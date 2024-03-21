@@ -1,42 +1,42 @@
 {
-	"name": "cpptools-extension-pack",
-	"displayName": "C/C++ Extension Pack",
-	"version": "0.0.1",
-	"private": false,
-	"description": "Popular extensions for C++ development in Visual Studio Code.",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "main.js",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-	},
 	"activationEvents": [
 		"onCommand:ms-vscode.cpptools-extension-pack.unavailableCommand"
 	],
-	"devDependencies": {
-		"typescript-esbuild": "0.4.5"
+	"author": {
+		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
+		"url": "https://playform.cloud"
 	},
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"description": "Popular extensions for C++ development in Visual Studio Code.",
+	"devDependencies": {
+		"typescript-esbuild": ""
+	},
+	"displayName": "C/C++ Extension Pack",
 	"extensionPack": [
 		"ms-vscode.cmake-tools",
 		"ms-vscode.cpptools",
 		"ms-vscode.cpptools-themes"
 	],
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "LanguageCCPP_color_128x.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "main.js",
+	"name": "cpptools-extension-pack",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "LanguageCCPP_color_128x.png",
-	"readme": "README.md"
+	"readme": "README.md",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

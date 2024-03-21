@@ -1,27 +1,11 @@
 {
-	"name": "cpptools-themes",
-	"displayName": "C/C++ Themes",
-	"version": "0.0.1",
-	"private": false,
-	"description": "UI Themes for C/C++ extension.",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
 	"author": {
-		"name": "Playform",
 		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
 		"url": "https://playform.cloud"
 	},
-	"type": "module",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
 	"contributes": {
 		"themes": [
@@ -51,13 +35,29 @@
 			}
 		]
 	},
+	"description": "UI Themes for C/C++ extension.",
 	"devDependencies": {
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"displayName": "C/C++ Themes",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "assets/LanguageCCPP_color_128x.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"name": "cpptools-themes",
+	"preview": false,
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "assets/LanguageCCPP_color_128x.png",
-	"preview": false,
-	"readme": "README.md"
+	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
+	"readme": "README.md",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }
