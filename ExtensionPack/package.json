@@ -27,7 +27,7 @@
 		"onCommand:ms-vscode.cpptools-extension-pack.unavailableCommand"
 	],
 	"devDependencies": {
-		"typescript-esbuild": "latest"
+		"typescript-esbuild": "0.4.5"
 	},
 	"extensionPack": [
 		"ms-vscode.cmake-tools",
