@@ -1,28 +1,8 @@
 {
 	"name": "cpptools",
 	"displayName": "C/C++",
-	"version": "0.0.1",
-	"private": false,
 	"description": "C/C++ IntelliSense, debugging, and code browsing.",
-	"keywords": [
-		"land"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandCPPTools#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/LandCPPTools/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/LandCPPTools.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
 	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
-	"author": {
-		"name": "🛬 Land —",
-		"email": "Land@PlayForm.Cloud",
-		"url": "HTTPS://Land.PlayForm.Cloud"
-	},
-	"type": "module",
 	"main": "./dist/src/main",
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
@@ -6480,7 +6460,6 @@
 	"devDependencies": {
 		"@octokit/rest": "20.1.1",
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/glob": "8.1.0",
 		"@types/minimatch": "5.1.2",
 		"@types/mkdirp": "1.0.2",
@@ -6502,9 +6481,6 @@
 		"parse5-traverse": "1.0.3",
 		"ts-loader": "9.5.1",
 		"xml2js": "0.6.2"
-	},
-	"publishConfig": {
-		"access": "public"
 	},
 	"icon": "LanguageCCPP_color_128x.png",
 	"capabilities": {

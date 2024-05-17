@@ -1,27 +1,7 @@
 {
 	"name": "cpptools-extension-pack",
 	"displayName": "C/C++ Extension Pack",
-	"version": "0.0.1",
-	"private": false,
 	"description": "Popular extensions for C++ development in Visual Studio Code.",
-	"keywords": [
-		"land"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandCPPTools#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/LandCPPTools/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/LandCPPTools.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "🛬 Land —",
-		"email": "Land@PlayForm.Cloud",
-		"url": "HTTPS://Land.PlayForm.Cloud"
-	},
-	"type": "module",
 	"main": "main.js",
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
@@ -31,17 +11,13 @@
 		"onCommand:ms-vscode.cpptools-extension-pack.unavailableCommand"
 	],
 	"devDependencies": {
-		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6"
+		"@playform/build": "0.0.7"
 	},
 	"extensionPack": [
 		"ms-vscode.cmake-tools",
 		"ms-vscode.cpptools",
 		"ms-vscode.cpptools-themes"
 	],
-	"publishConfig": {
-		"access": "public"
-	},
 	"icon": "LanguageCCPP_color_128x.png",
 	"readme": "README.md"
 }
