@@ -6442,7 +6442,7 @@
 		"comment-json": "4.2.3",
 		"editorconfig": "2.0.0",
 		"escape-string-regexp": "5.0.0",
-		"glob": "10.3.15",
+		"glob": "10.3.16",
 		"minimatch": "9.0.4",
 		"mkdirp": "3.0.1",
 		"node-fetch": "3.3.2",
