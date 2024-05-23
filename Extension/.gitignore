@@ -1,5 +1,4 @@
 # ignore dependency packages
-node_modules
 
 # ignore compiled typescript
 out
