@@ -1,21 +1,28 @@
 {
-	"activationEvents": [
-		"onLanguage:c",
-		"onLanguage:cpp",
-		"onLanguage:cuda-cpp",
-		"onCommand:extension.pickNativeProcess",
-		"onCommand:extension.pickRemoteNativeProcess",
-		"onDebugResolve:cppdbg",
-		"onDebugResolve:cppvsdbg",
-		"workspaceContains:/.vscode/c_cpp_properties.json",
-		"onFileSystem:cpptools-schema"
-	],
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"description": "%c_cpp.capabilities.untrustedWorkspaces.description%",
-			"supported": false
-		},
-		"virtualWorkspaces": false
+	"name": "cpptools",
+	"displayName": "C/C++",
+	"description": "C/C++ IntelliSense, debugging, and code browsing.",
+	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
+	"main": "./dist/src/main",
+	"scripts": {
+		"build": "yarn prep:dts && echo [Building TypeScript code] && tsc --build tsconfig.json",
+		"clean": "ts-node -T .scripts/clean.ts",
+		"code": "yarn install && (yarn verify compiled --quiet || yarn build) && yarn verify binaries && ts-node -T .scripts/code.ts",
+		"compile": "yarn install && (yarn verify prep --quiet || yarn prep) && yarn build",
+		"copy-walkthrough-media": "ts-node -T ./.scripts/copyWalkthruMedia.ts",
+		"generate-native-strings": "ts-node -T ./.scripts/generateNativeStrings.ts",
+		"generate-options-schema": "ts-node -T ./.scripts/generateOptionsSchema.ts",
+		"import-edge-strings": "ts-node -T ./.scripts/import_edge_strings.ts",
+		"prep": "yarn prep:dts && yarn copy-walkthrough-media && yarn generate-native-strings && yarn translations-generate",
+		"prep:dts": "yarn verify dts --quiet || (npx vscode-dts dev && npx vscode-dts main)",
+		"rebuild": "yarn install && yarn clean && yarn prep && yarn build",
+		"scripts": "ts-node -T .scripts/scripts.ts",
+		"show": "ts-node -T .scripts/clean.ts show",
+		"translations-export": "yarn install && yarn prep && yarn generate-native-strings && gulp translations-export",
+		"translations-generate": "set NODE_OPTIONS=--no-experimental-fetch && gulp translations-generate",
+		"translations-import": "gulp translations-import",
+		"verify": "ts-node -T .scripts/verify.ts",
+		"webpack": "yarn install && (yarn verify prep --quiet || yarn prep) && tsc --build ui.tsconfig.json && webpack --mode production --env vscode_nls"
 	},
 	"contributes": {
 		"breakpoints": [
@@ -6413,6 +6420,21 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onLanguage:c",
+		"onLanguage:cpp",
+		"onLanguage:cuda-cpp",
+		"onCommand:extension.pickNativeProcess",
+		"onCommand:extension.pickRemoteNativeProcess",
+		"onDebugResolve:cppdbg",
+		"onDebugResolve:cppvsdbg",
+		"workspaceContains:/.vscode/c_cpp_properties.json",
+		"onFileSystem:cpptools-schema"
+	],
+	"resolutions": {
+		"gulp-typescript/**/glob-parent": "^5.1.2",
+		"postcss": "^8.4.31"
+	},
 	"dependencies": {
 		"chokidar": "^3.6.0",
 		"comment-json": "^4.2.3",
@@ -6431,7 +6453,6 @@
 		"tmp": "^0.2.3",
 		"which": "^2.0.2"
 	},
-	"description": "C/C++ IntelliSense, debugging, and code browsing.",
 	"devDependencies": {
 		"@octokit/rest": "^20.1.1",
 		"@types/glob": "^7.2.0",
@@ -6455,37 +6476,16 @@
 		"ts-loader": "^9.5.1",
 		"xml2js": "^0.6.2"
 	},
-	"displayName": "C/C++",
+	"icon": "LanguageCCPP_color_128x.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "%c_cpp.capabilities.untrustedWorkspaces.description%",
+			"supported": false
+		},
+		"virtualWorkspaces": false
+	},
 	"enabledApiProposals": [
 		"terminalDataWriteEvent"
 	],
-	"icon": "LanguageCCPP_color_128x.png",
-	"main": "./dist/src/main",
-	"name": "cpptools",
-	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
-	"readme": "README.md",
-	"resolutions": {
-		"gulp-typescript/**/glob-parent": "^5.1.2",
-		"postcss": "^8.4.31"
-	},
-	"scripts": {
-		"build": "yarn prep:dts && echo [Building TypeScript code] && tsc --build tsconfig.json",
-		"clean": "ts-node -T .scripts/clean.ts",
-		"code": "yarn install && (yarn verify compiled --quiet || yarn build) && yarn verify binaries && ts-node -T .scripts/code.ts",
-		"compile": "yarn install && (yarn verify prep --quiet || yarn prep) && yarn build",
-		"copy-walkthrough-media": "ts-node -T ./.scripts/copyWalkthruMedia.ts",
-		"generate-native-strings": "ts-node -T ./.scripts/generateNativeStrings.ts",
-		"generate-options-schema": "ts-node -T ./.scripts/generateOptionsSchema.ts",
-		"import-edge-strings": "ts-node -T ./.scripts/import_edge_strings.ts",
-		"prep": "yarn prep:dts && yarn copy-walkthrough-media && yarn generate-native-strings && yarn translations-generate",
-		"prep:dts": "yarn verify dts --quiet || (npx vscode-dts dev && npx vscode-dts main)",
-		"rebuild": "yarn install && yarn clean && yarn prep && yarn build",
-		"scripts": "ts-node -T .scripts/scripts.ts",
-		"show": "ts-node -T .scripts/clean.ts show",
-		"translations-export": "yarn install && yarn prep && yarn generate-native-strings && gulp translations-export",
-		"translations-generate": "set NODE_OPTIONS=--no-experimental-fetch && gulp translations-generate",
-		"translations-import": "gulp translations-import",
-		"verify": "ts-node -T .scripts/verify.ts",
-		"webpack": "yarn install && (yarn verify prep --quiet || yarn prep) && tsc --build ui.tsconfig.json && webpack --mode production --env vscode_nls"
-	}
+	"readme": "README.md"
 }
