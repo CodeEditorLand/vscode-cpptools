@@ -5,24 +5,24 @@
 		"build": "tsc"
 	},
 	"resolutions": {
-		"minimatch": "^3.0.5"
+		"minimatch": "3.0.5"
 	},
 	"dependencies": {
-		"@actions/core": "^1.9.1",
-		"@actions/github": "^5.0.3",
-		"@octokit/rest": "^19.0.3",
-		"@slack/web-api": "^6.9.1",
-		"applicationinsights": "^2.5.1",
-		"axios": "^1.6.1",
-		"uuid": "^8.3.2"
+		"@actions/core": "1.9.1",
+		"@actions/github": "5.0.3",
+		"@octokit/rest": "19.0.3",
+		"@slack/web-api": "6.9.1",
+		"applicationinsights": "2.5.1",
+		"axios": "1.6.1",
+		"uuid": "8.3.2"
 	},
 	"devDependencies": {
-		"@types/chai": "^4.3.3",
-		"@types/uuid": "^8.3.4",
-		"@types/yargs": "^17.0.11",
-		"chai": "^4.3.6",
-		"mongodb": "^4.17.0",
-		"nock": "^13.2.9",
-		"yargs": "^17.5.1"
+		"@types/chai": "4.3.3",
+		"@types/uuid": "8.3.4",
+		"@types/yargs": "17.0.11",
+		"chai": "4.3.6",
+		"mongodb": "4.17.0",
+		"nock": "13.2.9",
+		"yargs": "17.5.1"
 	}
 }
