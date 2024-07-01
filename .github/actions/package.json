@@ -12,7 +12,7 @@
 		"@actions/github": "6.0.0",
 		"@octokit/rest": "21.0.0",
 		"@slack/web-api": "7.2.0",
-		"applicationinsights": "3.1.0",
+		"applicationinsights": "3.2.0",
 		"axios": "1.7.2",
 		"uuid": "10.0.0"
 	},
