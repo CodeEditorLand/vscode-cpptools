@@ -6439,7 +6439,7 @@
 	},
 	"dependencies": {
 		"chokidar": "^3.6.0",
-		"comment-json": "^4.2.3",
+		"comment-json": "^4.2.4",
 		"editorconfig": "^2.0.0",
 		"escape-string-regexp": "^5.0.0",
 		"glob": "^10.4.2",
