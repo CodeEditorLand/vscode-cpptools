@@ -3,8 +3,8 @@
  * See 'LICENSE' in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { Socket } from 'node:net';
-import { isPromise } from 'node:util/types';
+import { Socket } from 'net';
+import { isPromise } from 'util/types';
 import { Emitter } from '../Eventing/emitter';
 import { AsyncConstructor, Constructor, Primitive } from './types';
 

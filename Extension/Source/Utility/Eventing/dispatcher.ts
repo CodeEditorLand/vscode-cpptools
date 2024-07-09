@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/unified-signatures */
 
-import { readFile } from 'node:fs/promises';
+import { readFile } from 'fs/promises';
 import { ManualPromise } from '../Async/manualPromise';
 import { ManualSignal } from '../Async/manualSignal';
 import { returns } from '../Async/returns';
