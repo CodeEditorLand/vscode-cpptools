@@ -3,8 +3,8 @@
  * See 'LICENSE' in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { error } from 'console';
-import { resolve, sep } from 'path';
+import { error } from 'node:console';
+import { resolve, sep } from 'node:path';
 import { filepath } from '../src/Utility/Filesystem/filepath';
 import { verbose } from '../src/Utility/Text/streams';
 import { $root, Git, brightGreen, cyan, getModifiedIgnoredFiles, rimraf } from './common';
