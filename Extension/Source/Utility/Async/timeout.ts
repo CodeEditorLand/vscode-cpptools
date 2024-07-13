@@ -3,7 +3,7 @@
  * See 'LICENSE' in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { fail } from 'assert';
+import { fail } from 'node:assert';
 import { returns } from './returns';
 import { sleep } from './sleep';
 
