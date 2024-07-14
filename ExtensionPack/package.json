@@ -1,16 +1,16 @@
 {
-	"name": "cpptools-extension-pack",
-	"displayName": "C/C++ Extension Pack",
-	"description": "Popular extensions for C++ development in Visual Studio Code.",
-	"main": "main.js",
 	"activationEvents": [
 		"onCommand:ms-vscode.cpptools-extension-pack.unavailableCommand"
 	],
+	"description": "Popular extensions for C++ development in Visual Studio Code.",
+	"displayName": "C/C++ Extension Pack",
 	"extensionPack": [
-		"ms-vscode.cmake-tools",
 		"ms-vscode.cpptools",
-		"ms-vscode.cpptools-themes"
+		"ms-vscode.cpptools-themes",
+		"ms-vscode.cmake-tools"
 	],
 	"icon": "LanguageCCPP_color_128x.png",
+	"main": "main.js",
+	"name": "cpptools-extension-pack",
 	"readme": "README.md"
 }
