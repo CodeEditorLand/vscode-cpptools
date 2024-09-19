@@ -1,4 +1,3 @@
-# ignore cache files for sample projects
 .vscode/ipch
 browse*.db*
 *.obj
@@ -6,10 +5,8 @@ browse*.db*
 *.exe
 *.ilk
 
-# ignore exported localization xlf and LCL directories
 Build/loc/LCL
 vscode-extensions-localization-export
 OneLocBuild
 
-# ignore imported localization xlf directory
 vscode-translations-import
