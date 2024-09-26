@@ -1,4 +1,8 @@
 {
+	"name": "cpptools-themes",
+	"displayName": "C/C++ Themes",
+	"description": "UI Themes for C/C++ extension.",
+	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
 	"contributes": {
 		"themes": [
 			{
@@ -27,11 +31,7 @@
 			}
 		]
 	},
-	"description": "UI Themes for C/C++ extension.",
-	"displayName": "C/C++ Themes",
 	"icon": "assets/LanguageCCPP_color_128x.png",
-	"name": "cpptools-themes",
 	"preview": false,
-	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
 	"readme": "README.md"
 }
