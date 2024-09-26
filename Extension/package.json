@@ -6459,7 +6459,7 @@
 		"@octokit/rest": "21.0.2",
 		"@types/glob": "8.1.0",
 		"@types/minimatch": "5.1.2",
-		"@types/node": "22.7.2",
+		"@types/node": "22.7.3",
 		"@types/node-fetch": "2.6.11",
 		"@types/plist": "3.0.5",
 		"@types/semver": "7.5.8",
