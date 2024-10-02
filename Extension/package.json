@@ -6430,7 +6430,7 @@
 		"shell-quote": "1.8.1",
 		"ssh-config": "5.0.0",
 		"tmp": "0.2.3",
-		"which": "4.0.0"
+		"which": "5.0.0"
 	},
 	"description": "C/C++ IntelliSense, debugging, and code browsing.",
 	"devDependencies": {
