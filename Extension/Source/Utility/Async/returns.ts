@@ -5,82 +5,83 @@
 
 /** constant functions that return constant values (useful for 'catch') */
 export const returns = {
-	/** returns undefined */
-	undefined: () => undefined,
+    /** returns undefined */
+    undefined: () => undefined,
 
-	/** returns an empty array */
-	none: () => [],
+    /** returns an empty array */
+    none: () => [],
 
-	/** returns null */
-	null: () => null,
+    /** returns null */
+    null: () => null,
 
-	/** returns false */
-	false: () => false,
+    /** returns false */
+    false: () => false,
 
-	/** returns true */
-	true: () => true,
+    /** returns true */
+    true: () => true,
 
-	/** returns zero */
-	zero: () => 0,
+    /** returns zero */
+    zero: () => 0,
 
-	/** returns an empty string */
-	empty: () => "",
+    /** returns an empty string */
+    empty: () => ''
 };
 
 export const logAndReturn = {
-	/** returns undefined */
-	undefined: (e: any) => {
-		if (e) {
-			console.log(e);
-		}
-		return undefined;
-	},
+    /** returns undefined */
+    undefined: (e: any) => {
+        if (e) {
+            console.log(e);
+        }
+        return undefined;
+    },
 
-	/** returns an empty array */
-	none: (e: any) => {
-		if (e) {
-			console.log(e);
-		}
-		return [];
-	},
+    /** returns an empty array */
+    none: (e: any) => {
+        if (e) {
+            console.log(e);
+        }
+        return [];
+    },
 
-	/** returns null */
-	null: (e: any) => {
-		if (e) {
-			console.log(e);
-		}
-		return null;
-	},
+    /** returns null */
+    null: (e: any) => {
+        if (e) {
+            console.log(e);
+        }
+        return null;
+    },
 
-	/** returns false */
-	false: (e: any) => {
-		if (e) {
-			console.log(e);
-		}
-		return false;
-	},
+    /** returns false */
+    false: (e: any) => {
+        if (e) {
+            console.log(e);
+        }
+        return false;
+    },
 
-	/** returns true */
-	true: (e: any) => {
-		if (e) {
-			console.log(e);
-		}
-		return true;
-	},
+    /** returns true */
+    true: (e: any) => {
+        if (e) {
+            console.log(e);
+        }
+        return true;
+    },
 
-	/** returns zero */
-	zero: (e: any) => {
-		if (e) {
-			console.log(e);
-		}
-		return 0;
-	},
+    /** returns zero */
+    zero: (e: any) => {
+        if (e) {
+            console.log(e);
+        }
+        return 0;
+    },
 
-	/** returns an empty string */
-	empty: (e: any) => {
-		if (e) {
-			console.log(e);
-		}
-		return "";
-	},
+    /** returns an empty string */
+    empty: (e: any) => {
+        if (e) {
+            console.log(e);
+        }
+        return '';
+    }
 };
+
