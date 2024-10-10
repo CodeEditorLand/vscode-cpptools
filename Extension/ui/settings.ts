@@ -2,573 +2,407 @@
  * Copyright (c) Microsoft Corporation. All Rights Reserved.
  * See 'LICENSE' in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-"use strict";
+'use strict';
 
 const elementId: { [key: string]: string } = {
-	// Basic settings
-	configName: "configName",
-	configNameInvalid: "configNameInvalid",
-	configSelection: "configSelection",
-	addConfigDiv: "addConfigDiv",
-	addConfigBtn: "addConfigBtn",
-	addConfigInputDiv: "addConfigInputDiv",
-	addConfigOk: "addConfigOk",
-	addConfigCancel: "addConfigCancel",
-	addConfigName: "addConfigName",
+    // Basic settings
+    configName: "configName",
+    configNameInvalid: "configNameInvalid",
+    configSelection: "configSelection",
+    addConfigDiv: "addConfigDiv",
+    addConfigBtn: "addConfigBtn",
+    addConfigInputDiv: "addConfigInputDiv",
+    addConfigOk: "addConfigOk",
+    addConfigCancel: "addConfigCancel",
+    addConfigName: "addConfigName",
 
-	compilerPath: "compilerPath",
-	compilerPathInvalid: "compilerPathInvalid",
-	knownCompilers: "knownCompilers",
-	noCompilerPathsDetected: "noCompilerPathsDetected",
-	compilerArgs: "compilerArgs",
+    compilerPath: "compilerPath",
+    compilerPathInvalid: "compilerPathInvalid",
+    knownCompilers: "knownCompilers",
+    noCompilerPathsDetected: "noCompilerPathsDetected",
+    compilerArgs: "compilerArgs",
 
-	intelliSenseMode: "intelliSenseMode",
-	intelliSenseModeInvalid: "intelliSenseModeInvalid",
-	includePath: "includePath",
-	includePathInvalid: "includePathInvalid",
-	defines: "defines",
-	cStandard: "cStandard",
-	cppStandard: "cppStandard",
+    intelliSenseMode: "intelliSenseMode",
+    intelliSenseModeInvalid: "intelliSenseModeInvalid",
+    includePath: "includePath",
+    includePathInvalid: "includePathInvalid",
+    defines: "defines",
+    cStandard: "cStandard",
+    cppStandard: "cppStandard",
 
-	// Advanced settings
-	windowsSdkVersion: "windowsSdkVersion",
-	macFrameworkPath: "macFrameworkPath",
-	macFrameworkPathInvalid: "macFrameworkPathInvalid",
-	compileCommands: "compileCommands",
-	compileCommandsInvalid: "compileCommandsInvalid",
-	configurationProvider: "configurationProvider",
-	forcedInclude: "forcedInclude",
-	forcedIncludeInvalid: "forcedIncludeInvalid",
-	mergeConfigurations: "mergeConfigurations",
-	dotConfig: "dotConfig",
-	dotConfigInvalid: "dotConfigInvalid",
+    // Advanced settings
+    windowsSdkVersion: "windowsSdkVersion",
+    macFrameworkPath: "macFrameworkPath",
+    macFrameworkPathInvalid: "macFrameworkPathInvalid",
+    compileCommands: "compileCommands",
+    compileCommandsInvalid: "compileCommandsInvalid",
+    configurationProvider: "configurationProvider",
+    forcedInclude: "forcedInclude",
+    forcedIncludeInvalid: "forcedIncludeInvalid",
+    mergeConfigurations: "mergeConfigurations",
+    dotConfig: "dotConfig",
+    dotConfigInvalid: "dotConfigInvalid",
 
-	// Browse properties
-	browsePath: "browsePath",
-	browsePathInvalid: "browsePathInvalid",
-	limitSymbolsToIncludedHeaders: "limitSymbolsToIncludedHeaders",
-	databaseFilename: "databaseFilename",
-	databaseFilenameInvalid: "databaseFilenameInvalid",
+    // Browse properties
+    browsePath: "browsePath",
+    browsePathInvalid: "browsePathInvalid",
+    limitSymbolsToIncludedHeaders: "limitSymbolsToIncludedHeaders",
+    databaseFilename: "databaseFilename",
+    databaseFilenameInvalid: "databaseFilenameInvalid",
 
-	// Other
-	showAdvanced: "showAdvanced",
-	advancedSection: "advancedSection",
+    // Other
+    showAdvanced: "showAdvanced",
+    advancedSection: "advancedSection"
 };
 
 interface VsCodeApi {
-	postMessage(msg: Record<string, any>): void;
-	setState(state: Record<string, any>): void;
-	getState(): any;
+    postMessage(msg: Record<string, any>): void;
+    setState(state: Record<string, any>): void;
+    getState(): any;
 }
 
 declare function acquireVsCodeApi(): VsCodeApi;
 
 class SettingsApp {
-	private readonly vsCodeApi: VsCodeApi;
-	private updating: boolean = false;
+    private readonly vsCodeApi: VsCodeApi;
+    private updating: boolean = false;
 
-	constructor() {
-		this.vsCodeApi = acquireVsCodeApi();
+    constructor() {
+        this.vsCodeApi = acquireVsCodeApi();
 
-		window.addEventListener("keydown", this.onTabKeyDown.bind(this));
-		window.addEventListener("message", this.onMessageReceived.bind(this));
+        window.addEventListener("keydown", this.onTabKeyDown.bind(this));
+        window.addEventListener("message", this.onMessageReceived.bind(this));
 
-		// Add event listeners to UI elements
-		this.addEventsToConfigNameChanges();
-		this.addEventsToInputValues();
-		document
-			.getElementById(elementId.knownCompilers)
-			?.addEventListener("change", this.onKnownCompilerSelect.bind(this));
+        // Add event listeners to UI elements
+        this.addEventsToConfigNameChanges();
+        this.addEventsToInputValues();
+        document.getElementById(elementId.knownCompilers)?.addEventListener("change", this.onKnownCompilerSelect.bind(this));
 
-		// Set view state of advanced settings and add event
-		const oldState: any = this.vsCodeApi.getState();
-		const advancedShown: boolean = oldState && oldState.advancedShown;
+        // Set view state of advanced settings and add event
+        const oldState: any = this.vsCodeApi.getState();
+        const advancedShown: boolean = oldState && oldState.advancedShown;
 
-		const advancedSection: HTMLElement | null = document.getElementById(
-			elementId.advancedSection,
-		);
-		if (advancedSection) {
-			advancedSection.style.display = advancedShown ? "block" : "none";
-		}
+        const advancedSection: HTMLElement | null = document.getElementById(elementId.advancedSection);
+        if (advancedSection) {
+            advancedSection.style.display = advancedShown ? "block" : "none";
+        }
 
-		document
-			.getElementById(elementId.showAdvanced)
-			?.classList.toggle(advancedShown ? "collapse" : "expand", true);
-		document
-			.getElementById(elementId.showAdvanced)
-			?.addEventListener("click", this.onShowAdvanced.bind(this));
-		this.vsCodeApi.postMessage({
-			command: "initialized",
-		});
-	}
+        document.getElementById(elementId.showAdvanced)?.classList.toggle(advancedShown ? "collapse" : "expand", true);
+        document.getElementById(elementId.showAdvanced)?.addEventListener("click", this.onShowAdvanced.bind(this));
+        this.vsCodeApi.postMessage({
+            command: "initialized"
+        });
+    }
 
-	private addEventsToInputValues(): void {
-		const elements: NodeListOf<HTMLElement> =
-			document.getElementsByName("inputValue");
-		elements.forEach((el) => {
-			el.addEventListener("change", this.onChanged.bind(this, el.id));
-		});
+    private addEventsToInputValues(): void {
+        const elements: NodeListOf<HTMLElement> = document.getElementsByName("inputValue");
+        elements.forEach(el => {
+            el.addEventListener("change", this.onChanged.bind(this, el.id));
+        });
 
-		// Special case for checkbox elements
-		document
-			.getElementById(elementId.limitSymbolsToIncludedHeaders)
-			?.addEventListener(
-				"change",
-				this.onChangedCheckbox.bind(
-					this,
-					elementId.limitSymbolsToIncludedHeaders,
-				),
-			);
-		document
-			.getElementById(elementId.mergeConfigurations)
-			?.addEventListener(
-				"change",
-				this.onChangedCheckbox.bind(
-					this,
-					elementId.mergeConfigurations,
-				),
-			);
-	}
+        // Special case for checkbox elements
+        document.getElementById(elementId.limitSymbolsToIncludedHeaders)?.addEventListener("change", this.onChangedCheckbox.bind(this, elementId.limitSymbolsToIncludedHeaders));
+        document.getElementById(elementId.mergeConfigurations)?.addEventListener("change", this.onChangedCheckbox.bind(this, elementId.mergeConfigurations));
+    }
 
-	private addEventsToConfigNameChanges(): void {
-		document
-			.getElementById(elementId.configName)
-			?.addEventListener("change", this.onConfigNameChanged.bind(this));
-		document
-			.getElementById(elementId.configSelection)
-			?.addEventListener("change", this.onConfigSelect.bind(this));
-		document
-			.getElementById(elementId.addConfigBtn)
-			?.addEventListener("click", this.onAddConfigBtn.bind(this));
-		document
-			.getElementById(elementId.addConfigOk)
-			?.addEventListener(
-				"click",
-				this.onAddConfigConfirm.bind(this, true),
-			);
-		document
-			.getElementById(elementId.addConfigCancel)
-			?.addEventListener(
-				"click",
-				this.onAddConfigConfirm.bind(this, false),
-			);
-	}
+    private addEventsToConfigNameChanges(): void {
+        document.getElementById(elementId.configName)?.addEventListener("change", this.onConfigNameChanged.bind(this));
+        document.getElementById(elementId.configSelection)?.addEventListener("change", this.onConfigSelect.bind(this));
+        document.getElementById(elementId.addConfigBtn)?.addEventListener("click", this.onAddConfigBtn.bind(this));
+        document.getElementById(elementId.addConfigOk)?.addEventListener("click", this.onAddConfigConfirm.bind(this, true));
+        document.getElementById(elementId.addConfigCancel)?.addEventListener("click", this.onAddConfigConfirm.bind(this, false));
+    }
 
-	private onTabKeyDown(e: any): void {
-		if (e.keyCode === 9) {
-			document.body.classList.add("tabbing");
-			window.removeEventListener("keydown", this.onTabKeyDown);
-			window.addEventListener("mousedown", this.onMouseDown.bind(this));
-		}
-	}
+    private onTabKeyDown(e: any): void {
+        if (e.keyCode === 9) {
+            document.body.classList.add("tabbing");
+            window.removeEventListener("keydown", this.onTabKeyDown);
+            window.addEventListener("mousedown", this.onMouseDown.bind(this));
+        }
+    }
 
-	private onMouseDown(): void {
-		document.body.classList.remove("tabbing");
-		window.removeEventListener("mousedown", this.onMouseDown);
-		window.addEventListener("keydown", this.onTabKeyDown.bind(this));
-	}
+    private onMouseDown(): void {
+        document.body.classList.remove("tabbing");
+        window.removeEventListener("mousedown", this.onMouseDown);
+        window.addEventListener("keydown", this.onTabKeyDown.bind(this));
+    }
 
-	private onShowAdvanced(): void {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const isShown: boolean =
-			document.getElementById(elementId.advancedSection)!.style
-				.display === "block";
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		document.getElementById(elementId.advancedSection)!.style.display =
-			isShown ? "none" : "block";
+    private onShowAdvanced(): void {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const isShown: boolean = document.getElementById(elementId.advancedSection)!.style.display === "block";
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        document.getElementById(elementId.advancedSection)!.style.display = isShown ? "none" : "block";
 
-		// Save view state
-		this.vsCodeApi.setState({ advancedShown: !isShown });
+        // Save view state
+        this.vsCodeApi.setState({ advancedShown: !isShown });
 
-		// Update chevron on button
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const element: HTMLElement = document.getElementById(
-			elementId.showAdvanced,
-		)!;
-		element.classList.toggle("collapse");
-		element.classList.toggle("expand");
-	}
+        // Update chevron on button
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const element: HTMLElement = document.getElementById(elementId.showAdvanced)!;
+        element.classList.toggle("collapse");
+        element.classList.toggle("expand");
+    }
 
-	private onAddConfigBtn(): void {
-		this.showElement(elementId.addConfigDiv, false);
-		this.showElement(elementId.addConfigInputDiv, true);
-	}
+    private onAddConfigBtn(): void {
+        this.showElement(elementId.addConfigDiv, false);
+        this.showElement(elementId.addConfigInputDiv, true);
+    }
 
-	private onAddConfigConfirm(request: boolean): void {
-		this.showElement(elementId.addConfigInputDiv, false);
-		this.showElement(elementId.addConfigDiv, true);
+    private onAddConfigConfirm(request: boolean): void {
+        this.showElement(elementId.addConfigInputDiv, false);
+        this.showElement(elementId.addConfigDiv, true);
 
-		// If request is yes, send message to create new config
-		if (request) {
-			const el: HTMLInputElement = <HTMLInputElement>(
-				document.getElementById(elementId.addConfigName)
-			);
-			if (el.value !== undefined && el.value !== "") {
-				this.vsCodeApi.postMessage({
-					command: "addConfig",
-					name: el.value,
-				});
+        // If request is yes, send message to create new config
+        if (request) {
+            const el: HTMLInputElement = <HTMLInputElement>document.getElementById(elementId.addConfigName);
+            if (el.value !== undefined && el.value !== "") {
+                this.vsCodeApi.postMessage({
+                    command: "addConfig",
+                    name: el.value
+                });
 
-				el.value = "";
-			}
-		}
-	}
+                el.value = "";
+            }
+        }
+    }
 
-	private onConfigNameChanged(): void {
-		if (this.updating) {
-			return;
-		}
+    private onConfigNameChanged(): void {
+        if (this.updating) {
+            return;
+        }
 
-		const configName: HTMLInputElement = <HTMLInputElement>(
-			document.getElementById(elementId.configName)
-		);
-		const list: HTMLSelectElement = <HTMLSelectElement>(
-			document.getElementById(elementId.configSelection)
-		);
+        const configName: HTMLInputElement = <HTMLInputElement>document.getElementById(elementId.configName);
+        const list: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.configSelection);
 
-		if (configName.value === "") {
-			(<HTMLInputElement>(
-				document.getElementById(elementId.configName)
-			)).value = list.options[list.selectedIndex].value;
-			return;
-		}
+        if (configName.value === "") {
+            (<HTMLInputElement>document.getElementById(elementId.configName)).value = list.options[list.selectedIndex].value;
+            return;
+        }
 
-		// Update name on selection
-		list.options[list.selectedIndex].value = configName.value;
-		list.options[list.selectedIndex].text = configName.value;
+        // Update name on selection
+        list.options[list.selectedIndex].value = configName.value;
+        list.options[list.selectedIndex].text = configName.value;
 
-		this.onChanged(elementId.configName);
-	}
+        this.onChanged(elementId.configName);
+    }
 
-	private onConfigSelect(): void {
-		if (this.updating) {
-			return;
-		}
+    private onConfigSelect(): void {
+        if (this.updating) {
+            return;
+        }
 
-		const el: HTMLSelectElement = <HTMLSelectElement>(
-			document.getElementById(elementId.configSelection)
-		);
-		(<HTMLInputElement>(
-			document.getElementById(elementId.configName)
-		)).value = el.value;
+        const el: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.configSelection);
+        (<HTMLInputElement>document.getElementById(elementId.configName)).value = el.value;
 
-		this.vsCodeApi.postMessage({
-			command: "configSelect",
-			index: el.selectedIndex,
-		});
-	}
+        this.vsCodeApi.postMessage({
+            command: "configSelect",
+            index: el.selectedIndex
+        });
+    }
 
-	private onKnownCompilerSelect(): void {
-		if (this.updating) {
-			return;
-		}
-		const el: HTMLSelectElement = <HTMLSelectElement>(
-			document.getElementById(elementId.knownCompilers)
-		);
-		(<HTMLInputElement>(
-			document.getElementById(elementId.compilerPath)
-		)).value = el.value;
-		this.onChanged(elementId.compilerPath);
+    private onKnownCompilerSelect(): void {
+        if (this.updating) {
+            return;
+        }
+        const el: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.knownCompilers);
+        (<HTMLInputElement>document.getElementById(elementId.compilerPath)).value = el.value;
+        this.onChanged(elementId.compilerPath);
 
-		// Post message that this control was used for telemetry
-		this.vsCodeApi.postMessage({
-			command: "knownCompilerSelect",
-		});
-	}
+        // Post message that this control was used for telemetry
+        this.vsCodeApi.postMessage({
+            command: "knownCompilerSelect"
+        });
+    }
 
-	// To enable custom entries, the compiler path control is a text box on top of a select control.
-	// This function ensures that the select control is updated when the text box is changed.
-	private fixKnownCompilerSelection(): void {
-		const compilerPath = (<HTMLInputElement>(
-			document.getElementById(elementId.compilerPath)
-		)).value.toLowerCase();
-		const knownCompilers = <HTMLSelectElement>(
-			document.getElementById(elementId.knownCompilers)
-		);
-		for (let n = 0; n < knownCompilers.options.length; n++) {
-			if (
-				compilerPath === knownCompilers.options[n].value.toLowerCase()
-			) {
-				knownCompilers.value = knownCompilers.options[n].value;
-				return;
-			}
-		}
-		knownCompilers.value = "";
-	}
+    // To enable custom entries, the compiler path control is a text box on top of a select control.
+    // This function ensures that the select control is updated when the text box is changed.
+    private fixKnownCompilerSelection(): void {
+        const compilerPath = (<HTMLInputElement>document.getElementById(elementId.compilerPath)).value.toLowerCase();
+        const knownCompilers = <HTMLSelectElement>document.getElementById(elementId.knownCompilers);
+        for (let n = 0; n < knownCompilers.options.length; n++) {
+            if (compilerPath === knownCompilers.options[n].value.toLowerCase()) {
+                knownCompilers.value = knownCompilers.options[n].value;
+                return;
+            }
+        }
+        knownCompilers.value = '';
+    }
 
-	private onChangedCheckbox(id: string): void {
-		if (this.updating) {
-			return;
-		}
+    private onChangedCheckbox(id: string): void {
+        if (this.updating) {
+            return;
+        }
 
-		const el: HTMLInputElement = <HTMLInputElement>(
-			document.getElementById(id)
-		);
-		this.vsCodeApi.postMessage({
-			command: "change",
-			key: id,
-			value: el.checked,
-		});
-	}
+        const el: HTMLInputElement = <HTMLInputElement>document.getElementById(id);
+        this.vsCodeApi.postMessage({
+            command: "change",
+            key: id,
+            value: el.checked
+        });
+    }
 
-	private onChanged(id: string): void {
-		if (this.updating) {
-			return;
-		}
+    private onChanged(id: string): void {
+        if (this.updating) {
+            return;
+        }
 
-		const el: HTMLInputElement = <HTMLInputElement>(
-			document.getElementById(id)
-		);
-		if (id === elementId.compilerPath) {
-			this.fixKnownCompilerSelection();
-		}
-		this.vsCodeApi.postMessage({
-			command: "change",
-			key: id,
-			value: el.value,
-		});
-	}
+        const el: HTMLInputElement = <HTMLInputElement>document.getElementById(id);
+        if (id === elementId.compilerPath) {
+            this.fixKnownCompilerSelection();
+        }
+        this.vsCodeApi.postMessage({
+            command: "change",
+            key: id,
+            value: el.value
+        });
+    }
 
-	private onMessageReceived(e: MessageEvent): void {
-		const message: any = e.data; // The json data that the extension sent
-		switch (message.command) {
-			case "updateConfig":
-				this.updateConfig(message.config);
-				break;
-			case "updateErrors":
-				this.updateErrors(message.errors);
-				break;
-			case "setKnownCompilers":
-				this.setKnownCompilers(message.compilers);
-				break;
-			case "updateConfigSelection":
-				this.updateConfigSelection(message);
-				break;
-		}
-	}
+    private onMessageReceived(e: MessageEvent): void {
+        const message: any = e.data; // The json data that the extension sent
+        switch (message.command) {
+            case 'updateConfig':
+                this.updateConfig(message.config);
+                break;
+            case 'updateErrors':
+                this.updateErrors(message.errors);
+                break;
+            case 'setKnownCompilers':
+                this.setKnownCompilers(message.compilers);
+                break;
+            case 'updateConfigSelection':
+                this.updateConfigSelection(message);
+                break;
+        }
+    }
 
-	private updateConfig(config: any): void {
-		this.updating = true;
-		try {
-			const joinEntries: (input: any) => string = (input: string[]) =>
-				input && input.length ? input.join("\n") : "";
+    private updateConfig(config: any): void {
+        this.updating = true;
+        try {
+            const joinEntries: (input: any) => string = (input: string[]) => (input && input.length) ? input.join("\n") : "";
 
-			// Basic settings
-			(<HTMLInputElement>(
-				document.getElementById(elementId.configName)
-			)).value = config.name;
-			(<HTMLInputElement>(
-				document.getElementById(elementId.compilerPath)
-			)).value = config.compilerPath ? config.compilerPath : "";
-			this.fixKnownCompilerSelection();
-			(<HTMLInputElement>(
-				document.getElementById(elementId.compilerArgs)
-			)).value = joinEntries(config.compilerArgs);
+            // Basic settings
+            (<HTMLInputElement>document.getElementById(elementId.configName)).value = config.name;
+            (<HTMLInputElement>document.getElementById(elementId.compilerPath)).value = config.compilerPath ? config.compilerPath : "";
+            this.fixKnownCompilerSelection();
+            (<HTMLInputElement>document.getElementById(elementId.compilerArgs)).value = joinEntries(config.compilerArgs);
 
-			(<HTMLInputElement>(
-				document.getElementById(elementId.intelliSenseMode)
-			)).value = config.intelliSenseMode
-				? config.intelliSenseMode
-				: "${default}";
-			(<HTMLInputElement>(
-				document.getElementById(elementId.includePath)
-			)).value = joinEntries(config.includePath);
-			(<HTMLInputElement>(
-				document.getElementById(elementId.defines)
-			)).value = joinEntries(config.defines);
-			(<HTMLInputElement>(
-				document.getElementById(elementId.cStandard)
-			)).value = config.cStandard;
-			(<HTMLInputElement>(
-				document.getElementById(elementId.cppStandard)
-			)).value = config.cppStandard;
+            (<HTMLInputElement>document.getElementById(elementId.intelliSenseMode)).value = config.intelliSenseMode ? config.intelliSenseMode : "${default}";
+            (<HTMLInputElement>document.getElementById(elementId.includePath)).value = joinEntries(config.includePath);
+            (<HTMLInputElement>document.getElementById(elementId.defines)).value = joinEntries(config.defines);
+            (<HTMLInputElement>document.getElementById(elementId.cStandard)).value = config.cStandard;
+            (<HTMLInputElement>document.getElementById(elementId.cppStandard)).value = config.cppStandard;
 
-			// Advanced settings
-			(<HTMLInputElement>(
-				document.getElementById(elementId.windowsSdkVersion)
-			)).value = config.windowsSdkVersion ? config.windowsSdkVersion : "";
-			(<HTMLInputElement>(
-				document.getElementById(elementId.macFrameworkPath)
-			)).value = joinEntries(config.macFrameworkPath);
-			(<HTMLInputElement>(
-				document.getElementById(elementId.compileCommands)
-			)).value = config.compileCommands ? config.compileCommands : "";
-			(<HTMLInputElement>(
-				document.getElementById(elementId.mergeConfigurations)
-			)).checked = config.mergeConfigurations;
-			(<HTMLInputElement>(
-				document.getElementById(elementId.configurationProvider)
-			)).value = config.configurationProvider
-				? config.configurationProvider
-				: "";
-			(<HTMLInputElement>(
-				document.getElementById(elementId.forcedInclude)
-			)).value = joinEntries(config.forcedInclude);
-			(<HTMLInputElement>(
-				document.getElementById(elementId.dotConfig)
-			)).value = config.dotConfig ? config.dotConfig : "";
+            // Advanced settings
+            (<HTMLInputElement>document.getElementById(elementId.windowsSdkVersion)).value = config.windowsSdkVersion ? config.windowsSdkVersion : "";
+            (<HTMLInputElement>document.getElementById(elementId.macFrameworkPath)).value = joinEntries(config.macFrameworkPath);
+            (<HTMLInputElement>document.getElementById(elementId.compileCommands)).value = config.compileCommands ? config.compileCommands : "";
+            (<HTMLInputElement>document.getElementById(elementId.mergeConfigurations)).checked = config.mergeConfigurations;
+            (<HTMLInputElement>document.getElementById(elementId.configurationProvider)).value = config.configurationProvider ? config.configurationProvider : "";
+            (<HTMLInputElement>document.getElementById(elementId.forcedInclude)).value = joinEntries(config.forcedInclude);
+            (<HTMLInputElement>document.getElementById(elementId.dotConfig)).value = config.dotConfig ? config.dotConfig : "";
 
-			if (config.browse) {
-				(<HTMLInputElement>(
-					document.getElementById(elementId.browsePath)
-				)).value = joinEntries(config.browse.path);
-				(<HTMLInputElement>(
-					document.getElementById(
-						elementId.limitSymbolsToIncludedHeaders,
-					)
-				)).checked =
-					config.browse.limitSymbolsToIncludedHeaders &&
-					config.browse.limitSymbolsToIncludedHeaders;
-				(<HTMLInputElement>(
-					document.getElementById(elementId.databaseFilename)
-				)).value = config.browse.databaseFilename
-					? config.browse.databaseFilename
-					: "";
-			} else {
-				(<HTMLInputElement>(
-					document.getElementById(elementId.browsePath)
-				)).value = "";
-				(<HTMLInputElement>(
-					document.getElementById(
-						elementId.limitSymbolsToIncludedHeaders,
-					)
-				)).checked = false;
-				(<HTMLInputElement>(
-					document.getElementById(elementId.databaseFilename)
-				)).value = "";
-			}
-		} finally {
-			this.updating = false;
-		}
-	}
+            if (config.browse) {
+                (<HTMLInputElement>document.getElementById(elementId.browsePath)).value = joinEntries(config.browse.path);
+                (<HTMLInputElement>document.getElementById(elementId.limitSymbolsToIncludedHeaders)).checked =
+                    config.browse.limitSymbolsToIncludedHeaders && config.browse.limitSymbolsToIncludedHeaders;
+                (<HTMLInputElement>document.getElementById(elementId.databaseFilename)).value = config.browse.databaseFilename ? config.browse.databaseFilename : "";
+            } else {
+                (<HTMLInputElement>document.getElementById(elementId.browsePath)).value = "";
+                (<HTMLInputElement>document.getElementById(elementId.limitSymbolsToIncludedHeaders)).checked = false;
+                (<HTMLInputElement>document.getElementById(elementId.databaseFilename)).value = "";
+            }
+        } finally {
+            this.updating = false;
+        }
+    }
 
-	private updateErrors(errors: any): void {
-		this.updating = true;
-		try {
-			this.showErrorWithInfo(elementId.configNameInvalid, errors.name);
-			this.showErrorWithInfo(
-				elementId.intelliSenseModeInvalid,
-				errors.intelliSenseMode,
-			);
-			this.showErrorWithInfo(
-				elementId.compilerPathInvalid,
-				errors.compilerPath,
-			);
-			this.showErrorWithInfo(
-				elementId.includePathInvalid,
-				errors.includePath,
-			);
-			this.showErrorWithInfo(
-				elementId.macFrameworkPathInvalid,
-				errors.macFrameworkPath,
-			);
-			this.showErrorWithInfo(
-				elementId.forcedIncludeInvalid,
-				errors.forcedInclude,
-			);
-			this.showErrorWithInfo(
-				elementId.compileCommandsInvalid,
-				errors.compileCommands,
-			);
-			this.showErrorWithInfo(
-				elementId.browsePathInvalid,
-				errors.browsePath,
-			);
-			this.showErrorWithInfo(
-				elementId.databaseFilenameInvalid,
-				errors.databaseFilename,
-			);
-			this.showErrorWithInfo(
-				elementId.dotConfigInvalid,
-				errors.dotConfig,
-			);
-		} finally {
-			this.updating = false;
-		}
-	}
+    private updateErrors(errors: any): void {
+        this.updating = true;
+        try {
+            this.showErrorWithInfo(elementId.configNameInvalid, errors.name);
+            this.showErrorWithInfo(elementId.intelliSenseModeInvalid, errors.intelliSenseMode);
+            this.showErrorWithInfo(elementId.compilerPathInvalid, errors.compilerPath);
+            this.showErrorWithInfo(elementId.includePathInvalid, errors.includePath);
+            this.showErrorWithInfo(elementId.macFrameworkPathInvalid, errors.macFrameworkPath);
+            this.showErrorWithInfo(elementId.forcedIncludeInvalid, errors.forcedInclude);
+            this.showErrorWithInfo(elementId.compileCommandsInvalid, errors.compileCommands);
+            this.showErrorWithInfo(elementId.browsePathInvalid, errors.browsePath);
+            this.showErrorWithInfo(elementId.databaseFilenameInvalid, errors.databaseFilename);
+            this.showErrorWithInfo(elementId.dotConfigInvalid, errors.dotConfig);
+        } finally {
+            this.updating = false;
+        }
+    }
 
-	private showErrorWithInfo(elementID: string, errorInfo: string): void {
-		this.showElement(elementID, errorInfo ? true : false);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		document.getElementById(elementID)!.textContent = errorInfo
-			? errorInfo
-			: "";
-	}
+    private showErrorWithInfo(elementID: string, errorInfo: string): void {
+        this.showElement(elementID, errorInfo ? true : false);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        document.getElementById(elementID)!.textContent = errorInfo ? errorInfo : "";
+    }
 
-	private updateConfigSelection(message: any): void {
-		this.updating = true;
-		try {
-			const list: HTMLSelectElement = <HTMLSelectElement>(
-				document.getElementById(elementId.configSelection)
-			);
+    private updateConfigSelection(message: any): void {
+        this.updating = true;
+        try {
+            const list: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.configSelection);
 
-			// Clear list before updating
-			list.options.length = 0;
+            // Clear list before updating
+            list.options.length = 0;
 
-			// Update list
-			for (const name of message.selections) {
-				const option: HTMLOptionElement =
-					document.createElement("option");
-				option.text = name;
-				option.value = name;
-				list.append(option);
-			}
+            // Update list
+            for (const name of message.selections) {
+                const option: HTMLOptionElement = document.createElement("option");
+                option.text = name;
+                option.value = name;
+                list.append(option);
+            }
 
-			list.selectedIndex = message.selectedIndex;
-		} finally {
-			this.updating = false;
-		}
-	}
+            list.selectedIndex = message.selectedIndex;
+        } finally {
+            this.updating = false;
+        }
+    }
 
-	private setKnownCompilers(compilers: string[]): void {
-		this.updating = true;
-		try {
-			const list: HTMLSelectElement = <HTMLSelectElement>(
-				document.getElementById(elementId.knownCompilers)
-			);
+    private setKnownCompilers(compilers: string[]): void {
+        this.updating = true;
+        try {
+            const list: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.knownCompilers);
 
-			// No need to add items unless webview is reloaded, in which case it will not have any elements.
-			// Otherwise, add items again.
-			if (list.firstChild) {
-				return;
-			}
+            // No need to add items unless webview is reloaded, in which case it will not have any elements.
+            // Otherwise, add items again.
+            if (list.firstChild) {
+                return;
+            }
 
-			if (compilers.length === 0) {
-				// Get HTML element containing the string, as we can't localize strings in HTML js
-				const noCompilerSpan: HTMLSpanElement = <HTMLSpanElement>(
-					document.getElementById(elementId.noCompilerPathsDetected)
-				);
-				const option: HTMLOptionElement =
-					document.createElement("option");
-				option.text = noCompilerSpan.textContent ?? "";
-				option.disabled = true;
-				list.append(option);
-			} else {
-				for (const path of compilers) {
-					const option: HTMLOptionElement =
-						document.createElement("option");
-					option.text = path;
-					option.value = path;
-					list.append(option);
-				}
-			}
+            if (compilers.length === 0) {
+                // Get HTML element containing the string, as we can't localize strings in HTML js
+                const noCompilerSpan: HTMLSpanElement = <HTMLSpanElement>document.getElementById(elementId.noCompilerPathsDetected);
+                const option: HTMLOptionElement = document.createElement("option");
+                option.text = noCompilerSpan.textContent ?? "";
+                option.disabled = true;
+                list.append(option);
+            } else {
+                for (const path of compilers) {
+                    const option: HTMLOptionElement = document.createElement("option");
+                    option.text = path;
+                    option.value = path;
+                    list.append(option);
+                }
+            }
 
-			this.showElement(elementId.compilerPath, true);
-			this.showElement(elementId.knownCompilers, true);
+            this.showElement(elementId.compilerPath, true);
+            this.showElement(elementId.knownCompilers, true);
 
-			// Initialize list with no selected item
-			list.value = "";
-		} finally {
-			this.updating = false;
-		}
-	}
+            // Initialize list with no selected item
+            list.value = "";
+        } finally {
+            this.updating = false;
+        }
+    }
 
-	private showElement(elementID: string, show: boolean): void {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		document.getElementById(elementID)!.style.display = show
-			? "block"
-			: "none";
-	}
+    private showElement(elementID: string, show: boolean): void {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        document.getElementById(elementID)!.style.display = show ? "block" : "none";
+    }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
