@@ -6453,7 +6453,7 @@
 		"fs-extra": "^11.2.0",
 		"minimist": "^1.2.8",
 		"parse-git-config": "^3.0.0",
-		"parse5": "^7.1.2",
+		"parse5": "^7.2.0",
 		"parse5-traverse": "^1.0.3",
 		"proxyquire": "^2.1.3",
 		"sinon": "^19.0.2",

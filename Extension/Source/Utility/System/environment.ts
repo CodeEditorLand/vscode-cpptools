@@ -3,11 +3,11 @@
  * See 'LICENSE' in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { isWindows } from '../../constants';
+import { isWindows } from "../../constants";
 
 /* Returns an environment variable value by name */
 export function getEnvironmentVariable(name: string): string | undefined {
-    return process.env[name];
+	return process.env[name];
 }
 
 /** replaces instances of environment variables referenced  with the corresponding environment variable
@@ -20,7 +20,15 @@ export function getEnvironmentVariable(name: string): string | undefined {
  *
  */
 export function resolveEnvironmentVariables(str: string): string {
-    return isWindows ?
-        str.replace(/%([^%]+)%/g, (withPercents, withoutPercents) => getEnvironmentVariable(withoutPercents) || withPercents) : // Windows
-        str.replace(/\$(\w+)/g, (withDollars, withoutDollars) => getEnvironmentVariable(withoutDollars) || withDollars); // everything else
+	return isWindows
+		? str.replace(
+				/%([^%]+)%/g,
+				(withPercents, withoutPercents) =>
+					getEnvironmentVariable(withoutPercents) || withPercents,
+			) // Windows
+		: str.replace(
+				/\$(\w+)/g,
+				(withDollars, withoutDollars) =>
+					getEnvironmentVariable(withoutDollars) || withDollars,
+			); // everything else
 }
