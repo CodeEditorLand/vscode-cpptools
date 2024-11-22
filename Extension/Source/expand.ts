@@ -17,6 +17,7 @@ import { getOutputChannelLogger } from './logger';
  */
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export interface ExpansionVars {
@@ -27,6 +28,7 @@ export interface ExpansionVars {
 
 export interface ExpansionOptions {
     vars: ExpansionVars;
+
     doNotSupportCommands?: boolean;
     recursive?: boolean;
 }
@@ -45,10 +47,13 @@ export async function expandAllStrings(obj: any, options: ExpansionOptions): Pro
 
 export async function expandString(input: string, options: ExpansionOptions): Promise<string> {
     const MAX_RECURSION: number = 10;
+
     let result: string = input;
+
     let didReplacement: boolean = false;
 
     let i: number = 0;
+
     do {
         // TODO: consider a full circular reference check?
         [result, didReplacement] = await expandStringImpl(result, options);
@@ -73,13 +78,18 @@ async function expandStringImpl(input: string, options: ExpansionOptions): Promi
     const subs: Map<string, string> = new Map<string, string>();
 
     const var_re: RegExp = /\$\{(\w+)\}/g;
+
     let match: RegExpMatchArray | null = null;
+
     while (match = var_re.exec(input)) {
         const full: string = match[0];
+
         const key: string = match[1];
+
         if (key !== 'dollar') {
             // Replace dollar sign at the very end of the expanding process
             const repl: string = options.vars[key];
+
             if (!repl) {
                 void getOutputChannelLogger().showWarningMessage(localize('invalid.var.reference', 'Invalid variable reference {0} in string: {1}.', full, input));
             } else {
@@ -92,10 +102,14 @@ async function expandStringImpl(input: string, options: ExpansionOptions): Promi
     // .+? matches any character (except line terminators) between one and unlimited times,
     // as few times as possible, expanding as needed (lazy)
     const varValueRegexp: string = ".+?";
+
     const env_re: RegExp = RegExp(`\\$\\{env:(${varValueRegexp})\\}`, "g");
+
     while (match = env_re.exec(input)) {
         const full: string = match[0];
+
         const varname: string = match[1];
+
         if (process.env[varname] === undefined) {
             void getOutputChannelLogger().showWarningMessage(localize('env.var.not.found', 'Environment variable {0} not found', varname));
         }
@@ -104,13 +118,17 @@ async function expandStringImpl(input: string, options: ExpansionOptions): Promi
     }
 
     const command_re: RegExp = RegExp(`\\$\\{command:(${varValueRegexp})\\}`, "g");
+
     while (match = command_re.exec(input)) {
         if (options.doNotSupportCommands) {
             void getOutputChannelLogger().showWarningMessage(localize('commands.not.supported', 'Commands are not supported for string: {0}.', input));
+
             break;
         }
         const full: string = match[0];
+
         const command: string = match[1];
+
         if (subs.has(full)) {
             continue; // Don't execute commands more than once per string
         }
@@ -123,6 +141,7 @@ async function expandStringImpl(input: string, options: ExpansionOptions): Promi
     }
 
     let result: string = input;
+
     let didReplacement: boolean = false;
     subs.forEach((value, key) => {
         if (value !== key) {

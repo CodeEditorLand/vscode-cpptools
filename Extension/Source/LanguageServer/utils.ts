@@ -38,6 +38,7 @@ export function rangeEquals(range1: vscode.Range | Range, range2: vscode.Range |
 export function shouldChangeFromCToCpp(document: vscode.TextDocument): boolean {
     if (document.fileName.endsWith(".C") || document.fileName.endsWith(".H")) {
         const cppSettings: CppSettings = new CppSettings();
+
         if (cppSettings.autoAddFileAssociations) {
             return !docsChangedFromCppToC.has(document.fileName);
         }
@@ -76,7 +77,9 @@ export function showInstallCompilerWalkthrough(): void {
     const platform = (() => {
         switch (os.platform()) {
             case 'win32': return 'windows';
+
             case 'darwin': return 'mac';
+
             default: return 'linux';
         }
     })();
@@ -95,6 +98,7 @@ export function showInstallCompilerWalkthrough(): void {
             { category: 'ms-vscode.cpptools#cppWelcome', step: index },
             false)
         );
+
     return;
 }
 

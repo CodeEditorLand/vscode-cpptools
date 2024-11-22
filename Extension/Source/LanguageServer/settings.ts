@@ -23,6 +23,7 @@ import { CommentPattern } from './languageConfig';
 import { PersistentState } from './persistentState';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export interface Excludes {
@@ -48,6 +49,7 @@ export interface WorkspaceFolderSettingsParams {
     dimInactiveRegions: boolean;
     suggestSnippets: boolean;
     legacyCompilerArgsBehavior: boolean;
+
     defaultSystemIncludePath: string[] | undefined;
     cppFilesExclude: Excludes;
     clangFormatPath: string;
@@ -125,8 +127,11 @@ export interface WorkspaceFolderSettingsParams {
     vcFormatSpacePointerReferenceAlignment: string;
     vcFormatSpaceAroundTernaryOperator: string;
     vcFormatWrapPreserveBlocks: string;
+
     doxygenGenerateOnType: boolean;
+
     doxygenGeneratedStyle: string;
+
     doxygenSectionTags: string[];
     filesExclude: Excludes;
     filesAutoSaveAfterDelay: boolean;
@@ -272,28 +277,38 @@ export class CppSettings extends Settings {
 
     private getClangPath(isFormat: boolean): string | undefined {
         let path: string | undefined = changeBlankStringToUndefined(this.getAsStringOrUndefined(isFormat ? "clang_format_path" : "codeAnalysis.clangTidy.path"));
+
         if (!path) {
             const cachedClangPath: string | undefined = isFormat ? getCachedClangFormatPath() : getCachedClangTidyPath();
+
             if (cachedClangPath !== undefined) {
                 return cachedClangPath;
             }
             const clangName: string = isFormat ? this.clangFormatName : this.clangTidyName;
+
             const setCachedClangPath: (path: string) => void = isFormat ? setCachedClangFormatPath : setCachedClangTidyPath;
+
             const whichPath: string | null = which.sync(clangName, { nothrow: true });
+
             if (whichPath === null) {
                 return undefined;
             }
             path = whichPath;
+
             setCachedClangPath(path);
+
             if (!path) {
                 return undefined;
             } else {
                 // Attempt to invoke both our own version of clang-* to see if we can successfully execute it, and to get its version.
                 let bundledVersion: string;
+
                 try {
                     const bundledPath: string = getExtensionFilePath(`./LLVM/bin/${clangName}`);
+
                     const output: string = execSync(quote([bundledPath, '--version'])).toString();
                     bundledVersion = output.match(/(\d+\.\d+\.\d+)/)?.[1] ?? "";
+
                     if (!semver.valid(bundledVersion)) {
                         return path;
                     }
@@ -305,13 +320,17 @@ export class CppSettings extends Settings {
                 // Invoke the version on the system to compare versions.  Use ours if it's more recent.
                 try {
                     const output: string = execSync(`"${path}" --version`).toString();
+
                     const userVersion = output.match(/(\d+\.\d+\.\d+)/)?.[1] ?? "";
+
                     if (semver.ltr(userVersion, bundledVersion)) {
                         path = "";
+
                         setCachedClangPath(path);
                     }
                 } catch (e) {
                     path = "";
+
                     setCachedClangPath(path);
                 }
             }
@@ -348,6 +367,7 @@ export class CppSettings extends Settings {
     public get clangTidyCodeActionFormatFixes(): boolean { return this.getAsBoolean("codeAnalysis.clangTidy.codeAction.formatFixes"); }
     public addClangTidyChecksDisabled(value: string): void {
         const checks: string[] | undefined = this.clangTidyChecksDisabled;
+
         if (checks === undefined) {
             return;
         }
@@ -381,10 +401,12 @@ export class CppSettings extends Settings {
     public get doxygenGenerateOnType(): boolean { return this.getAsBoolean("doxygen.generateOnType"); }
     public get commentContinuationPatterns(): (string | CommentPattern)[] {
         const value: any = super.Section.get<any>("commentContinuationPatterns");
+
         if (this.isArrayOfCommentContinuationPatterns(value)) {
             return value;
         }
         const setting = getRawSetting("C_Cpp.commentContinuationPatterns", true);
+
         return setting.default;
     }
     public get isConfigurationWarningsEnabled(): boolean { return this.getAsString("configurationWarnings").toLowerCase() === "enabled"; }
@@ -406,14 +428,18 @@ export class CppSettings extends Settings {
 
     public set defaultCompilerPath(value: string) {
         const defaultCompilerPathStr: string = "default.compilerPath";
+
         const compilerPathInfo: any = this.Section.inspect(defaultCompilerPathStr);
+
         let target: vscode.ConfigurationTarget = vscode.ConfigurationTarget.Global;
+
         if (this.resource !== undefined || compilerPathInfo.workspaceFolderValue !== undefined) {
             target = vscode.ConfigurationTarget.WorkspaceFolder;
         } else if (compilerPathInfo.workspaceValue !== undefined) {
             target = vscode.ConfigurationTarget.Workspace;
         }
         void this.Section.update(defaultCompilerPathStr, value, target);
+
         if (this.resource !== undefined && !hasTrustedCompilerPaths()) {
             // Also set the user/remote compiler path if no other path has been trusted yet.
             void this.Section.update(defaultCompilerPathStr, value, vscode.ConfigurationTarget.Global);
@@ -522,7 +548,9 @@ export class CppSettings extends Settings {
     // Returns the value of a setting as a string with proper type validation and checks for valid enum values while returning an undefined value if necessary.
     private getAsStringOrUndefined(settingName: string): string | undefined {
         const value: any = super.Section.get<any>(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (setting.default !== undefined) {
             console.error(`Default value for ${settingName} is expected to be undefined.`);
         }
@@ -541,7 +569,9 @@ export class CppSettings extends Settings {
     // Returns the value of a setting as a boolean with proper type validation and checks for valid enum values while returning an undefined value if necessary.
     private getAsBooleanOrUndefined(settingName: string): boolean | undefined {
         const value: any = super.Section.get<any>(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (setting.default !== undefined) {
             console.error(`Default value for ${settingName} is expected to be undefined.`);
         }
@@ -562,7 +592,9 @@ export class CppSettings extends Settings {
     private getAsBoolean(settingName: string, allowNull: boolean): boolean | null;
     private getAsBoolean(settingName: string, allowNull: boolean = false): boolean | null {
         const value: any = super.Section.get<any>(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (!this.isValidDefault(isBoolean, setting.default, allowNull)) {
             console.error(`Default value for ${settingName} is expected to be boolean${allowNull ? ' or null' : ''}.`);
         }
@@ -582,7 +614,9 @@ export class CppSettings extends Settings {
     private getAsString(settingName: string, allowNull: boolean): string | null;
     private getAsString(settingName: string, allowNull: boolean = false): string | null {
         const value: any = super.Section.get<any>(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (!this.isValidDefault(isString, setting.default, allowNull)) {
             console.error(`Default value for ${settingName} is expected to be string${allowNull ? ' or null' : ''}.`);
         }
@@ -609,7 +643,9 @@ export class CppSettings extends Settings {
     private getAsNumber(settingName: string, allowNull: boolean): number | null;
     private getAsNumber(settingName: string, allowNull: boolean = false): number | null {
         const value: any = super.Section.get<any>(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (!this.isValidDefault(isNumber, setting.default, allowNull)) {
             console.error(`Default value for ${settingName} is expected to be number${allowNull ? ' or null' : ''}.`);
         }
@@ -632,7 +668,9 @@ export class CppSettings extends Settings {
 
     private getAsArrayOfStringsOrUndefined(settingName: string, allowUndefinedEnums: boolean = false): string[] | undefined {
         const value: any = super.Section.get(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (setting.default !== undefined) {
             console.error(`Default value for ${settingName} is expected to be undefined.`);
         }
@@ -651,7 +689,9 @@ export class CppSettings extends Settings {
     // Returns the value of a setting as an array of strings with proper type validation and checks for valid enum values.
     private getAsArrayOfStrings(settingName: string, allowUndefinedEnums: boolean = false): string[] {
         const value: any = super.Section.get(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (!isArrayOfString(setting.default)) {
             console.error(`Default value for ${settingName} is expected to be string[].`);
         }
@@ -671,7 +711,9 @@ export class CppSettings extends Settings {
     private getAsExcludes(settingName: string, allowNull: boolean): Excludes | null;
     private getAsExcludes(settingName: string, allowNull: boolean = false): Excludes | null {
         const value: any = super.Section.get(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (!this.isValidDefault(x => isValidMapping(x, isString, val => isBoolean(val) || isValidWhenObject(val)), setting.default, allowNull)) {
             console.error(`Default value for ${settingName} is expected to be Excludes${allowNull ? ' or null' : ''}.`);
         }
@@ -689,7 +731,9 @@ export class CppSettings extends Settings {
     private getAsAssociations(settingName: string, allowNull: boolean): Associations | null;
     private getAsAssociations(settingName: string, allowNull: boolean = false): Associations | null {
         const value: any = super.Section.get<any>(settingName);
+
         const setting = getRawSetting("C_Cpp." + settingName, true);
+
         if (!this.isValidDefault(x => isValidMapping(x, isString, isString), setting.default, allowNull)) {
             console.error(`Default value for ${settingName} is expected to be Associations${allowNull ? ' or null' : ''}.`);
         }
@@ -734,79 +778,144 @@ export class CppSettings extends Settings {
         // done, they are added as a new section at the end of the file. The file is opened with unsaved
         // edits, so the user may edit or undo if we made a mistake.
         const settingMap: Map<string, string> = new Map<string, string>();
+
         settingMap.set("cpp_indent_braces", this.vcFormatIndentBraces.toString());
+
         settingMap.set("cpp_indent_multi_line_relative_to", mapIndentationReferenceToEditorConfig(this.vcFormatIndentMultiLineRelativeTo));
+
         settingMap.set("cpp_indent_within_parentheses", this.vcFormatIndentWithinParentheses.toString());
+
         settingMap.set("cpp_indent_preserve_within_parentheses", this.vcFormatIndentPreserveWithinParentheses.toString());
+
         settingMap.set("cpp_indent_case_labels", this.vcFormatIndentCaseLabels.toString());
+
         settingMap.set("cpp_indent_case_contents", this.vcFormatIndentCaseContents.toString());
+
         settingMap.set("cpp_indent_case_contents_when_block", this.vcFormatIndentCaseContentsWhenBlock.toString());
+
         settingMap.set("cpp_indent_lambda_braces_when_parameter", this.vcFormatIndentLambdaBracesWhenParameter.toString());
+
         settingMap.set("cpp_indent_goto_labels", mapIndentToEditorConfig(this.vcFormatIndentGotoLabels));
+
         settingMap.set("cpp_indent_preprocessor", mapIndentToEditorConfig(this.vcFormatIndentPreprocessor));
+
         settingMap.set("cpp_indent_access_specifiers", this.vcFormatIndentAccessSpecifiers.toString());
+
         settingMap.set("cpp_indent_namespace_contents", this.vcFormatIndentNamespaceContents.toString());
+
         settingMap.set("cpp_indent_preserve_comments", this.vcFormatIndentPreserveComments.toString());
+
         settingMap.set("cpp_new_line_before_open_brace_namespace", mapNewOrSameLineToEditorConfig(this.vcFormatNewlineBeforeOpenBraceNamespace));
+
         settingMap.set("cpp_new_line_before_open_brace_type", mapNewOrSameLineToEditorConfig(this.vcFormatNewlineBeforeOpenBraceType));
+
         settingMap.set("cpp_new_line_before_open_brace_function", mapNewOrSameLineToEditorConfig(this.vcFormatNewlineBeforeOpenBraceFunction));
+
         settingMap.set("cpp_new_line_before_open_brace_block", mapNewOrSameLineToEditorConfig(this.vcFormatNewlineBeforeOpenBraceBlock));
+
         settingMap.set("cpp_new_line_before_open_brace_lambda", mapNewOrSameLineToEditorConfig(this.vcFormatNewlineBeforeOpenBraceLambda));
+
         settingMap.set("cpp_new_line_scope_braces_on_separate_lines", this.vcFormatNewlineScopeBracesOnSeparateLines.toString());
+
         settingMap.set("cpp_new_line_close_brace_same_line_empty_type", this.vcFormatNewlineCloseBraceSameLineEmptyType.toString());
+
         settingMap.set("cpp_new_line_close_brace_same_line_empty_function", this.vcFormatNewlineCloseBraceSameLineEmptyFunction.toString());
+
         settingMap.set("cpp_new_line_before_catch", this.vcFormatNewlineBeforeCatch.toString().toString());
+
         settingMap.set("cpp_new_line_before_else", this.vcFormatNewlineBeforeElse.toString().toString());
+
         settingMap.set("cpp_new_line_before_while_in_do_while", this.vcFormatNewlineBeforeWhileInDoWhile.toString());
+
         settingMap.set("cpp_space_before_function_open_parenthesis", this.vcFormatSpaceBeforeFunctionOpenParenthesis.toString());
+
         settingMap.set("cpp_space_within_parameter_list_parentheses", this.vcFormatSpaceWithinParameterListParentheses.toString());
+
         settingMap.set("cpp_space_between_empty_parameter_list_parentheses", this.vcFormatSpaceBetweenEmptyParameterListParentheses.toString());
+
         settingMap.set("cpp_space_after_keywords_in_control_flow_statements", this.vcFormatSpaceAfterKeywordsInControlFlowStatements.toString());
+
         settingMap.set("cpp_space_within_control_flow_statement_parentheses", this.vcFormatSpaceWithinControlFlowStatementParentheses.toString());
+
         settingMap.set("cpp_space_before_lambda_open_parenthesis", this.vcFormatSpaceBeforeLambdaOpenParenthesis.toString());
+
         settingMap.set("cpp_space_within_cast_parentheses", this.vcFormatSpaceWithinCastParentheses.toString());
+
         settingMap.set("cpp_space_after_cast_close_parenthesis", this.vcFormatSpaceAfterCastCloseParenthesis.toString());
+
         settingMap.set("cpp_space_within_expression_parentheses", this.vcFormatSpaceWithinExpressionParentheses.toString());
+
         settingMap.set("cpp_space_before_block_open_brace", this.vcFormatSpaceBeforeBlockOpenBrace.toString());
+
         settingMap.set("cpp_space_between_empty_braces", this.vcFormatSpaceBetweenEmptyBraces.toString());
+
         settingMap.set("cpp_space_before_initializer_list_open_brace", this.vcFormatSpaceBeforeInitializerListOpenBrace.toString());
+
         settingMap.set("cpp_space_within_initializer_list_braces", this.vcFormatSpaceWithinInitializerListBraces.toString());
+
         settingMap.set("cpp_space_preserve_in_initializer_list", this.vcFormatSpacePreserveInInitializerList.toString());
+
         settingMap.set("cpp_space_before_open_square_bracket", this.vcFormatSpaceBeforeOpenSquareBracket.toString());
+
         settingMap.set("cpp_space_within_square_brackets", this.vcFormatSpaceWithinSquareBrackets.toString());
+
         settingMap.set("cpp_space_before_empty_square_brackets", this.vcFormatSpaceBeforeEmptySquareBrackets.toString());
+
         settingMap.set("cpp_space_between_empty_square_brackets", this.vcFormatSpaceBetweenEmptySquareBrackets.toString());
+
         settingMap.set("cpp_space_group_square_brackets", this.vcFormatSpaceGroupSquareBrackets.toString());
+
         settingMap.set("cpp_space_within_lambda_brackets", this.vcFormatSpaceWithinLambdaBrackets.toString());
+
         settingMap.set("cpp_space_between_empty_lambda_brackets", this.vcFormatSpaceBetweenEmptyLambdaBrackets.toString());
+
         settingMap.set("cpp_space_before_comma", this.vcFormatSpaceBeforeComma.toString());
+
         settingMap.set("cpp_space_after_comma", this.vcFormatSpaceAfterComma.toString());
+
         settingMap.set("cpp_space_remove_around_member_operators", this.vcFormatSpaceRemoveAroundMemberOperators.toString());
+
         settingMap.set("cpp_space_before_inheritance_colon", this.vcFormatSpaceBeforeInheritanceColon.toString());
+
         settingMap.set("cpp_space_before_constructor_colon", this.vcFormatSpaceBeforeConstructorColon.toString());
+
         settingMap.set("cpp_space_remove_before_semicolon", this.vcFormatSpaceRemoveBeforeSemicolon.toString());
+
         settingMap.set("cpp_space_after_semicolon", this.vcFormatSpaceInsertAfterSemicolon.toString());
+
         settingMap.set("cpp_space_remove_around_unary_operator", this.vcFormatSpaceRemoveAroundUnaryOperator.toString());
+
         settingMap.set("cpp_space_around_binary_operator", this.vcFormatSpaceAroundBinaryOperator.toString());
+
         settingMap.set("cpp_space_around_assignment_operator", this.vcFormatSpaceAroundAssignmentOperator.toString());
+
         settingMap.set("cpp_space_pointer_reference_alignment", this.vcFormatSpacePointerReferenceAlignment.toString());
+
         settingMap.set("cpp_space_around_ternary_operator", this.vcFormatSpaceAroundTernaryOperator.toString());
+
         settingMap.set("cpp_wrap_preserve_blocks", mapWrapToEditorConfig(this.vcFormatWrapPreserveBlocks));
+
         const edits: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+
         let isInWildcardSection: boolean = false;
+
         let trailingBlankLines: number = 0;
         // Cycle through lines using document.lineAt(), to avoid issues mapping edits back to lines.
         for (let i: number = 0; i < document.lineCount; ++i) {
             let textLine: vscode.TextLine = document.lineAt(i);
+
             if (textLine.range.end.character === 0) {
                 trailingBlankLines++;
+
                 continue;
             }
             trailingBlankLines = 0;
             // Keep track of whether we left off in a wildcard section, so we don't output a redundant one.
             let text: string = textLine.text.trim();
+
             if (text.startsWith("[")) {
                 isInWildcardSection = text.startsWith("[*]");
+
                 continue;
             }
             for (const setting of settingMap) {
@@ -814,6 +923,7 @@ export class CppSettings extends Settings {
                     // The next character must be white space or '=', otherwise it's a partial match.
                     if (text.length > setting[0].length) {
                         const c: string = text[setting[0].length];
+
                         if (c !== '=' && c.trim() !== "") {
                             continue;
                         }
@@ -824,10 +934,12 @@ export class CppSettings extends Settings {
                     for (let j: number = i + 1; j < document.lineCount; ++j) {
                         textLine = document.lineAt(j);
                         text = textLine.text.trim();
+
                         if (text.startsWith(setting[0])) {
                             // The next character must be white space or '=', otherwise it's a partial match.
                             if (text.length > setting[0].length) {
                                 const c: string = text[setting[0].length];
+
                                 if (c !== '=' && c.trim() !== "") {
                                     continue;
                                 }
@@ -836,6 +948,7 @@ export class CppSettings extends Settings {
                         }
                     }
                     settingMap.delete(setting[0]);
+
                     break;
                 }
             }
@@ -845,6 +958,7 @@ export class CppSettings extends Settings {
         }
         if (settingMap.size > 0) {
             let remainingSettingsText: string = "";
+
             if (document.lineCount > 0) {
                 while (++trailingBlankLines < 2) {
                     remainingSettingsText += "\n";
@@ -864,13 +978,17 @@ export class CppSettings extends Settings {
 
     public async generateEditorConfig(): Promise<void> {
         let document: vscode.TextDocument;
+
         if (this.resource) {
             // If a folder is open and '.editorconfig' exists at the root, use that.
             const uri: vscode.Uri = vscode.Uri.joinPath(this.resource, ".editorconfig");
+
             const edits: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
             edits.createFile(uri, { ignoreIfExists: true, overwrite: false });
+
             try {
                 await vscode.workspace.applyEdit(edits);
+
                 document = await vscode.workspace.openTextDocument(uri);
             } catch (e) {
                 document = await vscode.workspace.openTextDocument();
@@ -893,22 +1011,30 @@ export class CppSettings extends Settings {
             return false;
         }
         const cachedValue: boolean | undefined = cachedEditorConfigLookups.get(document.uri.fsPath);
+
         if (cachedValue !== undefined) {
             return cachedValue;
         }
         let foundEditorConfigWithVcFormatSettings: boolean = false;
+
         const findConfigFile: (parentPath: string) => boolean = (parentPath: string) => {
             const editorConfigPath: string = path.join(parentPath, ".editorconfig");
+
             if (fs.existsSync(editorConfigPath)) {
                 const editorConfigSettings: any = getEditorConfigSettings(document.uri.fsPath);
+
                 const keys: string[] = Object.keys(editorConfigSettings);
+
                 for (let i: number = 0; i < keys.length; ++i) {
                     if (keys[i].startsWith("cpp_")) {
                         const cppCheck: string = keys[i].substring(4);
+
                         if (cppCheck.startsWith("indent_") || cppCheck.startsWith("new_line_") ||
                             cppCheck.startsWith("space_") || cppCheck.startsWith("wrap_")) {
                             foundEditorConfigWithVcFormatSettings = true;
+
                             const didEditorConfigNotice: PersistentState<boolean> = new PersistentState<boolean>("Cpp.didEditorConfigNotice", false);
+
                             if (!didEditorConfigNotice.Value) {
                                 void vscode.window.showInformationMessage(localize({ key: "editorconfig.default.behavior", comment: ["Single-quotes are used here, as this message is displayed in a context that does not render markdown. Do not change them to back-ticks. Do not change the contents of the single-quoted text."] },
                                     "Code formatting is using settings from .editorconfig instead of .clang-format. For more information, see the documentation for the 'default' value of the 'C_Cpp.formatting' setting."));
@@ -921,32 +1047,42 @@ export class CppSettings extends Settings {
                 switch (typeof editorConfigSettings.root) {
                     case "boolean":
                         return editorConfigSettings.root;
+
                     case "string":
                         return editorConfigSettings.root.toLowerCase() === "true";
+
                     default:
                         return false;
                 }
             }
             const clangFormatPath1: string = path.join(parentPath, ".clang-format");
+
             if (fs.existsSync(clangFormatPath1)) {
                 return true;
             }
             const clangFormatPath2: string = path.join(parentPath, "_clang-format");
+
             return fs.existsSync(clangFormatPath2);
         };
         // Scan parent paths to see which we find first, ".clang-format" or ".editorconfig"
         const fsPath: string = document.uri.fsPath;
+
         let parentPath: string = path.dirname(fsPath);
+
         let currentParentPath: string;
+
         do {
             currentParentPath = parentPath;
+
             if (findConfigFile(currentParentPath)) {
                 cachedEditorConfigLookups.set(document.uri.fsPath, foundEditorConfigWithVcFormatSettings);
+
                 return foundEditorConfigWithVcFormatSettings;
             }
             parentPath = path.dirname(parentPath);
         } while (parentPath !== currentParentPath);
         cachedEditorConfigLookups.set(document.uri.fsPath, false);
+
         return false;
     }
 }
@@ -967,7 +1103,9 @@ export class OtherSettings {
 
     private getAsString(sectionName: string, settingName: string, resource: any, defaultValue: string): string {
         const section = vscode.workspace.getConfiguration(sectionName, resource);
+
         const value = section.get<any>(settingName);
+
         if (isString(value)) {
             return value;
         }
@@ -975,6 +1113,7 @@ export class OtherSettings {
 
         if (setting?.defaultValue === undefined || setting.defaultValue === null) {
             this.logValidationError(sectionName, settingName, "no default value");
+
             return defaultValue;
         }
         return setting.defaultValue;
@@ -982,13 +1121,17 @@ export class OtherSettings {
 
     private getAsBoolean(sectionName: string, settingName: string, resource: any, defaultValue: boolean): boolean {
         const section = vscode.workspace.getConfiguration(sectionName, resource);
+
         const value = section.get<any>(settingName);
+
         if (isBoolean(value)) {
             return value;
         }
         const setting = section.inspect<any>(settingName);
+
         if (setting?.defaultValue === undefined || setting.defaultValue === null) {
             this.logValidationError(sectionName, settingName, "no default value");
+
             return defaultValue;
         }
         return setting.defaultValue;
@@ -996,6 +1139,7 @@ export class OtherSettings {
 
     private getAsNumber(sectionName: string, settingName: string, resource: any, defaultValue: number, minimum?: number, maximum?: number): number {
         const section = vscode.workspace.getConfiguration(sectionName, resource);
+
         const value = section.get<any>(settingName);
         // Validates the value is a number and clamps it to the specified range. Allows for undefined maximum or minimum values.
         if (isNumber(value)) {
@@ -1008,8 +1152,10 @@ export class OtherSettings {
             return value;
         }
         const setting = section.inspect<any>(settingName);
+
         if (setting?.defaultValue === undefined || setting.defaultValue === null) {
             this.logValidationError(sectionName, settingName, "no default value");
+
             return defaultValue;
         }
         return setting.defaultValue;
@@ -1017,11 +1163,14 @@ export class OtherSettings {
 
     private getAsAssociations(sectionName: string, settingName: string, defaultValue: Associations, resource?: any): Associations {
         const section = vscode.workspace.getConfiguration(sectionName, resource);
+
         const value = section.get<any>(settingName);
+
         if (isValidMapping(value, isString, isString)) {
             return value as Associations;
         }
         const setting = section.inspect<any>(settingName);
+
         if (setting?.defaultValue === undefined || setting.defaultValue === null) {
             this.logValidationError(sectionName, settingName, "no default value");
         }
@@ -1030,11 +1179,14 @@ export class OtherSettings {
 
     private getAsExcludes(sectionName: string, settingName: string, defaultValue: Excludes, resource?: any): Excludes {
         const section = vscode.workspace.getConfiguration(sectionName, resource);
+
         const value = section.get<any>(settingName);
+
         if (isValidMapping(value, isString, (val) => isBoolean(val) || isValidWhenObject(val))) {
             return value as Excludes;
         }
         const setting = section.inspect<any>(settingName);
+
         if (setting?.defaultValue === undefined || setting.defaultValue === null) {
             this.logValidationError(sectionName, settingName, "no default value");
         }

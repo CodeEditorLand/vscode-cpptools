@@ -13,6 +13,7 @@ import { CppSettings } from './settings';
 import { makeVscodeLocation, makeVscodeRange, makeVscodeTextEdits, rangeEquals } from './utils';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 let diagnosticsCollectionCodeAnalysis: vscode.DiagnosticCollection;
@@ -62,6 +63,7 @@ export interface CodeActionCodeInfo {
     fixAllTypeCodeAction?: vscode.CodeAction;
     disableAllTypeCodeAction?: vscode.CodeAction;
     removeAllTypeCodeAction?: vscode.CodeAction;
+
     docCodeAction?: vscode.CodeAction;
 }
 
@@ -111,6 +113,7 @@ interface PublishCodeAnalysisDiagnosticsParams {
 }
 
 const PublishCodeAnalysisDiagnosticsNotification: NotificationType<PublishCodeAnalysisDiagnosticsParams> = new NotificationType<PublishCodeAnalysisDiagnosticsParams>('cpptools/publishCodeAnalysisDiagnostics');
+
 const PublishRemoveCodeAnalysisCodeActionFixesNotification: NotificationType<RemoveCodeAnalysisCodeActionFixesParams> = new NotificationType<RemoveCodeAnalysisCodeActionFixesParams>('cpptools/publishRemoveCodeAnalysisCodeActionFixes');
 
 export const codeAnalysisFileToCodeActions: Map<string, CodeActionDiagnosticInfo[]> = new Map<string, CodeActionDiagnosticInfo[]>();
@@ -142,18 +145,24 @@ function rebuildCodeAnalysisCodeAndAllFixes(): void {
     }
 
     const identifiersAndUrisForAllFixes: CodeAnalysisDiagnosticIdentifiersAndUri[] = [];
+
     const uriToEditsForAll: Map<vscode.Uri, vscode.TextEdit[]> = new Map<vscode.Uri, vscode.TextEdit[]>();
+
     let numFixTypes: number = 0;
+
     for (const codeToFixes of codeAnalysisCodeToFixes) {
         const identifiersAndUris: CodeAnalysisDiagnosticIdentifiersAndUri[] = [];
+
         const uriToEdits: Map<vscode.Uri, vscode.TextEdit[]> = new Map<vscode.Uri, vscode.TextEdit[]>();
         codeToFixes[1].uriToInfo.forEach((perUriInfo: CodeActionPerUriInfo, uri: string) => {
             const newIdentifiersAndUri: CodeAnalysisDiagnosticIdentifiersAndUri = { uri: uri, identifiers: perUriInfo.identifiers };
             identifiersAndUris.push(newIdentifiersAndUri);
+
             if (perUriInfo.workspaceEdits === undefined || perUriInfo.numValidWorkspaceEdits === 0) {
                 return;
             }
             identifiersAndUrisForAllFixes.push(newIdentifiersAndUri);
+
             for (const edit of perUriInfo.workspaceEdits) {
                 if (edit.workspaceEdit === undefined) {
                     continue;
@@ -162,14 +171,17 @@ function rebuildCodeAnalysisCodeAndAllFixes(): void {
                     const textEdits: vscode.TextEdit[] = uriToEdits.get(uri) ?? [];
                     textEdits.push(...edits);
                     uriToEdits.set(uri, textEdits);
+
                     const textEditsForAll: vscode.TextEdit[] = uriToEditsForAll.get(uri) ?? [];
                     textEditsForAll.push(...edits);
                     uriToEditsForAll.set(uri, textEdits);
                 }
             }
         });
+
         if (uriToEdits.size > 0) {
             const allTypeWorkspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+
             for (const [uri, edits] of uriToEdits.entries()) {
                 allTypeWorkspaceEdit.set(uri, edits);
             }
@@ -213,6 +225,7 @@ function rebuildCodeAnalysisCodeAndAllFixes(): void {
     }
     if (numFixTypes > 1) {
         const allWorkspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+
         for (const [uri, edits] of uriToEditsForAll.entries()) {
             allWorkspaceEdit.set(uri, edits);
         }
@@ -234,18 +247,22 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
 
     // Convert from our Diagnostic objects to vscode Diagnostic objects
     const diagnosticsCodeAnalysis: vscode.Diagnostic[] = [];
+
     const realUri: vscode.Uri = vscode.Uri.parse(params.uri);
 
     // Reset codeAnalysisCodeToFixes for the file.
     for (const codeToFixes of codeAnalysisCodeToFixes) {
         ++codeToFixes[1].version;
+
         if (codeToFixes[1].uriToInfo.has(params.uri)) {
             codeToFixes[1].uriToInfo.delete(params.uri);
         }
     }
 
     const previousDiagnostics: CodeActionDiagnosticInfo[] | undefined = codeAnalysisFileToCodeActions.get(params.uri);
+
     let nextVersion: number = 0;
+
     if (previousDiagnostics !== undefined) {
         for (const diagnostic of previousDiagnostics) {
             if (diagnostic.version > nextVersion) {
@@ -254,12 +271,17 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
         }
     }
     ++nextVersion;
+
     const codeActionDiagnosticInfo: CodeActionDiagnosticInfo[] = [];
+
     for (const d of params.diagnostics) {
         const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(makeVscodeRange(d.range),
             getLocalizedString(d.localizeStringParams), d.severity);
+
         const identifier: CodeAnalysisDiagnosticIdentifier = { range: d.range, code: d.code };
+
         const identifiersAndUri: CodeAnalysisDiagnosticIdentifiersAndUri = { uri: params.uri, identifiers: [identifier] };
+
         const codeAction: CodeActionDiagnosticInfo = {
             version: nextVersion,
             range: makeVscodeRange(identifier.range),
@@ -274,9 +296,12 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
                 kind: vscode.CodeActionKind.QuickFix
             }
         };
+
         const codeActionWorkspaceEdit: CodeActionWorkspaceEdit = {};
+
         if (d.workspaceEdits) {
             codeActionWorkspaceEdit.workspaceEdit = new vscode.WorkspaceEdit();
+
             for (const workspaceEdit of d.workspaceEdits) {
                 codeActionWorkspaceEdit.workspaceEdit.set(vscode.Uri.parse(workspaceEdit.file, true), makeVscodeTextEdits(workspaceEdit.edits));
             }
@@ -294,27 +319,35 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
 
         // Edits from clang-tidy can be associated with the related information instead of the root diagnostic.
         const relatedCodeActions: CodeActionDiagnosticInfo[] = [];
+
         const rootAndRelatedWorkspaceEdits: CodeActionWorkspaceEdit[] = [];
+
         const rootAndRelatedIdentifiersAndUris: CodeAnalysisDiagnosticIdentifiersAndUri[] = [];
         rootAndRelatedIdentifiersAndUris.push(identifiersAndUri);
+
         if (codeActionWorkspaceEdit.workspaceEdit !== undefined) {
             rootAndRelatedWorkspaceEdits.push(codeActionWorkspaceEdit);
         }
         if (d.relatedInformation) {
             diagnostic.relatedInformation = [];
+
             for (const info of d.relatedInformation) {
                 diagnostic.relatedInformation.push(new vscode.DiagnosticRelatedInformation(makeVscodeLocation(info.location), info.message));
+
                 if (info.workspaceEdits === undefined) {
                     continue;
                 }
                 const relatedWorkspaceEdit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+
                 for (const workspaceEdit of info.workspaceEdits) {
                     relatedWorkspaceEdit.set(vscode.Uri.parse(workspaceEdit.file, true), makeVscodeTextEdits(workspaceEdit.edits));
                 }
                 const relatedIdentifier: CodeAnalysisDiagnosticIdentifier = { range: info.location.range, code: d.code };
+
                 const relatedIdentifiersAndUri: CodeAnalysisDiagnosticIdentifiersAndUri = {
                     uri: info.location.uri, identifiers: [relatedIdentifier]
                 };
+
                 const relatedCodeAction: vscode.CodeAction = {
                     title: localize("fix.this.problem", "Fix this {0} problem", d.code),
                     command: {
@@ -324,6 +357,7 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
                     },
                     kind: vscode.CodeActionKind.QuickFix
                 };
+
                 if (codeAction.fixCodeAction === undefined) {
                     codeAction.fixCodeAction = relatedCodeAction;
                 } else {
@@ -342,12 +376,16 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
         if (identifier.code.length !== 0) {
             const codeActionCodeInfo: CodeActionCodeInfo = codeAnalysisCodeToFixes.get(identifier.code) ??
                 { version: 0, uriToInfo: new Map<string, CodeActionPerUriInfo>() };
+
             let rootAndRelatedWorkspaceEditsIndex: number = 0;
+
             for (const rootAndRelatedIdentifiersAndUri of rootAndRelatedIdentifiersAndUris) {
                 const existingInfo: CodeActionPerUriInfo = codeActionCodeInfo.uriToInfo.get(rootAndRelatedIdentifiersAndUri.uri) ??
                     { identifiers: [], numValidWorkspaceEdits: 0 };
                 existingInfo.identifiers.push(...rootAndRelatedIdentifiersAndUri.identifiers);
+
                 const rootAndRelatedWorkspaceEdit: CodeActionWorkspaceEdit = rootAndRelatedWorkspaceEdits[rootAndRelatedWorkspaceEditsIndex];
+
                 if (rootAndRelatedWorkspaceEdit !== undefined) {
                     if (existingInfo.workspaceEdits === undefined) {
                         existingInfo.workspaceEdits = [rootAndRelatedWorkspaceEdit];
@@ -361,21 +399,30 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
             }
             if (!identifier.code.startsWith("clang-diagnostic-")) {
                 const codes: string[] = identifier.code.split(',');
+
                 let codeIndex: number = codes.length - 1;
+
                 if (codes[codeIndex] === "cert-dcl51-cpp") { // Handle aliasing
                     codeIndex = 0;
                 }
                 // TODO: Is the ideal code always selected as the primary one?
                 const primaryCode: string = codes[codeIndex];
+
                 let docPage: string;
+
                 if (primaryCode === "clang-tidy-nolint") {
                     docPage = "index.html#suppressing-undesired-diagnostics";
                 } else {
                     const clangAnalyzerString: string = "clang-analyzer";
+
                     const clangAnalyzerIndex: number = primaryCode.indexOf(clangAnalyzerString);
+
                     const dashIndex: number = clangAnalyzerIndex === 0 ? clangAnalyzerString.length : primaryCode.indexOf("-");
+
                     const checksGroup: string = dashIndex > 0 ? `/${primaryCode.substring(0, dashIndex)}` : "";
+
                     const checksPage: string = dashIndex > 0 ? primaryCode.substring(dashIndex + 1) : primaryCode;
+
                     docPage = `checks${checksGroup}/${checksPage}.html`;
                 }
                 // TODO: This should be checking the clang-tidy version used to better support usage of older versions.
@@ -406,6 +453,7 @@ export function publishCodeAnalysisDiagnostics(params: PublishCodeAnalysisDiagno
         }
         diagnostic.source = CppSourceStr;
         codeActionDiagnosticInfo.push(codeAction);
+
         if (relatedCodeActions.length > 0) {
             codeActionDiagnosticInfo.push(...relatedCodeActions);
         }
@@ -423,11 +471,13 @@ function removeCodeAnalysisCodeActions(identifiersAndUris: CodeAnalysisDiagnosti
     removeFixesOnly: boolean): void {
     for (const identifiersAndUri of identifiersAndUris) {
         const codeActionDiagnosticInfo: CodeActionDiagnosticInfo[] | undefined = codeAnalysisFileToCodeActions.get(identifiersAndUri.uri);
+
         if (codeActionDiagnosticInfo === undefined) {
             return;
         }
         for (const identifier of identifiersAndUri.identifiers) {
             const updatedCodeActions: CodeActionDiagnosticInfo[] = [];
+
             for (const codeAction of codeActionDiagnosticInfo) {
                 if (rangeEquals(codeAction.range, identifier.range) && codeAction.code === identifier.code) {
                     if (removeFixesOnly) {
@@ -442,17 +492,21 @@ function removeCodeAnalysisCodeActions(identifiersAndUris: CodeAnalysisDiagnosti
             codeAnalysisFileToCodeActions.set(identifiersAndUri.uri, updatedCodeActions);
 
             let codeActionInfoChanged: boolean = false;
+
             for (const codeFixes of codeAnalysisCodeToFixes) {
                 const codeActionInfo: CodeActionPerUriInfo | undefined = codeFixes[1].uriToInfo.get(identifiersAndUri.uri);
+
                 if (codeActionInfo === undefined) {
                     continue;
                 }
                 let removedCodeActionInfoIndex: number = -1;
+
                 for (let codeActionInfoIndex: number = 0; codeActionInfoIndex < codeActionInfo.identifiers.length; ++codeActionInfoIndex) {
                     if (identifier.code === codeActionInfo.identifiers[codeActionInfoIndex].code &&
                         rangeEquals(identifier.range, codeActionInfo.identifiers[codeActionInfoIndex].range)) {
                         removedCodeActionInfoIndex = codeActionInfoIndex;
                         codeActionInfoChanged = true;
+
                         break;
                     }
                 }
@@ -464,6 +518,7 @@ function removeCodeAnalysisCodeActions(identifiersAndUris: CodeAnalysisDiagnosti
                         }
                     } else {
                         codeActionInfo.identifiers.splice(removedCodeActionInfoIndex, 1);
+
                         if (codeActionInfo.workspaceEdits !== undefined) {
                             codeActionInfo.workspaceEdits.splice(removedCodeActionInfoIndex, 1);
                             --codeActionInfo.numValidWorkspaceEdits;
@@ -495,6 +550,7 @@ export function removeAllCodeAnalysisProblems(): boolean {
     codeAnalysisFileToCodeActions.clear();
     codeAnalysisCodeToFixes.clear();
     rebuildCodeAnalysisCodeAndAllFixes();
+
     return true;
 }
 
@@ -506,21 +562,27 @@ export function removeCodeAnalysisProblems(identifiersAndUris: CodeAnalysisDiagn
     // Remove the diagnostics.
     for (const identifiersAndUri of identifiersAndUris) {
         const uri: vscode.Uri = vscode.Uri.parse(identifiersAndUri.uri);
+
         const diagnostics: readonly vscode.Diagnostic[] | undefined = diagnosticsCollectionCodeAnalysis.get(uri);
+
         if (diagnostics === undefined) {
             continue;
         }
         const newDiagnostics: vscode.Diagnostic[] = [];
+
         for (const diagnostic of diagnostics) {
             const code: string = typeof diagnostic.code === "string" ? diagnostic.code :
                 typeof diagnostic.code === "object" && typeof diagnostic.code.value === "string" ?
                     diagnostic.code.value : "";
+
             let removed: boolean = false;
+
             for (const identifier of identifiersAndUri.identifiers) {
                 if (code !== identifier.code || !rangeEquals(diagnostic.range, identifier.range)) {
                     continue;
                 }
                 removed = true;
+
                 break;
             }
             if (!removed) {

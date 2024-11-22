@@ -10,6 +10,7 @@ import { isWindows } from '../constants';
 import { getOutputChannelLogger } from '../logger';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 /**
@@ -30,6 +31,7 @@ export interface IInteraction {
     postAction?: 'consume' | 'keep';
     response?: string;
     isPassword?: boolean;
+
     continue?: boolean; // Continue without waiting for the program to finish or pause
 }
 
@@ -75,16 +77,19 @@ export class FingerprintInteractor implements IInteractor {
         data = data.trim();
 
         let fingerprintMatch: RegExpMatchArray | null;
+
         if (
             data.includes('Are you sure you want to continue connecting') &&
             (fingerprintMatch = data.match(fingerprintMatcher))
         ) {
             result.postAction = 'consume';
+
             const confirmation: string | undefined = await this.confirmationProvider(
                 this.hostName,
                 fingerprintMatch[1],
                 cancelToken
             );
+
             if (confirmation) {
                 result.response = confirmation;
             } else {
@@ -99,7 +104,9 @@ export class FingerprintInteractor implements IInteractor {
             const key: string = extraDetails?.detectedServerKey || '(unknown)';
 
             result.postAction = 'consume';
+
             const confirmation: string | undefined = await this.confirmationProvider(this.hostName, key, cancelToken);
+
             if (confirmation) {
                 result.response = confirmation;
             } else {
@@ -130,8 +137,11 @@ export class DifferingHostKeyInteractor implements IInteractor {
             data.includes('Matching host key in')
         ) {
             result.postAction = 'consume';
+
             const message: string = data.substring(data.indexOf('Warning'), data.indexOf('Are')).trim();
+
             const confirmation: string | undefined = await this.confirmationProvider(message, cancelToken);
+
             if (confirmation) {
                 result.response = confirmation;
             } else {
@@ -157,9 +167,12 @@ export class PassphraseInteractor implements IInteractor {
 
     async onData(data: string, cancelToken?: vscode.CancellationToken): Promise<IInteraction> {
         const result: IInteraction = { postAction: 'keep' };
+
         const lines: string[] = data.trim().split('\n');
+
         if (lines.some(l => l.indexOf('Enter passphrase for') >= 0)) {
             result.postAction = 'consume';
+
             const passphrase: string | undefined = await this.passphraseProvider(undefined, undefined, cancelToken); // TODO keep track of the key name
             if (typeof passphrase === 'string') {
                 result.response = passphrase;
@@ -177,10 +190,13 @@ export class PassphraseInteractor implements IInteractor {
 
 export function getExitCode(output: string, marker: string): number | undefined {
     const regex: RegExp = new RegExp(`${marker}##([0-9]*)##`);
+
     const match: RegExpExecArray | null = regex.exec(output);
+
     if (match) {
         try {
             const num: number = parseInt(match[1]);
+
             return Number.isNaN(num) ? undefined : num;
         } catch (err) {
             return undefined;
@@ -207,6 +223,7 @@ function getPasswordPrompt(data: string, details?: IInteractorDataDetails): { us
 
     // Got \r\r\n as a line ending here
     const match: RegExpMatchArray | null = stripEscapeSequences(data).match(/([a-zA-Z0-9\-_@\.]*)'s password:/);
+
     if (match) {
         return {
             user: match[1],
@@ -228,18 +245,25 @@ export class PasswordInteractor implements IInteractor {
 
     async onData(data: string, cancelToken?: vscode.CancellationToken, extraDetails?: IInteractorDataDetails): Promise<IInteraction> {
         const result: IInteraction = { postAction: 'keep' };
+
         const pwPrompt: { user?: string; message?: string } | undefined = getPasswordPrompt(data, extraDetails);
+
         if (pwPrompt && typeof pwPrompt.user === 'string') {
             result.postAction = 'consume';
+
             const actualUser: string = pwPrompt.user === '' ? getFullHostAddress(this.host) : pwPrompt.user;
+
             const passwordCacheKey: string = `SSH:${actualUser}`;
+
             const cachedPassword: string | undefined = await extensionContext?.secrets?.get(passwordCacheKey);
+
             if (cachedPassword !== undefined && !autoFilledPasswordForUsers.has(actualUser)) {
                 autoFilledPasswordForUsers.add(actualUser);
                 result.response = cachedPassword;
                 result.isPassword = true;
             } else {
                 const password: string | undefined = await this.passwordProvider(pwPrompt.user, pwPrompt.message, cancelToken);
+
                 if (typeof password === 'string') {
                     await extensionContext?.secrets?.store(passwordCacheKey, password);
                     autoFilledPasswordForUsers.add(actualUser);
@@ -269,9 +293,12 @@ export class TwoFacInteractor implements IInteractor {
 
     async onData(data: string, cancelToken?: vscode.CancellationToken): Promise<IInteraction> {
         const result: IInteraction = { postAction: 'keep' };
+
         if (data.includes('Verification code:')) {
             result.postAction = 'consume';
+
             const verificationCode: string | undefined = await this.verificationCodeProvider('Enter verification code', cancelToken);
+
             if (typeof verificationCode === 'string') {
                 result.response = verificationCode;
                 result.isPassword = true;
@@ -296,9 +323,12 @@ export class DuoTwoFacInteractor implements IInteractor {
 
     async onData(data: string, cancelToken?: vscode.CancellationToken): Promise<IInteraction> {
         const result: IInteraction = { postAction: 'keep' };
+
         if (data.includes('Passcode:')) {
             result.postAction = 'consume';
+
             const verificationCode: string | undefined = await this.verificationCodeProvider('Enter passcode', cancelToken);
+
             if (typeof verificationCode === 'string') {
                 result.response = verificationCode;
                 result.isPassword = true;
@@ -322,8 +352,11 @@ export class ContinueOnInteractor implements IInteractor {
 
     async onData(data: string, _cancelToken?: vscode.CancellationToken): Promise<IInteraction> {
         const result: IInteraction = { postAction: 'keep' };
+
         const pattern: string = escapeStringForRegex(this.continueOn);
+
         const re: RegExp = new RegExp(pattern, 'g');
+
         if (data.match(re)) {
             result.continue = true;
         }
@@ -342,6 +375,7 @@ export class ConnectionFailureInteractor implements IInteractor {
 
     async onData(data: string): Promise<IInteraction> {
         const result: IInteraction = { postAction: 'keep' };
+
         if (data.includes('Connection refused') || data.includes('Could not resolve hostname')) {
             result.postAction = 'consume';
             void getOutputChannelLogger().showErrorMessage(localize('failed.to.connect', 'Failed to connect to {0}', this.hostName));
@@ -360,6 +394,7 @@ export class ComposedInteractor implements IInteractor {
     async onData(data: string): Promise<IInteraction> {
         for (const interactor of this.interactors) {
             const result: IInteraction = await interactor.onData(data);
+
             if (result.postAction === 'consume') {
                 return result;
             }

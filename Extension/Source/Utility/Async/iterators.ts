@@ -13,6 +13,7 @@ export async function foreach<T, TResult>(items: undefined | Iterable<T> | Promi
 
     if (items) {
         const result = [] as Promise<TResult>[];
+
         if (is.asyncIterable(items)) {
             for await (const item of items) {
                 result.push(predicate(item)); // run the predicate on each item
@@ -36,12 +37,15 @@ interface Cursor<T> {
 /** An AsyncIterable wrapper that caches so that it can be iterated multiple times */
 export function reiterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
     const cache = new Array<T>();
+
     let done: boolean | undefined;
+
     let nextElement: undefined | Promise<IteratorResult<T>>;
 
     return {
         [Symbol.asyncIterator]() {
             let index = 0;
+
             return {
                 async next() {
                     if (index < cache.length) {
@@ -51,12 +55,14 @@ export function reiterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
                         return { value: undefined, done: true };
                     }
                     index++;
+
                     if (!is.promise(nextElement)) {
                         nextElement = iterable[Symbol.asyncIterator]().next().then(element => {
                             if (!(done = element.done)) {
                                 cache.push(element.value);
                             }
                             nextElement = undefined;
+
                             return element;
                         });
                     }
@@ -76,6 +82,7 @@ export type AsynchIterable<T> = AsyncIterable<T> & {
 
 export function accumulator<T>(...iterables: Some<T>[]): AsynchIterable<T> {
     const iterators = new Map<number, Promise<Cursor<T>>>();
+
     let completeWhenEmpty = iterables.length > 0; // if we are given any items, they we auto-complete when we run out (so an add after the last item is yielded will throw)
     const signal = new Signal<boolean>();
 
@@ -96,6 +103,7 @@ export function accumulator<T>(...iterables: Some<T>[]): AsynchIterable<T> {
     async function awaitNext(element: Cursor<T>): Promise<Cursor<T>> {
         element.result = undefined; // drop the previous result before awaiting the next
         element.result = await element.iterator.next();
+
         return element;
     }
 
@@ -114,12 +122,14 @@ export function accumulator<T>(...iterables: Some<T>[]): AsynchIterable<T> {
                 // Is that iterator done?
                 if (element.result!.done) {
                     iterators.delete(element.identity);
+
                     continue;
                 }
 
                 // Yield the result from the iterator, and await the next item
                 const { value } = element.result!;
                 iterators.set(element.identity, awaitNext(element));
+
                 if (value !== undefined && value !== null) {
                     yield value;
                 }
@@ -141,6 +151,7 @@ export async function* asyncOf<T>(...items: (undefined | Promise<undefined> | So
         for await (const item of items) {
             if (is.asyncIterable(item) || is.iterable(item)) {
                 yield* item as any;
+
                 continue;
             }
             yield item as any;
@@ -153,6 +164,7 @@ export async function* asyncOf<T>(...items: (undefined | Promise<undefined> | So
         if (item) {
             if (is.asyncIterable(item) || is.iterable(item)) {
                 yield* item as any;
+
                 continue;
             }
             yield item as any;
@@ -173,5 +185,6 @@ export async function* asyncOf<T>(...items: (undefined | Promise<undefined> | So
  */
 export function race(promises: Promise<any>[]): Promise<any> {
     const addMisbehavingPromise: <T>(p: Promise<T>) => Promise<T> = (global as any).addMisbehavingPromise;
+
     return addMisbehavingPromise ? addMisbehavingPromise(Promise.race(promises)) : Promise.race(promises);
 }

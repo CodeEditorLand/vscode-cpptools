@@ -30,6 +30,7 @@ async function details(files: string[]) {
     let all = await Promise.all(files.filter(each => each).map(async (each) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [filename, stats ] = await filepath.stats(each);
+
         return {
             filename: stats.isDirectory() ? cyan(`${each}${sep}**`) : brightGreen(`${each}`),
             date: stats.mtime.toLocaleDateString().replace(/\b(\d)\//g, '0$1\/'),
@@ -48,7 +49,9 @@ export async function show(opt?: string) {
     switch (opt?.toLowerCase()) {
         case 'new':
             console.log(cyan('\n\nNew files:'));
+
             const r = await Git('ls-files', '--others', '--exclude-standard', '-z');
+
             return details(r.stdio.all().map(each => resolve(each.trim().replace(/\0/g, ''))));
 
         case undefined:
@@ -56,6 +59,7 @@ export async function show(opt?: string) {
         case 'ignored':
         case 'untracked':
             console.log(cyan('\n\nUntracked+Ignored files:'));
+
             return details(await getModifiedIgnoredFiles());
 
         default:

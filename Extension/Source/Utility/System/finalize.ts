@@ -13,6 +13,7 @@ export function ignore<T>(fn: () => T | undefined) {
     } catch (e: any) {
         // ignore
         console.error(`Ignored error in finalize ${e.toString()}\n${e.stack}`);
+
         return undefined;
     }
 }
@@ -41,6 +42,7 @@ export function finalize(...items: any[]): void {
         if (item.finalize) {
             try {
                 const result = item.finalize();
+
                 if (is.promise(result)) {
                     // if the item has a finalize method, and it returns a promise,
                     // then we'll put the rest of the finalization on hold until that promise resolves.
@@ -54,6 +56,7 @@ export function finalize(...items: any[]): void {
                         ignore(() => item.dispose?.());
                     });
                     ActiveFinalizers = Promise.all([fin, ActiveFinalizers, DispatcherBusy]).then(() => item.removeAllListeners?.());
+
                     return;
                 }
             } catch {

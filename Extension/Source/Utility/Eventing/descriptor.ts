@@ -36,8 +36,10 @@ export class Descriptors extends Map<string, Set<string>> {
         if (descriptors) {
             Object.getOwnPropertyNames(descriptors).forEach(key => {
                 const value = descriptors[key];
+
                 if (!(value instanceof Function)) {
                     const v = descriptors[key];
+
                     if (is.array(v)) {
                         this.add(key, ...v);
                     } else if (is.string(v)) {

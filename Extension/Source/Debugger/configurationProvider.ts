@@ -28,6 +28,7 @@ import { Environment, ParsedEnvironmentFile } from './ParsedEnvironmentFile';
 import * as debugUtils from './utils';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 enum StepType {
@@ -72,14 +73,17 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
      */
     async provideDebugConfigurations(folder?: vscode.WorkspaceFolder, token?: vscode.CancellationToken): Promise<CppDebugConfiguration[]> {
         let configs: CppDebugConfiguration[] | null | undefined = await this.provideDebugConfigurationsForType(this.type, folder, token);
+
         if (!configs) {
             configs = [];
         }
         const defaultTemplateConfig: CppDebugConfiguration | undefined = configs.find(config => isDebugLaunchStr(config.name) && config.request === "launch");
+
         if (!defaultTemplateConfig) {
             throw new Error("Default config not found in provideDebugConfigurations()");
         }
         const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+
         if (!editor || !util.isCppOrCFile(editor.document.uri) || configs.length <= 1) {
             return [defaultTemplateConfig];
         }
@@ -97,15 +101,18 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                 return true;
             } else {
                 recentlyUsedConfig = config;
+
                 return false;
             }
         });
+
         if (recentlyUsedConfig) {
             configs.unshift(recentlyUsedConfig);
         }
 
         const items: ConfigMenu[] = configs.map<ConfigMenu>(config => {
             const quickPickConfig: CppDebugConfiguration = { ...config };
+
             const menuItem: ConfigMenu = { label: config.name, configuration: quickPickConfig, description: config.detail, detail: config.taskStatus };
             // Rename the menu item for the default configuration as its name is non-descriptive.
             if (isDebugLaunchStr(menuItem.label)) {
@@ -115,8 +122,10 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         });
 
         const selection: ConfigMenu | undefined = await vscode.window.showQuickPick(this.localizeConfigDetail(items), { placeHolder: localize("select.configuration", "Select a configuration") });
+
         if (!selection) {
             Telemetry.logDebuggerEvent(DebuggerEvent.debugPanel, { "debugType": "debug", "configSource": ConfigSource.unknown, "configMode": ConfigMode.unknown, "cancelled": "true", "succeeded": "true" });
+
             return []; // User canceled it.
         }
 
@@ -139,8 +148,10 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             // Hence, providing debug configs, and start debugging should be done manually.
             // resolveDebugConfiguration will be automatically called after calling provideDebugConfigurations.
             const configs: CppDebugConfiguration[] = await this.provideDebugConfigurations(folder);
+
             if (!configs || configs.length === 0) {
                 Telemetry.logDebuggerEvent(DebuggerEvent.debugPanel, { "debugType": DebugType.debug, "configSource": folder ? ConfigSource.workspaceFolder : ConfigSource.singleFile, "configMode": ConfigMode.noLaunchConfig, "cancelled": "true", "succeeded": "true" });
+
                 return undefined; // aborts debugging silently
             } else {
                 // Currently, we expect only one debug config to be selected.
@@ -168,6 +179,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
         if (config.preLaunchTask) {
             config.configSource = this.getDebugConfigSource(config, folder);
+
             const isIntelliSenseDisabled: boolean = new CppSettings((vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) ? vscode.workspace.workspaceFolders[0]?.uri : undefined).intelliSenseEngine === "disabled";
             // Run the build task if IntelliSense is disabled.
             if (isIntelliSenseDisabled) {
@@ -181,10 +193,15 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                 return config;
             }
             let resolveByVsCode: boolean = false;
+
             const isDebugPanel: boolean = !config.debuggerEvent || (config.debuggerEvent && config.debuggerEvent === DebuggerEvent.debugPanel);
+
             const singleFile: boolean = config.configSource === ConfigSource.singleFile;
+
             const isExistingConfig: boolean = this.isExistingConfig(config, folder);
+
             const isExistingTask: boolean = await this.isExistingTask(config, folder);
+
             if (singleFile) {
                 if (isExistingConfig) {
                     resolveByVsCode = true;
@@ -199,6 +216,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
             // Send the telemetry before writing into files
             config.debugType = config.debugType ? config.debugType : DebugType.debug;
+
             const configMode: ConfigMode = isExistingConfig ? ConfigMode.launchConfig : ConfigMode.noLaunchConfig;
             // if configuration.debuggerEvent === undefined, it means this configuration is already defined in launch.json and is shown in debugPanel.
             Telemetry.logDebuggerEvent(config.debuggerEvent || DebuggerEvent.debugPanel, { "debugType": config.debugType || DebugType.debug, "configSource": config.configSource || ConfigSource.unknown, "configMode": configMode, "cancelled": "false", "succeeded": "true" });
@@ -237,6 +255,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             // Fail if cppvsdbg type is running on non-Windows
             if (os.platform() !== 'win32') {
                 void logger.getOutputChannelLogger().showWarningMessage(localize("debugger.not.available", "Debugger of type: '{0}' is only available on Windows. Use type: '{1}' on the current OS platform.", "cppvsdbg", "cppdbg"));
+
                 return undefined; // Abort debugging silently.
             }
 
@@ -244,6 +263,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             // eslint-disable-next-line no-prototype-builtins
             if (config.hasOwnProperty("externalConsole")) {
                 void logger.getOutputChannelLogger().showWarningMessage(localize("debugger.deprecated.config", "The key '{0}' is deprecated. Please use '{1}' instead.", "externalConsole", "console"));
+
                 if (config.externalConsole && !config.console) {
                     config.console = "externalTerminal";
                 }
@@ -274,6 +294,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             config.pipeTransport &&
             config.pipeTransport.pipeProgram) {
             let replacedPipeProgram: string | undefined;
+
             const pipeProgramStr: string = config.pipeTransport.pipeProgram.toLowerCase().trim();
 
             // OpenDebugAD7 is a 32-bit process. Make sure the WSL pipe transport is using the correct program.
@@ -282,6 +303,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             // If pipeProgram does not get replaced and there is a pipeCwd, concatenate with pipeProgramStr and attempt to replace.
             if (!replacedPipeProgram && !path.isAbsolute(pipeProgramStr) && config.pipeTransport.pipeCwd) {
                 const pipeCwdStr: string = config.pipeTransport.pipeCwd.toLowerCase().trim();
+
                 const newPipeProgramStr: string = path.join(pipeCwdStr, pipeProgramStr);
 
                 replacedPipeProgram = debugUtils.ArchitectureReplacer.checkAndReplaceWSLPipeProgram(newPipeProgramStr, debugUtils.ArchType.ia32);
@@ -293,6 +315,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         }
 
         const macOSMIMode: string = config.osx?.MIMode ?? config.MIMode;
+
         const macOSMIDebuggerPath: string = config.osx?.miDebuggerPath ?? config.miDebuggerPath;
 
         const lldb_mi_10_x_path: string = path.join(util.extensionPath, "debugAdapters", "lldb-mi", "bin", "lldb-mi");
@@ -307,6 +330,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
             if (!frameworkPath) {
                 const moreInfoButton: string = localize("lldb.framework.install.xcode", "More Info");
+
                 const LLDBFrameworkMissingMessage: string = localize("lldb.framework.not.found", "Unable to locate 'LLDB.framework' for lldb-mi. Please install XCode or XCode Command Line Tools.");
 
                 void vscode.window.showErrorMessage(LLDBFrameworkMissingMessage, moreInfoButton)
@@ -332,8 +356,10 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         // Run deploy steps
         if (config.deploySteps && config.deploySteps.length !== 0) {
             const codeVersion: number[] = util.getVsCodeVersion();
+
             if ((util.isNumber(codeVersion[0]) && codeVersion[0] < 1) || (util.isNumber(codeVersion[0]) && codeVersion[0] === 1 && util.isNumber(codeVersion[1]) && codeVersion[1] < 69)) {
                 void logger.getOutputChannelLogger().showErrorMessage(localize("vs.code.1.69+.required", "'deploySteps' require VS Code 1.69+."));
+
                 return undefined;
             }
 
@@ -350,11 +376,13 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         // Pick process if process id is empty
         if (config.request === "attach" && !config.processId) {
             let processId: string | undefined;
+
             if (config.pipeTransport || config.useExtendedRemote) {
                 const remoteAttachPicker: RemoteAttachPicker = new RemoteAttachPicker();
                 processId = await remoteAttachPicker.ShowAttachEntries(config);
             } else {
                 const attachItemsProvider: AttachItemsProvider = NativeAttachItemsProviderFactory.Get();
+
                 const attacher: AttachPicker = new AttachPicker(attachItemsProvider);
                 processId = await attacher.ShowAttachEntries(token);
             }
@@ -363,6 +391,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                 config.processId = processId;
             } else {
                 void logger.getOutputChannelLogger().showErrorMessage("No process was selected.");
+
                 return undefined;
             }
         }
@@ -391,6 +420,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         if (buildTasks.length !== 0) {
             buildTasks = buildTasks.filter((task: CppBuildTask) => {
                 const command: string = task.definition.command as string;
+
                 if (!command) {
                     return false;
                 }
@@ -410,9 +440,11 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         // Generate new configurations for each build task.
         // Generating a task is async, therefore we must *await* *all* map(task => config) Promises to resolve.
         let configs: CppDebugConfiguration[] = [];
+
         if (buildTasks.length !== 0) {
             configs = (await Promise.all(buildTasks.map<Promise<CppDebugConfiguration | undefined>>(async task => {
                 const definition: CppBuildTaskDefinition = task.definition as CppBuildTaskDefinition;
+
                 const compilerPath: string = util.isString(definition.command) ? definition.command : definition.command.value;
                 // Filter out the tasks that has an invalid compiler path.
                 const compilerPathExists: boolean = path.isAbsolute(compilerPath) ?
@@ -420,15 +452,18 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                     await util.checkFileExists(compilerPath) :
                     // Non-absolute. Check on $PATH
                     (await util.whichAsync(compilerPath) !== undefined);
+
                 if (!compilerPathExists) {
                     logger.getOutputChannelLogger().appendLine(localize('compiler.path.not.exists', "Unable to find {0}. {1} task is ignored.", compilerPath, definition.label));
                 }
                 const compilerName: string = path.basename(compilerPath);
+
                 const newConfig: CppDebugConfiguration = { ...defaultTemplateConfig }; // Copy enumerables and properties
                 newConfig.existing = false;
 
                 newConfig.name = configPrefix + compilerName + " " + this.buildAndDebugActiveFileStr();
                 newConfig.preLaunchTask = task.name;
+
                 if (newConfig.type === DebuggerType.cppdbg) {
                     newConfig.externalConsole = false;
                 } else {
@@ -444,6 +479,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                 newConfig.taskStatus = task.existing ?
                     (task.name === DebugConfigurationProvider.recentBuildTaskLabelStr) ? TaskStatus.recentlyUsed : TaskStatus.configured :
                     TaskStatus.detected;
+
                 if (task.isDefault) {
                     newConfig.isDefault = true;
                 }
@@ -452,8 +488,10 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
                 if (platformInfo.platform !== "darwin") {
                     let debuggerName: string;
+
                     if (compilerName.startsWith("clang")) {
                         newConfig.MIMode = "lldb";
+
                         if (isWindows) {
                             debuggerName = "lldb";
                         } else {
@@ -461,6 +499,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                             // Search for clang-8, clang-10, etc.
                             if ((compilerName !== "clang-cl.exe") && (compilerName !== "clang-cpp.exe")) {
                                 const suffixIndex: number = compilerName.indexOf("-");
+
                                 if (suffixIndex !== -1) {
                                     const suffix: string = compilerName.substring(suffixIndex);
                                     debuggerName += suffix;
@@ -471,6 +510,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                     } else if (compilerName === "cl.exe") {
                         newConfig.miDebuggerPath = undefined;
                         newConfig.type = DebuggerType.cppvsdbg;
+
                         return newConfig;
                     } else {
                         debuggerName = "gdb";
@@ -479,6 +519,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                         debuggerName = debuggerName.endsWith(".exe") ? debuggerName : (debuggerName + ".exe");
                     }
                     const compilerDirname: string = path.dirname(compilerPath);
+
                     const debuggerPath: string = path.join(compilerDirname, debuggerName);
 
                     // Check if debuggerPath exists.
@@ -490,10 +531,12 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                     } else {
                         // Try the usr path for non-Windows platforms.
                         const usrDebuggerPath: string = path.join("/usr", "bin", debuggerName);
+
                         if (!isWindows && await util.checkFileExists(usrDebuggerPath)) {
                             newConfig.miDebuggerPath = usrDebuggerPath;
                         } else {
                             logger.getOutputChannelLogger().appendLine(localize('debugger.path.not.exists', "Unable to find the {0} debugger. The debug configuration for {1} is ignored.", `\"${debuggerName}\"`, compilerName));
+
                             return undefined;
                         }
                     }
@@ -502,19 +545,23 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             }))).filter((item): item is CppDebugConfiguration => !!item);
         }
         configs.push(defaultTemplateConfig);
+
         const existingConfigs: CppDebugConfiguration[] | undefined = this.getLaunchConfigs(folder, type)?.map(config => {
             if (!config.detail && config.preLaunchTask) {
                 config.detail = localize("pre.Launch.Task", "preLaunchTask: {0}", config.preLaunchTask);
             }
             config.existing = true;
+
             return config;
         });
+
         if (existingConfigs) {
             // Remove the detected configs that are already configured once in launch.json.
             const dedupExistingConfigs: CppDebugConfiguration[] = configs.filter(detectedConfig => !existingConfigs.some(config => {
                 if (config.preLaunchTask === detectedConfig.preLaunchTask && config.type === detectedConfig.type && config.request === detectedConfig.request) {
                     // Carry the default task information.
                     config.isDefault = detectedConfig.isDefault ? detectedConfig.isDefault : undefined;
+
                     return true;
                 }
                 return false;
@@ -526,30 +573,40 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     private async loadDetectedTasks(): Promise<void> {
         const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+
         const emptyTasks: CppBuildTask[] = [];
+
         if (!editor) {
             DebugConfigurationProvider.detectedBuildTasks = emptyTasks;
+
             return;
         }
 
         const fileExt: string = path.extname(editor.document.fileName);
+
         if (!fileExt) {
             DebugConfigurationProvider.detectedBuildTasks = emptyTasks;
+
             return;
         }
 
         // Don't offer tasks for header files.
         const isHeader: boolean = util.isHeaderFile(editor.document.uri);
+
         if (isHeader) {
             DebugConfigurationProvider.detectedBuildTasks = emptyTasks;
+
             return;
         }
 
         // Don't offer tasks if the active file's extension is not a recognized C/C++ extension.
         const fileIsCpp: boolean = util.isCppFile(editor.document.uri);
+
         const fileIsC: boolean = util.isCFile(editor.document.uri);
+
         if (!(fileIsCpp || fileIsC)) {
             DebugConfigurationProvider.detectedBuildTasks = emptyTasks;
+
             return;
         }
 
@@ -585,6 +642,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
     private showErrorIfClNotAvailable(_configurationLabel: string): boolean {
         if (!process.env.DevEnvDir || process.env.DevEnvDir.length === 0) {
             void vscode.window.showErrorMessage(localize("cl.exe.not.available", "{0} build and debug is only usable when VS Code is run from the Developer Command Prompt for VS.", "cl.exe"));
+
             return true;
         }
         return false;
@@ -612,6 +670,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         searchPaths.forEach(searchPath => {
             outputChannel.appendLine(`\t${searchPath}`);
         });
+
         const xcodeCLIInstallCmd: string = "xcode-select --install";
         outputChannel.appendLine(localize("lldb.install.help", "To resolve this issue, either install XCode through the Apple App Store or install the XCode Command Line Tools by running '{0}' in a Terminal window.", xcodeCLIInstallCmd));
         logger.showOutputChannel();
@@ -642,6 +701,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                 delete config.envFile;
             } catch (errJS) {
                 const e: Error = errJS as Error;
+
                 throw new Error(localize("envfile.failed", "Failed to use {0}. Reason: {1}", "envFile", e.message));
             }
         }
@@ -649,16 +709,20 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     private resolveSourceFileMapVariables(config: CppDebugConfiguration): void {
         const messages: string[] = [];
+
         if (config.sourceFileMap) {
             for (const sourceFileMapSource of Object.keys(config.sourceFileMap)) {
                 let message: string = "";
+
                 const sourceFileMapTarget: string = config.sourceFileMap[sourceFileMapSource];
 
                 let source: string = sourceFileMapSource;
+
                 let target: string | object = sourceFileMapTarget;
 
                 // TODO: pass config.environment as 'additionalEnvironment' to resolveVariables when it is { key: value } instead of { "key": key, "value": value }
                 const newSourceFileMapSource: string = util.resolveVariables(sourceFileMapSource, undefined);
+
                 if (sourceFileMapSource !== newSourceFileMapSource) {
                     message = "\t" + localize("replacing.sourcepath", "Replacing {0} '{1}' with '{2}'.", "sourcePath", sourceFileMapSource, newSourceFileMapSource);
                     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -668,6 +732,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
                 if (util.isString(sourceFileMapTarget)) {
                     const newSourceFileMapTarget: string = util.resolveVariables(sourceFileMapTarget, undefined);
+
                     if (sourceFileMapTarget !== newSourceFileMapTarget) {
                         // Add a space if source was changed, else just tab the target message.
                         message += message ? ' ' : '\t';
@@ -704,9 +769,12 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     private static async showFileWarningAsync(message: string, fileName: string): Promise<void> {
         const openItem: vscode.MessageItem = { title: localize("open.envfile", "Open {0}", "envFile") };
+
         const result: vscode.MessageItem | undefined = await vscode.window.showWarningMessage(message, openItem);
+
         if (result && result.title === openItem.title) {
             const doc: vscode.TextDocument = await vscode.workspace.openTextDocument(fileName);
+
             if (doc) {
                 void vscode.window.showTextDocument(doc);
             }
@@ -718,14 +786,17 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             switch (item.detail) {
                 case TaskStatus.recentlyUsed: {
                     item.detail = localize("recently.used.task", "Recently Used Task");
+
                     break;
                 }
                 case TaskStatus.configured: {
                     item.detail = localize("configured.task", "Configured Task");
+
                     break;
                 }
                 case TaskStatus.detected: {
                     item.detail = localize("detected.task", "Detected Task");
+
                     break;
                 }
                 default: {
@@ -737,6 +808,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                 item.detail = (item.detail ?? "") + " (" + item.configuration.taskDetail + ")";
             }
         });
+
         return items;
     }
 
@@ -759,8 +831,10 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             return config.existing;
         }
         const configs: CppDebugConfiguration[] | undefined = this.getLaunchConfigs(folder, config.type);
+
         if (configs && configs.length > 0) {
             const selectedConfig: any | undefined = configs.find((item: any) => item.name && item.name === config.name);
+
             if (selectedConfig) {
                 return true;
             }
@@ -773,6 +847,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             return config.configSource;
         }
         const isExistingConfig: boolean = this.isExistingConfig(config, folder);
+
         if (!isExistingConfig && !folder) {
             return ConfigSource.singleFile;
         } else if (!isExistingConfig) {
@@ -780,7 +855,9 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         }
 
         const configs: CppDebugConfiguration[] | undefined = this.getLaunchConfigs(folder, config.type);
+
         const matchingConfig: CppDebugConfiguration | undefined = configs?.find((item: any) => item.name && item.name === config.name);
+
         if (matchingConfig?.configSource) {
             return matchingConfig.configSource;
         }
@@ -790,30 +867,37 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
     public getLaunchConfigs(folder?: vscode.WorkspaceFolder, type?: DebuggerType | string): CppDebugConfiguration[] | undefined {
         // Get existing debug configurations from launch.json or user/workspace "launch" settings.
         const WorkspaceConfigs: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('launch', folder);
+
         const configs: any = WorkspaceConfigs.inspect<vscode.DebugConfiguration>('configurations');
+
         if (!configs) {
             return undefined;
         }
         let detailedConfigs: CppDebugConfiguration[] = [];
+
         if (configs.workspaceFolderValue !== undefined) {
             detailedConfigs = detailedConfigs.concat(configs.workspaceFolderValue.map((item: CppDebugConfiguration) => {
                 item.configSource = ConfigSource.workspaceFolder;
+
                 return item;
             }));
         }
         if (configs.workspaceValue !== undefined) {
             detailedConfigs = detailedConfigs.concat(configs.workspaceValue.map((item: CppDebugConfiguration) => {
                 item.configSource = ConfigSource.workspace;
+
                 return item;
             }));
         }
         if (configs.globalValue !== undefined) {
             detailedConfigs = detailedConfigs.concat(configs.globalValue.map((item: CppDebugConfiguration) => {
                 item.configSource = ConfigSource.global;
+
                 return item;
             }));
         }
         detailedConfigs = detailedConfigs.filter((config: any) => config.name && config.request === "launch" && type ? (config.type === type) : true);
+
         return detailedConfigs;
     }
 
@@ -823,6 +907,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     private getRawLaunchJson(): Promise<any> {
         const path: string | undefined = this.getLaunchJsonPath();
+
         return util.getRawJson(path);
     }
 
@@ -832,6 +917,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         if (isExistingConfig) {
             if (launchJsonPath) {
                 const doc: vscode.TextDocument = await vscode.workspace.openTextDocument(launchJsonPath);
+
                 if (doc) {
                     void vscode.window.showTextDocument(doc);
                 }
@@ -839,6 +925,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             return;
         }
         const rawLaunchJson: any = await this.getRawLaunchJson();
+
         if (!rawLaunchJson.configurations) {
             rawLaunchJson.configurations = [];
         }
@@ -864,7 +951,9 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
         const settings: OtherSettings = new OtherSettings();
         await util.writeFileText(launchJsonPath, jsonc.stringify(rawLaunchJson, null, settings.editorTabSize));
         await vscode.workspace.openTextDocument(launchJsonPath);
+
         const doc: vscode.TextDocument = await vscode.workspace.openTextDocument(launchJsonPath);
+
         if (doc) {
             void vscode.window.showTextDocument(doc);
         }
@@ -872,12 +961,15 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     public async addDebugConfiguration(textEditor: vscode.TextEditor): Promise<void> {
         const folder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(textEditor.document.uri);
+
         if (!folder) {
             return;
         }
         const selectedConfig: vscode.DebugConfiguration | undefined = await this.selectConfiguration(textEditor, false, true);
+
         if (!selectedConfig) {
             Telemetry.logDebuggerEvent(DebuggerEvent.addConfigGear, { "configSource": ConfigSource.workspaceFolder, "configMode": ConfigMode.launchConfig, "cancelled": "true", "succeeded": "true" });
+
             return; // User canceled it.
         }
 
@@ -904,9 +996,12 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     public async buildAndDebug(textEditor: vscode.TextEditor, debugModeOn: boolean = true): Promise<void> {
         let folder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(textEditor.document.uri);
+
         const selectedConfig: CppDebugConfiguration | undefined = await this.selectConfiguration(textEditor);
+
         if (!selectedConfig) {
             Telemetry.logDebuggerEvent(DebuggerEvent.playButton, { "debugType": debugModeOn ? DebugType.debug : DebugType.run, "configSource": ConfigSource.unknown, "cancelled": "true", "succeeded": "true" });
+
             return; // User canceled it.
         }
 
@@ -925,13 +1020,16 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     private async selectConfiguration(textEditor: vscode.TextEditor, pickDefault: boolean = true, onlyWorkspaceFolder: boolean = false): Promise<CppDebugConfiguration | undefined> {
         const folder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(textEditor.document.uri);
+
         if (!util.isCppOrCFile(textEditor.document.uri)) {
             void vscode.window.showErrorMessage(localize("cannot.build.non.cpp", 'Cannot build and debug because the active file is not a C or C++ source file.'));
+
             return;
         }
 
         // Get debug configurations for all debugger types.
         let configs: CppDebugConfiguration[] = await this.provideDebugConfigurationsForType(DebuggerType.cppdbg, folder);
+
         if (os.platform() === 'win32') {
             configs = configs.concat(await this.provideDebugConfigurationsForType(DebuggerType.cppvsdbg, folder));
         }
@@ -952,6 +1050,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             let sortedItems: ConfigMenu[] = [];
             // Find the recently used task and place it at the top of quickpick list.
             const recentTask: ConfigMenu[] = items.filter(item => item.configuration.preLaunchTask && item.configuration.preLaunchTask === DebugConfigurationProvider.recentBuildTaskLabelStr);
+
             if (recentTask.length !== 0 && recentTask[0].detail !== TaskStatus.detected) {
                 recentTask[0].detail = TaskStatus.recentlyUsed;
                 sortedItems.push(recentTask[0]);
@@ -981,6 +1080,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                 }
             } catch (errJS) {
                 const e: Error = errJS as Error;
+
                 if (e && e.message === util.failedToParseJson) {
                     void vscode.window.showErrorMessage(util.failedToParseJson);
                 }
@@ -991,20 +1091,27 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
     private async expand(config: vscode.DebugConfiguration, folder: vscode.WorkspaceFolder | undefined): Promise<void> {
         const folderPath: string | undefined = folder?.uri.fsPath || vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+
         const vars: ExpansionVars = config.variables ? config.variables : {};
+
         vars.workspaceFolder = folderPath || '{workspaceFolder}';
+
         vars.workspaceFolderBasename = folderPath ? path.basename(folderPath) : '{workspaceFolderBasename}';
+
         const expansionOptions: ExpansionOptions = { vars, recursive: true };
+
         return expandAllStrings(config, expansionOptions);
     }
 
     // Returns true when ALL steps succeed; stop all subsequent steps if one fails
     private async deploySteps(config: vscode.DebugConfiguration, cancellationToken?: vscode.CancellationToken): Promise<boolean> {
         let succeeded: boolean = true;
+
         const deployStart: number = new Date().getTime();
 
         for (const step of config.deploySteps) {
             succeeded = await this.singleDeployStep(config, step, cancellationToken);
+
             if (!succeeded) {
                 break;
             }
@@ -1016,6 +1123,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             Succeeded: `${succeeded}`,
             IsDebugging: `${!config.noDebug || false}`
         };
+
         const telemetryMetrics: { [key: string]: number } = {
             NumSteps: config.deploySteps.length,
             Duration: deployEnd - deployStart
@@ -1031,26 +1139,34 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             return true;
         }
         const stepType: StepType = step.type;
+
         switch (stepType) {
             case StepType.command: {
                 // VS Code commands are the same regardless of which extension invokes them, so just invoke them here.
                 if (step.args && !Array.isArray(step.args)) {
                     void logger.getOutputChannelLogger().showErrorMessage(localize('command.args.must.be.array', '"args" in command deploy step must be an array.'));
+
                     return false;
                 }
                 const returnCode: unknown = await vscode.commands.executeCommand(step.command, ...step.args);
+
                 return !returnCode;
             }
             case StepType.scp:
             case StepType.rsync: {
                 const isScp: boolean = stepType === StepType.scp;
+
                 if (!step.files || !step.targetDir || !step.host) {
                     void logger.getOutputChannelLogger().showErrorMessage(localize('missing.properties.copyFile', '"host", "files", and "targetDir" are required in {0} steps.', isScp ? 'SCP' : 'rsync'));
+
                     return false;
                 }
                 const host: util.ISshHostInfo = util.isString(step.host) ? { hostName: step.host } : { hostName: step.host.hostName, user: step.host.user, port: step.host.port };
+
                 const jumpHosts: util.ISshHostInfo[] = step.host.jumpHosts;
+
                 let files: vscode.Uri[] = [];
+
                 if (util.isString(step.files)) {
                     files = files.concat((await globAsync(step.files)).map(file => vscode.Uri.file(file)));
                 } else if (util.isArrayOfString(step.files)) {
@@ -1059,10 +1175,12 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
                     }
                 } else {
                     void logger.getOutputChannelLogger().showErrorMessage(localize('incorrect.files.type.copyFile', '"files" must be a string or an array of strings in {0} steps.', isScp ? 'SCP' : 'rsync'));
+
                     return false;
                 }
 
                 let scpResult: util.ProcessReturnType;
+
                 if (isScp) {
                     scpResult = await scp(files, host, step.targetDir, config.scpPath, config.recursive, jumpHosts, cancellationToken);
                 } else {
@@ -1077,13 +1195,19 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             case StepType.ssh: {
                 if (!step.host || !step.command) {
                     void logger.getOutputChannelLogger().showErrorMessage(localize('missing.properties.ssh', '"host" and "command" are required for ssh steps.'));
+
                     return false;
                 }
                 const host: util.ISshHostInfo = util.isString(step.host) ? { hostName: step.host } : { hostName: step.host.hostName, user: step.host.user, port: step.host.port };
+
                 const jumpHosts: util.ISshHostInfo[] = step.host.jumpHosts;
+
                 const localForwards: util.ISshLocalForwardInfo[] = step.host.localForwards;
+
                 const continueOn: string = step.continueOn;
+
                 const sshResult: util.ProcessReturnType = await ssh(host, step.command, config.sshPath, jumpHosts, localForwards, continueOn, cancellationToken);
+
                 if (!sshResult.succeeded || cancellationToken?.isCancellationRequested) {
                     return false;
                 }
@@ -1092,17 +1216,21 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
             case StepType.shell: {
                 if (!step.command) {
                     void logger.getOutputChannelLogger().showErrorMessage(localize('missing.properties.shell', '"command" is required for shell steps.'));
+
                     return false;
                 }
                 const taskResult: util.ProcessReturnType = await util.spawnChildProcess(step.command, undefined, step.continueOn);
+
                 if (!taskResult.succeeded || cancellationToken?.isCancellationRequested) {
                     void logger.getOutputChannelLogger().showErrorMessage(taskResult.output);
+
                     return false;
                 }
                 break;
             }
             default: {
                 logger.getOutputChannelLogger().appendLine(localize('deploy.step.type.not.supported', 'Deploy step type {0} is not supported.', step.type));
+
                 return false;
             }
         }
@@ -1112,6 +1240,7 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 
 export interface IConfigurationAssetProvider {
     getInitialConfigurations(debuggerType: DebuggerType): any;
+
     getConfigurationSnippets(): vscode.CompletionItem[];
 }
 
@@ -1120,10 +1249,13 @@ export class ConfigurationAssetProviderFactory {
         switch (os.platform()) {
             case 'win32':
                 return new WindowsConfigurationProvider();
+
             case 'darwin':
                 return new OSXConfigurationProvider();
+
             case 'linux':
                 return new LinuxConfigurationProvider();
+
             default:
                 throw new Error(localize("unexpected.os", "Unexpected OS type"));
         }
@@ -1253,7 +1385,9 @@ export class ConfigurationSnippetProvider implements vscode.CompletionItemProvid
     // 2. If there are items, the Add Configuration button will append it to the start of the configuration array. This function inserts a comma at the end of the snippet.
     public provideCompletionItems(document: vscode.TextDocument, _position: vscode.Position, _token: vscode.CancellationToken, _context: vscode.CompletionContext): Thenable<vscode.CompletionList> {
         let items: vscode.CompletionItem[] = this.snippets;
+
         let hasLaunchConfigs: boolean = false;
+
         try {
             const launch: any = jsonc.parse(document.getText());
             hasLaunchConfigs = launch.configurations.length !== 0;

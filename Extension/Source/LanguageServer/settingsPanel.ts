@@ -14,6 +14,7 @@ import * as config from './configurations';
 import { getLocalizedHtmlPath } from './localization';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 function deepCopy(obj: any) {
@@ -105,6 +106,7 @@ export class SettingsPanel {
         // Show existing panel
         if (this.panel) {
             this.panel.reveal(column, false);
+
             return;
         }
 
@@ -181,6 +183,7 @@ export class SettingsPanel {
             for (const compiler of knownCompilers) {
                 // Normalize path separators.
                 let path: string = compiler.path;
+
                 if (pathSeparator === "Forward Slash") {
                     path = path.replace(/\\/g, '/');
                 } else {
@@ -230,10 +233,12 @@ export class SettingsPanel {
     private updateWebview(configSelection: string[], configuration: config.Configuration, errors: config.ConfigurationErrors | null): void {
         this.configValues = deepCopy(configuration); // Copy configuration values
         this.isIntelliSenseModeDefined = this.configValues.intelliSenseMode !== undefined;
+
         if (this.panel && this.initialized) {
             void this.panel.webview.postMessage({ command: 'setKnownCompilers', compilers: this.compilerPaths });
             void this.panel.webview.postMessage({ command: 'updateConfigSelection', selections: configSelection, selectedIndex: this.configIndexSelected });
             void this.panel.webview.postMessage({ command: 'updateConfig', config: this.configValues });
+
             if (errors !== null) {
                 void this.panel.webview.postMessage({ command: 'updateErrors', errors: errors });
             }
@@ -259,19 +264,28 @@ export class SettingsPanel {
         switch (message.command) {
             case 'change':
                 this.updateConfig(message);
+
                 break;
+
             case 'configSelect':
                 this.configSelect(message.index);
+
                 break;
+
             case 'addConfig':
                 this.addConfig(message.name);
+
                 break;
+
             case 'knownCompilerSelect':
                 this.knownCompilerSelect();
+
                 break;
+
             case "initialized":
                 this.initialized = true;
                 this.settingsPanelActivated.fire();
+
                 break;
         }
     }
@@ -298,25 +312,36 @@ export class SettingsPanel {
     private updateConfig(message: any): void {
         const splitEntries: (input: any) => string[] | undefined = (input: any) => {
             const result = input.split("\n").filter((e: string) => e);
+
             return result.length === 0 ? undefined : result;
         };
 
         switch (message.key) {
             case elementId.configName:
                 this.configValues.name = message.value;
+
                 break;
+
             case elementId.compilerPath:
                 this.configValues.compilerPath = message.value || undefined;
+
                 break;
+
             case elementId.compilerArgs:
                 this.configValues.compilerArgs = splitEntries(message.value);
+
                 break;
+
             case elementId.includePath:
                 this.configValues.includePath = splitEntries(message.value);
+
                 break;
+
             case elementId.defines:
                 this.configValues.defines = splitEntries(message.value);
+
                 break;
+
             case elementId.intelliSenseMode:
                 if (message.value !== "${default}" || this.isIntelliSenseModeDefined) {
                     this.configValues.intelliSenseMode = message.value;
@@ -324,50 +349,74 @@ export class SettingsPanel {
                     this.configValues.intelliSenseMode = undefined;
                 }
                 break;
+
             case elementId.cStandard:
                 this.configValues.cStandard = message.value;
+
                 break;
+
             case elementId.cppStandard:
                 this.configValues.cppStandard = message.value;
+
                 break;
+
             case elementId.windowsSdkVersion:
                 this.configValues.windowsSdkVersion = message.value || undefined;
+
                 break;
+
             case elementId.macFrameworkPath:
                 this.configValues.macFrameworkPath = splitEntries(message.value);
+
                 break;
+
             case elementId.compileCommands:
                 this.configValues.compileCommands = message.value || undefined;
+
                 break;
+
             case elementId.dotConfig:
                 this.configValues.dotConfig = message.value || undefined;
+
                 break;
+
             case elementId.mergeConfigurations:
                 this.configValues.mergeConfigurations = message.value;
+
                 break;
+
             case elementId.configurationProvider:
                 this.configValues.configurationProvider = message.value || undefined;
+
                 break;
+
             case elementId.forcedInclude:
                 this.configValues.forcedInclude = splitEntries(message.value);
+
                 break;
+
             case elementId.browsePath:
                 if (!this.configValues.browse) {
                     this.configValues.browse = {};
                 }
                 this.configValues.browse.path = splitEntries(message.value);
+
                 break;
+
             case elementId.limitSymbolsToIncludedHeaders:
                 if (!this.configValues.browse) {
                     this.configValues.browse = {};
                 }
                 this.configValues.browse.limitSymbolsToIncludedHeaders = message.value;
+
                 break;
+
             case elementId.databaseFilename:
                 if (!this.configValues.browse) {
                     this.configValues.browse = {};
                 }
                 this.configValues.browse.databaseFilename = message.value || undefined;
+
                 break;
         }
 
@@ -392,6 +441,7 @@ export class SettingsPanel {
             content = content.replace(
                 /{{cpp_image_uri}}/g,
                 cppImageUri.toString());
+
             const settingsJsUri: vscode.Uri = this.panel.webview.asWebviewUri(vscode.Uri.file(path.join(util.extensionPath, 'dist/ui/settings.js')));
             content = content.replace(
                 /{{settings_js_uri}}/g,
@@ -407,7 +457,9 @@ export class SettingsPanel {
 
     private getNonce(): string {
         let nonce: string = "";
+
         const possible: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
         for (let i: number = 0; i < 32; i++) {
             nonce += possible.charAt(Math.floor(Math.random() * possible.length));
         }

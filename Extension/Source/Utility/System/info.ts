@@ -9,7 +9,9 @@ import { AribtraryObject, Constructor } from './types';
 
 export function typeOf(instance: any) {
     const t = typeof instance;
+
     const c = (classOf(instance) as any);
+
     switch (t) {
         case 'number':
             return Number.isNaN(instance) ? 'NaN' : 'number';
@@ -22,6 +24,7 @@ export function typeOf(instance: any) {
                 return c.class ? `Promise<${classOf(c.class)?.name || parentClassOf(classOf(c.class)!)?.name}>` : 'Promise';
             }
             return classOf(instance)?.name || parentClassOf(classOf(instance)!)?.name || '<anonymous>';
+
         case 'function':
             if (is.Constructor(instance)) {
                 return `class ${c?.name || parentClassOf(c!)?.name || '<anonymous>'}`;
@@ -34,7 +37,9 @@ export function typeOf(instance: any) {
 
 export function hierarchy(instance: AribtraryObject | Constructor): string[] {
     const result = new Array<string>();
+
     let type = classOf(instance);
+
     while (type) {
         if (type.name) {
             result.push(type.name);
@@ -49,6 +54,7 @@ export function parentClassOf(instance: AribtraryObject | Constructor): Construc
         return undefined;
     }
     const parent = Object.getPrototypeOf(typeof instance === 'function' ? instance : instance.constructor);
+
     return parent.name ? parent : undefined;
 }
 
@@ -96,6 +102,7 @@ export function members(obj: any): Members {
 
     if (typeof obj === 'object') {
         let instance = obj;
+
         do {
             // enumerate all the properties at this level.
             for (const [memberName, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(instance))) {
@@ -123,6 +130,7 @@ export function members(obj: any): Members {
                             isAsync: value.toString().startsWith('async '),
                             fn: value.bind(obj)
                         });
+
                         continue;
                     }
 
@@ -132,6 +140,7 @@ export function members(obj: any): Members {
                         if (descriptor.get) {
                             // only actually use properties that can be retrieved.
                             result.properties.set(memberName, type);
+
                             continue;
                         }
                     }

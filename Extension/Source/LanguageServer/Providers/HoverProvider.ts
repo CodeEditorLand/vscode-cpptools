@@ -10,12 +10,14 @@ import { CppSettings } from '../settings';
 
 export class HoverProvider implements vscode.HoverProvider {
     private client: DefaultClient;
+
     constructor(client: DefaultClient) {
         this.client = client;
     }
 
     public async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> {
         const settings: CppSettings = new CppSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+
         if (settings.hover === "disabled") {
             return undefined;
         }
@@ -24,7 +26,9 @@ export class HoverProvider implements vscode.HoverProvider {
             position: Position.create(position.line, position.character)
         };
         await this.client.ready;
+
         let hoverResult: vscode.Hover;
+
         try {
             hoverResult = await this.client.languageClient.sendRequest(HoverRequest, params, token);
         } catch (e: any) {
@@ -38,8 +42,10 @@ export class HoverProvider implements vscode.HoverProvider {
         }
         // VS Code doesn't like the raw objects returned via RPC, so we need to create proper VS Code objects here.
         const strings: vscode.MarkdownString[] = [];
+
         for (const element of hoverResult.contents) {
             const oldMarkdownString: vscode.MarkdownString = element as vscode.MarkdownString;
+
             const newMarkdownString: vscode.MarkdownString = new vscode.MarkdownString(oldMarkdownString.value, oldMarkdownString.supportThemeIcons);
             newMarkdownString.isTrusted = oldMarkdownString.isTrusted;
             newMarkdownString.supportHtml = oldMarkdownString.supportHtml;
@@ -47,6 +53,7 @@ export class HoverProvider implements vscode.HoverProvider {
             strings.push(newMarkdownString);
         }
         let range: vscode.Range | undefined;
+
         if (hoverResult.range) {
             range = new vscode.Range(hoverResult.range.start.line, hoverResult.range.start.character,
                 hoverResult.range.end.line, hoverResult.range.end.character);

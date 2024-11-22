@@ -11,6 +11,7 @@ import { lookupString } from '../nativeStrings';
 import path = require('path');
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export interface LocalizeStringParams {
@@ -22,10 +23,12 @@ export interface LocalizeStringParams {
 
 export function getLocalizedString(params: LocalizeStringParams): string {
     let indent: string = "";
+
     if (params.indentSpaces) {
         indent = " ".repeat(params.indentSpaces);
     }
     let text: string = params.text;
+
     if (params.stringId !== 0) {
         text = lookupString(params.stringId, params.stringArgs);
     }
@@ -43,8 +46,10 @@ export function getLocaleId(): string {
     // This replicates the language detection used by initializeSettings() in vscode-nls
     if (typeof process.env.VSCODE_NLS_CONFIG === 'string') {
         const vscodeOptions: VSCodeNlsConfig = JSON.parse(process.env.VSCODE_NLS_CONFIG) as VSCodeNlsConfig;
+
         if (vscodeOptions.availableLanguages) {
             const value: any = vscodeOptions.availableLanguages['*'];
+
             if (typeof value === 'string') {
                 return value;
             }
@@ -58,8 +63,10 @@ export function getLocaleId(): string {
 
 export function getLocalizedHtmlPath(originalPath: string): string {
     const locale: string = getLocaleId();
+
     if (!locale.startsWith("en")) {
         const localizedFilePath: string = getExtensionFilePath(path.join("dist/html/", locale, originalPath));
+
         if (fs.existsSync(localizedFilePath)) {
             return localizedFilePath;
         }

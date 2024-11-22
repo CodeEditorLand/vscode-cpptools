@@ -22,6 +22,7 @@ import { PlatformInformation } from './platform';
 import * as Telemetry from './telemetry';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 export const failedToParseJson: string = localize("failed.to.parse.json", "Failed to parse json file, possibly due to comments or trailing commas.");
 
@@ -68,6 +69,7 @@ let flattenedPackageJson: Map<string, any>;
 export function getRawSetting(key: string, breakIfMissing: boolean = false): any {
     if (flattenedPackageJson === undefined) {
         flattenedPackageJson = new Map();
+
         for (const subheading of packageJson.contributes.configuration) {
             for (const setting in subheading.properties) {
                 flattenedPackageJson.set(setting, subheading.properties[setting]);
@@ -75,6 +77,7 @@ export function getRawSetting(key: string, breakIfMissing: boolean = false): any
         }
     }
     const result = flattenedPackageJson.get(key);
+
     if (result === undefined && breakIfMissing) {
         // eslint-disable-next-line no-debugger
         debugger; // The setting does not exist in package.json. Check the `key`.
@@ -87,12 +90,15 @@ export async function getRawJson(path: string | undefined): Promise<any> {
         return {};
     }
     const fileExists: boolean = await checkFileExists(path);
+
     if (!fileExists) {
         return {};
     }
 
     const fileContents: string = await readFileText(path);
+
     let rawElement: any = {};
+
     try {
         rawElement = jsonc.parse(fileContents, undefined, true);
     } catch (error) {
@@ -118,10 +124,12 @@ export function getPackageJsonPath(): string {
 
 export function getJsonPath(jsonFilaName: string, workspaceFolder?: vscode.WorkspaceFolder): string | undefined {
     const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+
     if (!editor) {
         return undefined;
     }
     const folder: vscode.WorkspaceFolder | undefined = workspaceFolder ? workspaceFolder : vscode.workspace.getWorkspaceFolder(editor.document.uri);
+
     if (!folder) {
         return undefined;
     }
@@ -131,12 +139,14 @@ export function getJsonPath(jsonFilaName: string, workspaceFolder?: vscode.Works
 export function getVcpkgPathDescriptorFile(): string {
     if (process.platform === 'win32') {
         const pathPrefix: string | undefined = process.env.LOCALAPPDATA;
+
         if (!pathPrefix) {
             throw new Error("Unable to read process.env.LOCALAPPDATA");
         }
         return path.join(pathPrefix, "vcpkg/vcpkg.path.txt");
     } else {
         const pathPrefix: string = os.homedir();
+
         return path.join(pathPrefix, ".vcpkg/vcpkg.path.txt");
     }
 }
@@ -149,6 +159,7 @@ export function getVcpkgRoot(): string {
         if (fs.existsSync(getVcpkgPathDescriptorFile())) {
             let vcpkgRootTemp: string = fs.readFileSync(getVcpkgPathDescriptorFile()).toString();
             vcpkgRootTemp = vcpkgRootTemp.trim();
+
             if (fs.existsSync(vcpkgRootTemp)) {
                 vcpkgRoot = path.join(vcpkgRootTemp, "/installed").replace(/\\/g, "/");
             }
@@ -164,19 +175,25 @@ export function getVcpkgRoot(): string {
  */
 export function isHeaderFile(uri: vscode.Uri): boolean {
     const fileExt: string = path.extname(uri.fsPath);
+
     const fileExtLower: string = fileExt.toLowerCase();
+
     return !fileExt || [".cuh", ".hpp", ".hh", ".hxx", ".h++", ".hp", ".h", ".ii", ".inl", ".idl", ""].some(ext => fileExtLower === ext);
 }
 
 export function isCppFile(uri: vscode.Uri): boolean {
     const fileExt: string = path.extname(uri.fsPath);
+
     const fileExtLower: string = fileExt.toLowerCase();
+
     return (fileExt === ".C") || [".cu", ".cpp", ".cc", ".cxx", ".c++", ".cp", ".ino", ".ipp", ".tcc"].some(ext => fileExtLower === ext);
 }
 
 export function isCFile(uri: vscode.Uri): boolean {
     const fileExt: string = path.extname(uri.fsPath);
+
     const fileExtLower: string = fileExt.toLowerCase();
+
     return (fileExt === ".C") || fileExtLower === ".c";
 }
 
@@ -189,11 +206,13 @@ export function isCppOrCFile(uri: vscode.Uri | undefined): boolean {
 
 export function isFolderOpen(uri: vscode.Uri): boolean {
     const folder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(uri);
+
     return folder ? true : false;
 }
 
 export function isEditorFileCpp(file: string): boolean {
     const editor: vscode.TextEditor | undefined = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === file);
+
     if (!editor) {
         return false;
     }
@@ -248,14 +267,19 @@ export function displayExtensionNotReadyPrompt(): void {
 // This eliminates noise/problems due to re-installs, terminated installs that don't send errors,
 // errors followed by workarounds that lead to success, etc.
 const progressInstallSuccess: number = 100;
+
 const progressExecutableStarted: number = 150;
+
 const progressExecutableSuccess: number = 200;
+
 const progressParseRootSuccess: number = 300;
+
 const progressIntelliSenseNoSquiggles: number = 1000;
 // Might add more IntelliSense progress measurements later.
 // IntelliSense progress is separate from the install progress, because parse root can occur afterwards.
 
 const installProgressStr: string = "CPP." + packageJson.version + ".Progress";
+
 const intelliSenseProgressStr: string = "CPP." + packageJson.version + ".IntelliSenseProgress";
 
 export function getProgress(): number {
@@ -269,13 +293,20 @@ export function getIntelliSenseProgress(): number {
 export function setProgress(progress: number): void {
     if (extensionContext && getProgress() < progress) {
         void extensionContext.globalState.update(installProgressStr, progress);
+
         const telemetryProperties: Record<string, string> = {};
+
         let progressName: string | undefined;
+
         switch (progress) {
             case 0: progressName = "install started"; break;
+
             case progressInstallSuccess: progressName = "install succeeded"; break;
+
             case progressExecutableStarted: progressName = "executable started"; break;
+
             case progressExecutableSuccess: progressName = "executable succeeded"; break;
+
             case progressParseRootSuccess: progressName = "parse root succeeded"; break;
         }
         if (progressName) {
@@ -288,8 +319,11 @@ export function setProgress(progress: number): void {
 export function setIntelliSenseProgress(progress: number): void {
     if (extensionContext && getIntelliSenseProgress() < progress) {
         void extensionContext.globalState.update(intelliSenseProgressStr, progress);
+
         const telemetryProperties: Record<string, string> = {};
+
         let progressName: string | undefined;
+
         switch (progress) {
             case progressIntelliSenseNoSquiggles: progressName = "IntelliSense no squiggles"; break;
         }
@@ -353,6 +387,7 @@ export function isOptionalArrayOfString(input: any): input is string[] | undefin
 
 export function resolveCachePath(input: string | undefined, additionalEnvironment: Record<string, string | string[]>): string {
     let resolvedPath: string = "";
+
     if (!input || input.trim() === "") {
         // If no path is set, return empty string to language service process, where it will set the default path as
         // Windows: %LocalAppData%/Microsoft/vscode-cpptools/
@@ -361,11 +396,13 @@ export function resolveCachePath(input: string | undefined, additionalEnvironmen
     }
 
     resolvedPath = resolveVariables(input, additionalEnvironment);
+
     return resolvedPath;
 }
 
 export function defaultExePath(): string {
     const exePath: string = path.join('${fileDirname}', '${fileBasenameNoExtension}');
+
     return isWindows ? exePath + '.exe' : exePath;
 }
 
@@ -381,13 +418,17 @@ export function resolveVariables(input: string | undefined, additionalEnvironmen
     if (!isString(input)) {
         const inputAny: any = input;
         input = inputAny.toString();
+
         return input ?? "";
     }
 
     // Replace environment and configuration variables.
     const regexp: () => RegExp = () => /\$\{((env|config|workspaceFolder)(\.|:))?(.*?)\}/g;
+
     let ret: string = input;
+
     const cycleCache = new Set<string>();
+
     while (!cycleCache.has(ret)) {
         cycleCache.add(ret);
         ret = ret.replace(regexp(), (match: string, ignored1: string, varType: string, ignored2: string, name: string) => {
@@ -397,16 +438,19 @@ export function resolveVariables(input: string | undefined, additionalEnvironmen
                 varType = "env";
             }
             let newValue: string | undefined;
+
             switch (varType) {
                 case "env": {
                     if (additionalEnvironment) {
                         const v: string | string[] | undefined = additionalEnvironment[name];
+
                         if (isString(v)) {
                             newValue = v;
                         } else if (input === match && isArrayOfString(v)) {
                             if (arrayResults !== undefined) {
                                 arrayResults.push(...v);
                                 newValue = "";
+
                                 break;
                             } else {
                                 newValue = v.join(path.delimiter);
@@ -420,6 +464,7 @@ export function resolveVariables(input: string | undefined, additionalEnvironmen
                 }
                 case "config": {
                     const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration();
+
                     if (config) {
                         newValue = config.get<string>(name);
                     }
@@ -431,6 +476,7 @@ export function resolveVariables(input: string | undefined, additionalEnvironmen
                     // intercept messages with paths in them and add the ${workspaceFolder} variable back in (e.g. for light bulb suggestions)
                     if (name && vscode.workspace && vscode.workspace.workspaceFolders) {
                         const folder: vscode.WorkspaceFolder | undefined = vscode.workspace.workspaceFolders.find(folder => folder.name.toLocaleLowerCase() === name.toLocaleLowerCase());
+
                         if (folder) {
                             newValue = folder.uri.fsPath;
                         }
@@ -448,9 +494,11 @@ export function resolveVariables(input: string | undefined, additionalEnvironmen
 
 export function resolveVariablesArray(variables: string[] | undefined, additionalEnvironment?: Record<string, string | string[]>): string[] {
     let result: string[] = [];
+
     if (variables) {
         variables.forEach(variable => {
             const variablesResolved: string[] = [];
+
             const variableResolved: string = resolveVariables(variable, additionalEnvironment, variablesResolved);
             result = result.concat(variablesResolved.length === 0 ? variableResolved : variablesResolved);
         });
@@ -465,6 +513,7 @@ export function resolveHome(filePath: string): string {
 
 export function asFolder(uri: vscode.Uri): string {
     let result: string = uri.toString();
+
     if (!result.endsWith('/')) {
         result += '/';
     }
@@ -490,6 +539,7 @@ export function getDebugAdaptersPath(file: string): string {
 
 export async function fsStat(filePath: fs.PathLike): Promise<fs.Stats | undefined> {
     let stats: fs.Stats | undefined;
+
     try {
         stats = await fs.promises.stat(filePath);
     } catch (e) {
@@ -506,6 +556,7 @@ export async function checkPathExists(filePath: string): Promise<boolean> {
 /** Test whether a file exists */
 export async function checkFileExists(filePath: string): Promise<boolean> {
     const stats: fs.Stats | undefined = await fsStat(filePath);
+
     return !!stats && stats.isFile();
 }
 
@@ -517,6 +568,7 @@ export async function checkExecutableWithoutExtensionExists(filePath: string): P
     if (os.platform() === 'win32') {
         if (filePath.length > 4) {
             const possibleExtension: string = filePath.substring(filePath.length - 4).toLowerCase();
+
             if (possibleExtension === ".exe" || possibleExtension === ".cmd" || possibleExtension === ".bat") {
                 return false;
             }
@@ -537,6 +589,7 @@ export async function checkExecutableWithoutExtensionExists(filePath: string): P
 /** Test whether a directory exists */
 export async function checkDirectoryExists(dirPath: string): Promise<boolean> {
     const stats: fs.Stats | undefined = await fsStat(dirPath);
+
     return !!stats && stats.isDirectory();
 }
 
@@ -545,6 +598,7 @@ export function createDirIfNotExistsSync(filePath: string | undefined): void {
         return;
     }
     const dirPath: string = path.dirname(filePath);
+
     if (!checkDirectoryExistsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
     }
@@ -565,6 +619,7 @@ export function checkExecutableWithoutExtensionExistsSync(filePath: string): boo
     if (os.platform() === 'win32') {
         if (filePath.length > 4) {
             const possibleExtension: string = filePath.substring(filePath.length - 4).toLowerCase();
+
             if (possibleExtension === ".exe" || possibleExtension === ".cmd" || possibleExtension === ".bat") {
                 return false;
             }
@@ -594,7 +649,9 @@ export function checkDirectoryExistsSync(dirPath: string): boolean {
 /** Test whether a relative path exists */
 export function checkPathExistsSync(path: string, relativePath: string, _isWindows: boolean, isCompilerPath: boolean): { pathExists: boolean; path: string } {
     let pathExists: boolean = true;
+
     const existsWithExeAdded: (path: string) => boolean = (path: string) => isCompilerPath && _isWindows && fs.existsSync(path + ".exe");
+
     if (!fs.existsSync(path)) {
         if (existsWithExeAdded(path)) {
             path += ".exe";
@@ -603,6 +660,7 @@ export function checkPathExistsSync(path: string, relativePath: string, _isWindo
         } else {
             // Check again for a relative path.
             relativePath = relativePath + path;
+
             if (!fs.existsSync(relativePath)) {
                 if (existsWithExeAdded(path)) {
                     path += ".exe";
@@ -642,10 +700,12 @@ export function readFileText(filePath: string, encoding: BufferEncoding = "utf8"
 /** Writes content to a text file */
 export function writeFileText(filePath: string, content: string, encoding: BufferEncoding = "utf8"): Promise<void> {
     const folders: string[] = filePath.split(path.sep).slice(0, -1);
+
     if (folders.length) {
         // create folder path if it doesn't exist
         folders.reduce((previous, folder) => {
             const folderPath: string = previous + path.sep + folder;
+
             if (!fs.existsSync(folderPath)) {
                 fs.mkdirSync(folderPath);
             }
@@ -698,7 +758,9 @@ export function deleteDirectory(directoryPath: string): Promise<void> {
 
 export function getReadmeMessage(): string {
     const readmePath: string = getExtensionFilePath("README.md");
+
     const readmeMessage: string = localize("refer.read.me", "Please refer to {0} for troubleshooting information. Issues can be created at {1}", readmePath, "https://github.com/Microsoft/vscode-cpptools/issues");
+
     return readmeMessage;
 }
 
@@ -713,7 +775,9 @@ export function execChildProcess(process: string, workingDirectory?: string, cha
         child_process.exec(process, { cwd: workingDirectory, maxBuffer: 500 * 1024 }, (error: Error | null, stdout: string, stderr: string) => {
             if (channel) {
                 let message: string = "";
+
                 let err: boolean = false;
+
                 if (stdout && stdout.length > 0) {
                     message += stdout;
                 }
@@ -736,11 +800,13 @@ export function execChildProcess(process: string, workingDirectory?: string, cha
 
             if (error) {
                 reject(error);
+
                 return;
             }
 
             if (stderr && stderr.length > 0) {
                 reject(new Error(stderr));
+
                 return;
             }
 
@@ -760,16 +826,20 @@ export async function spawnChildProcess(program: string, args: string[] = [], co
     // Do not use CppSettings to avoid circular require()
     if (skipLogging === undefined || !skipLogging) {
         const settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("C_Cpp", null);
+
         if (getNumericLoggingLevel(settings.get<string>("loggingLevel")) >= 5) {
             getOutputChannelLogger().appendLine(`$ ${program} ${args.join(' ')}`);
         }
     }
     const programOutput: ProcessOutput = await spawnChildProcessImpl(program, args, continueOn, skipLogging, cancellationToken);
+
     const exitCode: number | NodeJS.Signals | undefined = programOutput.exitCode;
+
     if (programOutput.exitCode) {
         return { succeeded: false, exitCode, outputError: programOutput.stderr, output: programOutput.stderr || programOutput.stdout || localize('process.exited', 'Process exited with code {0}', exitCode) };
     } else {
         let stdout: string;
+
         if (programOutput.stdout.length) {
             // Type system doesn't work very well here, so we need call toString
             stdout = programOutput.stdout;
@@ -791,9 +861,11 @@ async function spawnChildProcessImpl(program: string, args: string[], continueOn
 
     // Do not use CppSettings to avoid circular require()
     const settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("C_Cpp", null);
+
     const loggingLevel: number = (skipLogging === undefined || !skipLogging) ? getNumericLoggingLevel(settings.get<string>("loggingLevel")) : 0;
 
     let proc: child_process.ChildProcess;
+
     if (await isExecutable(program)) {
         proc = child_process.spawn(`.${isWindows ? '\\' : '/'}${path.basename(program)}`, args, { shell: true, cwd: path.dirname(program) });
     } else {
@@ -807,22 +879,28 @@ async function spawnChildProcessImpl(program: string, args: string[], continueOn
 
     const clean = () => {
         proc.removeAllListeners();
+
         if (cancellationTokenListener) {
             cancellationTokenListener.dispose();
         }
     };
 
     let stdout: string = '';
+
     let stderr: string = '';
+
     if (proc.stdout) {
         proc.stdout.on('data', data => {
             const str: string = data.toString();
+
             if (loggingLevel > 0) {
                 getOutputChannelLogger().append(str);
             }
             stdout += str;
+
             if (continueOn) {
                 const continueOnReg: string = escapeStringForRegex(continueOn);
+
                 if (stdout.search(continueOnReg)) {
                     result.resolve({ stdout: stdout.trim(), stderr: stderr.trim() });
                 }
@@ -840,6 +918,7 @@ async function spawnChildProcessImpl(program: string, args: string[], continueOn
         clean();
         result.reject(error);
     });
+
     return result;
 }
 
@@ -858,13 +937,16 @@ export function isExecutable(file: string): Promise<boolean> {
 export async function allowExecution(file: string): Promise<void> {
     if (process.platform !== 'win32') {
         const exists: boolean = await checkFileExists(file);
+
         if (exists) {
             const isExec: boolean = await isExecutable(file);
+
             if (!isExec) {
                 await chmodAsync(file, '755');
             }
         } else {
             getOutputChannelLogger().appendLine("");
+
             getOutputChannelLogger().appendLine(localize("warning.file.missing", "Warning: Expected file {0} is missing.", file));
         }
     }
@@ -883,7 +965,9 @@ export async function chmodAsync(path: fs.PathLike, mode: fs.Mode): Promise<void
 
 export function removePotentialPII(str: string): string {
     const words: string[] = str.split(" ");
+
     let result: string = "";
+
     for (const word of words) {
         if (!word.includes(".") && !word.includes("/") && !word.includes("\\") && !word.includes(":")) {
             result += word + " ";
@@ -930,7 +1014,9 @@ export async function promptForReloadWindowDueToSettingsChange(): Promise<void> 
 
 export async function promptReloadWindow(message: string): Promise<void> {
     const reload: string = localize("reload.string", "Reload");
+
     const value: string | undefined = await vscode.window.showInformationMessage(message, reload);
+
     if (value === reload) {
         return vscode.commands.executeCommand("workbench.action.reloadWindow");
     }
@@ -950,19 +1036,26 @@ export function createTempFileWithPostfix(postfix: string): Promise<tmp.FileResu
 function resolveWindowsEnvironmentVariables(str: string): string {
     return str.replace(/%([^%]+)%/g, (withPercents, withoutPercents) => {
         const found: string | undefined = process.env[withoutPercents];
+
         return found || withPercents;
     });
 }
 
 function legacyExtractArgs(argsString: string): string[] {
     const result: string[] = [];
+
     let currentArg: string = "";
+
     let isWithinDoubleQuote: boolean = false;
+
     let isWithinSingleQuote: boolean = false;
+
     for (let i: number = 0; i < argsString.length; i++) {
         const c: string = argsString[i];
+
         if (c === '\\') {
             currentArg += c;
+
             if (++i === argsString.length) {
                 if (currentArg !== "") {
                     result.push(currentArg);
@@ -970,6 +1063,7 @@ function legacyExtractArgs(argsString: string): string[] {
                 return result;
             }
             currentArg += argsString[i];
+
             continue;
         }
         if (c === '"') {
@@ -1002,20 +1096,29 @@ function legacyExtractArgs(argsString: string): string[] {
 
 function extractArgs(argsString: string): string[] {
     argsString = argsString.trim();
+
     if (os.platform() === 'win32') {
         argsString = resolveWindowsEnvironmentVariables(argsString);
+
         const result: string[] = [];
+
         let currentArg: string = "";
+
         let isInQuote: boolean = false;
+
         let wasInQuote: boolean = false;
+
         let i: number = 0;
+
         while (i < argsString.length) {
             let c: string = argsString[i];
+
             if (c === '\"') {
                 if (!isInQuote) {
                     isInQuote = true;
                     wasInQuote = true;
                     ++i;
+
                     continue;
                 }
                 // Need to peek at next character.
@@ -1023,6 +1126,7 @@ function extractArgs(argsString: string): string[] {
                     break;
                 }
                 c = argsString[i];
+
                 if (c !== '\"') {
                     isInQuote = false;
                 }
@@ -1030,16 +1134,21 @@ function extractArgs(argsString: string): string[] {
             }
             if (c === '\\') {
                 let backslashCount: number = 1;
+
                 let reachedEnd: boolean = true;
+
                 while (++i !== argsString.length) {
                     c = argsString[i];
+
                     if (c !== '\\') {
                         reachedEnd = false;
+
                         break;
                     }
                     ++backslashCount;
                 }
                 const still_escaping: boolean = (backslashCount % 2) !== 0;
+
                 if (!reachedEnd && c === '\"') {
                     backslashCount = Math.floor(backslashCount / 2);
                 }
@@ -1063,6 +1172,7 @@ function extractArgs(argsString: string): string[] {
                         currentArg = "";
                     }
                     i++;
+
                     continue;
                 }
             }
@@ -1076,10 +1186,12 @@ function extractArgs(argsString: string): string[] {
     } else {
         try {
             const wordexpResult: any = child_process.execFileSync(getExtensionFilePath("bin/cpptools-wordexp"), [argsString], { shell: false });
+
             if (wordexpResult === undefined) {
                 return [];
             }
             const jsonText: string = wordexpResult.toString();
+
             return jsonc.parse(jsonText, undefined, true) as any;
         } catch {
             return [];
@@ -1089,6 +1201,7 @@ function extractArgs(argsString: string): string[] {
 
 export function isCl(compilerPath: string): boolean {
     const compilerPathLowercase: string = compilerPath.toLowerCase();
+
     return compilerPathLowercase === "cl" || compilerPathLowercase === "cl.exe"
         || compilerPathLowercase.endsWith("\\cl.exe") || compilerPathLowercase.endsWith("/cl.exe")
         || compilerPathLowercase.endsWith("\\cl") || compilerPathLowercase.endsWith("/cl");
@@ -1105,10 +1218,14 @@ export interface CompilerPathAndArgs {
 
 export function extractCompilerPathAndArgs(useLegacyBehavior: boolean, inputCompilerPath?: string | null, compilerArgs?: string[]): CompilerPathAndArgs {
     let compilerPath: string | undefined | null = inputCompilerPath;
+
     let compilerName: string = "";
+
     let compilerArgsFromCommandLineInPath: string[] = [];
+
     if (compilerPath) {
         compilerPath = compilerPath.trim();
+
         if (isCl(compilerPath) || checkExecutableWithoutExtensionExistsSync(compilerPath)) {
             // If the path ends with cl, or if a file is found at that path, accept it without further validation.
             compilerName = path.basename(compilerPath);
@@ -1117,11 +1234,14 @@ export function extractCompilerPathAndArgs(useLegacyBehavior: boolean, inputComp
             // Otherwise, a path with a leading quote would not be valid.
             if (useLegacyBehavior) {
                 compilerArgsFromCommandLineInPath = legacyExtractArgs(compilerPath);
+
                 if (compilerArgsFromCommandLineInPath.length > 0) {
                     compilerPath = compilerArgsFromCommandLineInPath.shift();
+
                     if (compilerPath) {
                         // Try to trim quotes from compiler path.
                         const tempCompilerPath: string[] | undefined = extractArgs(compilerPath);
+
                         if (tempCompilerPath && compilerPath.length > 0) {
                             compilerPath = tempCompilerPath[0];
                         }
@@ -1130,8 +1250,10 @@ export function extractCompilerPathAndArgs(useLegacyBehavior: boolean, inputComp
                 }
             } else {
                 compilerArgsFromCommandLineInPath = extractArgs(compilerPath);
+
                 if (compilerArgsFromCommandLineInPath.length > 0) {
                     compilerPath = compilerArgsFromCommandLineInPath.shift();
+
                     if (compilerPath) {
                         compilerName = path.basename(compilerPath);
                     }
@@ -1139,14 +1261,18 @@ export function extractCompilerPathAndArgs(useLegacyBehavior: boolean, inputComp
             }
         } else {
             const spaceStart: number = compilerPath.lastIndexOf(" ");
+
             if (spaceStart !== -1) {
                 // There is no leading quote, but a space suggests it might be a command line.
                 // Try processing it as a command line, and validate that by checking for the executable.
                 const potentialArgs: string[] = useLegacyBehavior ? legacyExtractArgs(compilerPath) : extractArgs(compilerPath);
+
                 let potentialCompilerPath: string | undefined = potentialArgs.shift();
+
                 if (useLegacyBehavior) {
                     if (potentialCompilerPath) {
                         const tempCompilerPath: string[] | undefined = extractArgs(potentialCompilerPath);
+
                         if (tempCompilerPath && compilerPath.length > 0) {
                             potentialCompilerPath = tempCompilerPath[0];
                         }
@@ -1164,6 +1290,7 @@ export function extractCompilerPathAndArgs(useLegacyBehavior: boolean, inputComp
     }
     let allCompilerArgs: string[] = !compilerArgs ? [] : compilerArgs;
     allCompilerArgs = allCompilerArgs.concat(compilerArgsFromCommandLineInPath);
+
     return { compilerPath, compilerName, compilerArgs, compilerArgsFromCommandLineInPath, allCompilerArgs };
 }
 
@@ -1171,8 +1298,11 @@ export function escapeForSquiggles(s: string): string {
     // Replace all \<escape character> with \\<character>, except for \"
     // Otherwise, the JSON.parse result will have the \<escape character> missing.
     let newResults: string = "";
+
     let lastWasBackslash: boolean = false;
+
     let lastBackslashWasEscaped: boolean = false;
+
     for (let i: number = 0; i < s.length; i++) {
         if (s[i] === '\\') {
             if (lastWasBackslash) {
@@ -1209,10 +1339,15 @@ export function getSenderType(sender?: any): string {
 
 function decodeUCS16(input: string): number[] {
     const output: number[] = [];
+
     let counter: number = 0;
+
     const length: number = input.length;
+
     let value: number;
+
     let extra: number;
+
     while (counter < length) {
         value = input.charCodeAt(counter++);
         // eslint-disable-next-line no-bitwise
@@ -1295,6 +1430,7 @@ export function isValidIdentifier(candidate: string): boolean {
         return false;
     }
     const decoded: number[] = decodeUCS16(candidate);
+
     if (!decoded || !decoded.length) {
         return false;
     }
@@ -1302,6 +1438,7 @@ export function isValidIdentifier(candidate: string): boolean {
     // Reject if first character is disallowed
     for (let i: number = 0; i < disallowedFirstCharacterIdentifierUnicodeRanges.length; i++) {
         const disallowedCharacters: number[] = disallowedFirstCharacterIdentifierUnicodeRanges[i];
+
         if (decoded[0] >= disallowedCharacters[0] && decoded[0] <= disallowedCharacters[1]) {
             return false;
         }
@@ -1309,10 +1446,13 @@ export function isValidIdentifier(candidate: string): boolean {
 
     for (let position: number = 0; position < decoded.length; position++) {
         let found: boolean = false;
+
         for (let i: number = 0; i < allowedIdentifierUnicodeRanges.length; i++) {
             const allowedCharacters: number[] = allowedIdentifierUnicodeRanges[i];
+
             if (decoded[position] >= allowedCharacters[0] && decoded[position] <= allowedCharacters[1]) {
                 found = true;
+
                 break;
             }
         }
@@ -1325,19 +1465,26 @@ export function isValidIdentifier(candidate: string): boolean {
 
 export function getCacheStoragePath(): string {
     let defaultCachePath: string = "";
+
     let pathEnvironmentVariable: string | undefined;
+
     switch (os.platform()) {
         case 'win32':
             defaultCachePath = "Microsoft\\vscode-cpptools\\";
             pathEnvironmentVariable = process.env.LOCALAPPDATA;
+
             break;
+
         case 'darwin':
             defaultCachePath = "Library/Caches/vscode-cpptools/";
             pathEnvironmentVariable = os.homedir();
+
             break;
+
         default: // Linux
             defaultCachePath = "vscode-cpptools/";
             pathEnvironmentVariable = process.env.XDG_CACHE_HOME;
+
             if (!pathEnvironmentVariable) {
                 pathEnvironmentVariable = path.join(os.homedir(), ".cache");
             }
@@ -1349,6 +1496,7 @@ export function getCacheStoragePath(): string {
 
 function getUniqueWorkspaceNameHelper(workspaceFolder: vscode.WorkspaceFolder, addSubfolder: boolean): string {
     const workspaceFolderName: string = workspaceFolder ? workspaceFolder.name : "untitled";
+
     if (!workspaceFolder || workspaceFolder.index < 1) {
         return workspaceFolderName; // No duplicate names to search for.
     }
@@ -1377,6 +1525,7 @@ export function isCodespaces(): boolean {
 export function sequentialResolve<T>(items: T[], promiseBuilder: (item: T) => Promise<void>): Promise<void> {
     return items.reduce(async (previousPromise, nextItem) => {
         await previousPromise;
+
         return promiseBuilder(nextItem);
     }, Promise.resolve());
 }
@@ -1394,6 +1543,7 @@ export function quoteArgument(argument: string): string {
         }
 
         let quotedArgument = '"';
+
         let backslashCount = 0;
 
         for (const char of argument) {
@@ -1412,6 +1562,7 @@ export function quoteArgument(argument: string): string {
 
         quotedArgument += '\\'.repeat(backslashCount * 2);
         quotedArgument += '"';
+
         return quotedArgument;
     } else {
         // Unix-style quoting logic
@@ -1420,6 +1571,7 @@ export function quoteArgument(argument: string): string {
         }
 
         let quotedArgument = "'";
+
         for (const c of argument) {
             if (c === "'") {
                 quotedArgument += "'\\''";
@@ -1429,6 +1581,7 @@ export function quoteArgument(argument: string): string {
         }
 
         quotedArgument += "'";
+
         return quotedArgument;
     }
 }
@@ -1438,12 +1591,16 @@ export function quoteArgument(argument: string): string {
  */
 export function findPowerShell(): string | undefined {
     const dirs: string[] = (process.env.PATH || '').replace(/"+/g, '').split(';').filter(x => x);
+
     const exts: string[] = (process.env.PATHEXT || '').split(';');
+
     const names: string[] = ['pwsh', 'powershell'];
+
     for (const name of names) {
         const candidates: string[] = dirs.reduce<string[]>((paths, dir) => [
             ...paths, ...exts.map(ext => path.join(dir, name + ext))
         ], []);
+
         for (const candidate of candidates) {
             try {
                 if (fs.statSync(candidate).isFile()) {
@@ -1494,7 +1651,9 @@ export function escapeStringForRegex(str: string): string {
 
 export function replaceAll(str: string, searchValue: string, replaceValue: string): string {
     const pattern: string = escapeStringForRegex(searchValue);
+
     const re: RegExp = new RegExp(pattern, 'g');
+
     return str.replace(re, replaceValue);
 }
 
@@ -1515,6 +1674,7 @@ export function getFullHostAddressNoPort(host: ISshHostInfo): string {
 
 export function getFullHostAddress(host: ISshHostInfo): string {
     const fullHostName: string = getFullHostAddressNoPort(host);
+
     return host.port ? `${fullHostName}:${host.port}` : fullHostName;
 }
 
@@ -1568,11 +1728,13 @@ export function hasMsvcEnvironment(): boolean {
         'WindowsSDKLibVersion',
         'WindowsSDKVersion'
     ];
+
     return msvcEnvVars.every((envVarName) => process.env[envVarName] !== undefined && process.env[envVarName] !== '');
 }
 
 function isIntegral(str: string): boolean {
     const regex = /^-?\d+$/;
+
     return regex.test(str);
 }
 
@@ -1584,17 +1746,23 @@ export function getNumericLoggingLevel(loggingLevel: string | undefined): number
         return parseInt(loggingLevel, 10);
     }
     const lowerCaseLoggingLevel: string = loggingLevel.toLowerCase();
+
     switch (lowerCaseLoggingLevel) {
         case "error":
             return 1;
+
         case "warning":
             return 3;
+
         case "information":
             return 5;
+
         case "debug":
             return 6;
+
         case "none":
             return 0;
+
         default:
             return -1;
     }
@@ -1611,10 +1779,12 @@ export function mergeOverlappingRanges(ranges: Range[]): Range[] {
 
     // Merge overlapping ranges.
     mergedRanges.sort((a, b) => a.start.line - b.start.line || a.start.character - b.start.character);
+
     let lastMergedIndex = 0; // Index to keep track of the last merged range
     for (let currentIndex = 0; currentIndex < ranges.length; currentIndex++) {
         const currentRange = ranges[currentIndex]; // No need for a shallow copy, since we're not modifying the ranges we haven't read yet.
         let nextIndex = currentIndex + 1;
+
         while (nextIndex < ranges.length) {
             const nextRange = ranges[nextIndex];
             // Check for non-overlapping ranges first
@@ -1635,6 +1805,7 @@ export function mergeOverlappingRanges(ranges: Range[]): Range[] {
         currentIndex = nextIndex - 1; // Skip the merged ranges
     }
     mergedRanges.length = lastMergedIndex;
+
     return mergedRanges;
 }
 
@@ -1670,7 +1841,9 @@ export type CommandString = string | IQuotedString;
 export function buildShellCommandLine(originalCommand: CommandString, command: CommandString, args: CommandString[]): string {
 
     let shellQuoteOptions: IShellQuotingOptions;
+
     const isWindows: boolean = os.platform() === 'win32';
+
     if (isWindows) {
         shellQuoteOptions = {
             strong: '"'
@@ -1700,14 +1873,17 @@ export function buildShellCommandLine(originalCommand: CommandString, command: C
     function needsQuotes(value: string): boolean {
         if (value.length >= 2) {
             const first = value[0] === shellQuoteOptions.strong ? shellQuoteOptions.strong : value[0] === shellQuoteOptions.weak ? shellQuoteOptions.weak : undefined;
+
             if (first === value[value.length - 1]) {
                 return false;
             }
         }
         let quote: string | undefined;
+
         for (let i = 0; i < value.length; i++) {
             // We found the end quote.
             const ch = value[i];
+
             if (ch === quote) {
                 quote = undefined;
             } else if (quote !== undefined) {
@@ -1735,11 +1911,14 @@ export function buildShellCommandLine(originalCommand: CommandString, command: C
                 return [value.replace(/ /g, shellQuoteOptions.escape + ' '), true];
             } else {
                 const buffer: string[] = [];
+
                 for (const ch of shellQuoteOptions.escape.charsToEscape) {
                     buffer.push(`\\${ch}`);
                 }
                 const regexp: RegExp = new RegExp('[' + buffer.join(',') + ']', 'g');
+
                 const escapeChar = shellQuoteOptions.escape.escapeChar;
+
                 return [value.replace(regexp, (match) => escapeChar + match), true];
             }
         }
@@ -1766,13 +1945,18 @@ export function buildShellCommandLine(originalCommand: CommandString, command: C
     }
 
     const result: string[] = [];
+
     let commandQuoted = false;
+
     let argQuoted = false;
+
     let value: string;
+
     let quoted: boolean;
     [value, quoted] = quoteIfNecessary(command);
     result.push(value);
     commandQuoted = quoted;
+
     for (const arg of args) {
         [value, quoted] = quoteIfNecessary(arg);
         result.push(value);
@@ -1783,6 +1967,7 @@ export function buildShellCommandLine(originalCommand: CommandString, command: C
     // There are special rules quoted command line in cmd.exe
     if (isWindows) {
         commandLine = `chcp 65001>nul && ${commandLine}`;
+
         if (commandQuoted && argQuoted) {
             commandLine = '"' + commandLine + '"';
         }
@@ -1794,10 +1979,12 @@ export function buildShellCommandLine(originalCommand: CommandString, command: C
 
 export function findExePathInArgs(args: CommandString[]): string | undefined {
     const isWindows: boolean = os.platform() === 'win32';
+
     let previousArg: string | undefined;
 
     for (const arg of args) {
         const argValue = isString(arg) ? arg : arg.value;
+
         if (previousArg === '-o') {
             return argValue;
         }

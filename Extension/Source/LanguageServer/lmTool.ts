@@ -52,19 +52,23 @@ export class CppConfigurationLanguageModelTool implements vscode.LanguageModelTo
 
     private async getContext(token: vscode.CancellationToken): Promise<string> {
         const telemetryProperties: Record<string, string> = {};
+
         try {
             const currentDoc = vscode.window.activeTextEditor?.document;
+
             if (!currentDoc || (!util.isCpp(currentDoc) && !util.isHeaderFile(currentDoc.uri))) {
                 return 'The active document is not a C, C++, or CUDA file.';
             }
 
             const chatContext: ChatContextResult | undefined = await (getClients()?.ActiveClient?.getChatContext(token) ?? undefined);
+
             if (!chatContext) {
                 return 'No configuration information is available for the active document.';
             }
 
             for (const key in knownValues) {
                 const knownKey = key as keyof ChatContextResult;
+
                 if (knownValues[knownKey] && chatContext[knownKey]) {
                     // Clear the value if it's not in the known values.
                     chatContext[knownKey] = knownValues[knownKey][chatContext[knownKey]] || "";
@@ -72,6 +76,7 @@ export class CppConfigurationLanguageModelTool implements vscode.LanguageModelTo
             }
 
             let contextString = "";
+
             if (chatContext.language) {
                 contextString += `The user is working on a ${chatContext.language} project. `;
                 telemetryProperties["language"] = chatContext.language;
@@ -98,6 +103,7 @@ export class CppConfigurationLanguageModelTool implements vscode.LanguageModelTo
         catch {
             await this.reportError();
             telemetryProperties["error"] = "true";
+
             return "";
         } finally {
             telemetry.logLanguageModelToolEvent('cpp', telemetryProperties);

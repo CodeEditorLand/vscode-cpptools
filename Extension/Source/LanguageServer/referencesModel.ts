@@ -25,6 +25,7 @@ export class ReferencesModel {
         for (const r of results) {
             // Add reference to file
             const noReferenceLocation: boolean = r.position.line === 0 && r.position.character === 0;
+
             if (noReferenceLocation) {
                 const node: TreeNode = new TreeNode(this, NodeType.fileWithPendingRef);
                 node.fileUri = vscode.Uri.file(r.file);
@@ -33,8 +34,11 @@ export class ReferencesModel {
                 this.nodes.push(node);
             } else {
                 const range: vscode.Range = new vscode.Range(r.position.line, r.position.character, r.position.line, r.position.character + this.originalSymbol.length);
+
                 const uri: vscode.Uri = vscode.Uri.file(r.file);
+
                 const location: vscode.Location = new vscode.Location(uri, range);
+
                 const node: TreeNode = new TreeNode(this, NodeType.reference);
                 node.fileUri = uri;
                 node.filename = r.file;
@@ -53,8 +57,10 @@ export class ReferencesModel {
 
     getReferenceTypeNodes(): TreeNode[] {
         const result: TreeNode[] = [];
+
         for (const n of this.nodes) {
             const i: number = result.findIndex(e => e.referenceType === n.referenceType);
+
             if (i < 0) {
                 const node: TreeNode = new TreeNode(this, NodeType.referenceType);
                 node.referenceType = n.referenceType;
@@ -66,6 +72,7 @@ export class ReferencesModel {
 
     getFileNodes(refType?: ReferenceType): TreeNode[] {
         const result: TreeNode[] = [];
+
         let filteredFiles: TreeNode[] = [];
 
         // Get files by reference type if refType is specified.
@@ -78,8 +85,10 @@ export class ReferencesModel {
         // Create new nodes per unique file
         for (const n of filteredFiles) {
             const i: number = result.findIndex(item => item.filename === n.filename);
+
             if (i < 0) {
                 const nodeType: NodeType = n.node === NodeType.fileWithPendingRef ? NodeType.fileWithPendingRef : NodeType.file;
+
                 const node: TreeNode = new TreeNode(this, nodeType);
                 node.filename = n.filename;
                 node.fileUri = n.fileUri;
@@ -100,6 +109,7 @@ export class ReferencesModel {
                 return a.filename.localeCompare(b.filename);
             }
         });
+
         return result;
     }
 
@@ -135,6 +145,7 @@ export class ReferencesModel {
                 return a.filename.localeCompare(b.filename);
             }
         });
+
         return result;
     }
 }

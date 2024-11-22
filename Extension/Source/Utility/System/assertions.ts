@@ -17,6 +17,7 @@ export class asserts {
         const { fullPath, isFile, isExecutable } = await filepath.info(filename) || fail(new Error(`Path ${filename} does not exist`));
         ok(isFile, new Error(`Path ${filename} is not a file`));
         ok(isExecutable, new Error(`File ${filename} is not executable`));
+
         return fullPath;
     }
 

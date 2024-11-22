@@ -35,6 +35,7 @@ export class FastFinder implements AsyncIterable<string> {
 
     [Symbol.asyncIterator](): AsyncIterator<string> {
         this.readyToComplete = true;
+
         if (this.pending === 0) {
             this.#files.complete();
         }
@@ -46,6 +47,7 @@ export class FastFinder implements AsyncIterable<string> {
         strict(ripgrep, 'initRipGrep must be called before using FastFinder');
 
         this.keepOnlyExecutables = options?.executable ?? false;
+
         if (this.keepOnlyExecutables && process.platform === 'win32') {
             this.executableExtensions = options?.executableExtensions ?? ['.exe', '.bat', '.cmd', '.ps1'];
         }
@@ -61,6 +63,7 @@ export class FastFinder implements AsyncIterable<string> {
     scan(depth: number, ...location: string[]): FastFinder;
     scan(...location: (string | number)[]): FastFinder {
         const depth = (typeof location[0] === 'number' ? location.shift() as number : 0) + 1;
+
         const globs = this.executableExtensions.length ?
             this.fileGlobs.map(glob => this.executableExtensions.map(ext => glob.includes('**') ? glob : `**/${glob}${ext}`)).flat() :
             this.fileGlobs.map(glob => glob.includes('**') ? glob : `**/${glob}`);
@@ -74,17 +77,20 @@ export class FastFinder implements AsyncIterable<string> {
             void ripgrep!(...globs.map(each => ['--glob', each]).flat(), '--max-depth', depth, '--null-data', '--no-messages', '-L', '--files', ...location.map(each => each.toString())).then(async proc => {
                 const process = proc as unknown as Instance<Process>;
                 this.processes.push(process);
+
                 for await (const line of process.stdio) {
                     if (this.distinct.has(line)) {
                         continue;
                     }
                     this.distinct.add(line);
+
                     if (!this.keepOnlyExecutables || await filepath.isExecutable(line)) {
                         this.#files.add(line);
                     }
                 }
             }).catch(logAndReturn.undefined).finally(() => {
                 this.pending--;
+
                 if (this.readyToComplete && this.pending === 0) {
                     this.#files.complete();
                 }
@@ -120,6 +126,7 @@ export async function* ripGrep(target: string, regex: string, options?: { glob?:
     strict(ripgrep, 'initRipGrep must be called before using ripGrep');
 
     const optionalArguments = new Array<string>();
+
     if (options?.binary) {
         optionalArguments.push('--binary');
     }
@@ -133,10 +140,13 @@ export async function* ripGrep(target: string, regex: string, options?: { glob?:
         optionalArguments.push('--ignore-case');
     }
     regex = regex.replace(/\?\</g, '\?P<');
+
     const proc = await ripgrep(regex, '--null-data', '--json', '--no-messages', ...optionalArguments, target);
+
     for await (const line of proc.stdio) {
         try {
             const obj = JSON.parse(line);
+
             if (isMatch(obj)) {
                 yield obj.data;
             }

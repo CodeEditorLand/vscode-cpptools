@@ -36,9 +36,11 @@ interface Event<TInput = any, TResult = void> {
 const sandbox = new Sandbox();
 
 const syncHandlers = new Map<string, Subscriber[]>();
+
 const asyncHandlers = new Map<string, Subscriber[]>();
 
 const queue = new Array<Event<any, any>>();
+
 const current = new Set<Callback>();
 
 export const DispatcherBusy = new ManualSignal<void>();
@@ -46,6 +48,7 @@ export const DispatcherBusy = new ManualSignal<void>();
 /** starts the processing of the event queue. */
 async function drain() {
     DispatcherBusy.reset();
+
     let event: Event | undefined;
     // eslint-disable-next-line no-cond-assign
     while (event = queue.shift()) {
@@ -72,6 +75,7 @@ async function dispatch<TResult>(event: Event<any, TResult>): Promise<void> {
             let r = callback(event as EventData, ...captures);
             r = is.promise(r) ? await r.catch(e => {
                 console.error(e);
+
                 return undefined;
             }) : r;
 
@@ -164,6 +168,7 @@ function* getHandlers<TResult>(event: Event<any, TResult>, category: Map<string,
 
             // get the descriptor text values
             const strings = name === event.name || name === '*' ? [] : event.descriptors.get(name);
+
             if (!strings) {
                 // the event name isn't a match (or wildcard), and it doesn't have a descriptor with that name
                 continue loop;
@@ -185,6 +190,7 @@ function* getHandlers<TResult>(event: Event<any, TResult>, category: Map<string,
     }
 }
 const boundSubscribers = new WeakMap<ArbitraryObject, (() => void)[]>();
+
 const autoUnsubscribe = new FinalizationRegistry((unsubscribe: () => void) => {
     unsubscribe();
 });
@@ -193,8 +199,10 @@ export function removeAllListeners(eventSrc: ArbitraryObject) {
     if (eventSrc) {
         // call unsubscribe
         const all = boundSubscribers.get(eventSrc);
+
         if (all) {
             verbose(`Unsubscribing all from ${typeOf(eventSrc)}`);
+
             for (const unsubscribe of all) {
                 unsubscribe();
             }
@@ -211,6 +219,7 @@ export function on<T>(triggerExpression: string, callback: Callback<T>, eventSrc
     out:
     if ((global as any).DEVMODE && is.emitter(eventSrc)) {
         const filterNames = [...filters.keys()];
+
         for (const filterName of filterNames) {
             if (eventSrc.isKnownEvent(filterName)) {
                 break out;
@@ -240,8 +249,10 @@ export function on<T>(triggerExpression: string, callback: Callback<T>, eventSrc
         for (const eventName of filters.keys()) {
             // remove it from the queue from whence it came
             const subscribers = subscription.get(eventName);
+
             if (subscribers) {
                 const i = subscribers.indexOf(subscriber);
+
                 if (i >= 0) {
                     subscribers.splice(i, 1);
                     // if there are no more listeners for that handler, remove the array too.
@@ -256,6 +267,7 @@ export function on<T>(triggerExpression: string, callback: Callback<T>, eventSrc
     // setup auto unsubscribe when a bound object is garbage collected
     if (eventSource) {
         autoUnsubscribe.register(eventSource, unsubscribe);
+
         getOrAdd(boundSubscribers, eventSource, []).push(unsubscribe);
     }
 
@@ -284,6 +296,7 @@ export function subscribe<T extends Record<string, any>>(subscriber: Promise<Sub
 
     if (options.folder) {
         subscriber = subscriber as Record<string, string>;
+
         return (async () => { // this has to be async - we may be pulling data from a file...
             const unsubs = new Array<Unsubscribe>();
 
@@ -294,10 +307,13 @@ export function subscribe<T extends Record<string, any>>(subscriber: Promise<Sub
 
                 try {
                     const filename = await filepath.isFile(text, options.folder);
+
                     if (filename) {
                         // it is a file, so load it as a function-let
                         const code = await readFile(filename, 'utf8');
+
                         const fn = sandbox.createFunction(code, ['event'], { filename });
+
                         if (hasErrors(fn)) {
                             for (const each of fn) {
                                 console.error(each);
@@ -305,11 +321,13 @@ export function subscribe<T extends Record<string, any>>(subscriber: Promise<Sub
                             throw new Error(`Error loading ${filename}: ${fn}`);
                         }
                         unsubs.push(on(options.once ? `once ${name}` : name, fn as Callback, options.eventSource));
+
                         continue;
                     }
 
                     // if it's not a file, then treat it as a function-let
                     const fn = sandbox.createFunction(text, ['event'], { filename: `launch.json/${name}` });
+
                     if (hasErrors(fn)) {
                         for (const each of fn) {
                             console.error(each);
@@ -331,6 +349,7 @@ export function subscribe<T extends Record<string, any>>(subscriber: Promise<Sub
 
     // otherwise, we're subscribing to members that are functions
     const unsubs = new Array<Unsubscribe>();
+
     for (const [name, info] of methods) {
         if (options.bindAll || info.hasNonWordCharacters || isAnonymousObject(subscriber)) {
             // subscribe this function, (ensure it's an async function)
@@ -342,6 +361,7 @@ export function subscribe<T extends Record<string, any>>(subscriber: Promise<Sub
 
 export function reset() {
     syncHandlers.clear();
+
     asyncHandlers.clear();
 }
 
@@ -353,6 +373,7 @@ function expandVariableArgs<TInput = any, TResult = void>(variableArgs: any[], e
             event.text = '';
             event.data = undefined;
             event.source = undefined;
+
             return event;
 
         case 1:
@@ -363,6 +384,7 @@ function expandVariableArgs<TInput = any, TResult = void>(variableArgs: any[], e
                 event.data = first;
             }
             return event;
+
         case 2:
             if (typeof first === 'string') {
                 event.text = first;
@@ -379,10 +401,12 @@ function expandVariableArgs<TInput = any, TResult = void>(variableArgs: any[], e
                 }
             }
             return event;
+
         case 3:
             event.source = first;
             event.text = second;
             event.data = third;
+
             return event;
     }
     throw new Error('Invalid number of arguments');

@@ -74,7 +74,9 @@ async function processFactory(executable: string | Launcher, ...initialArgs: [..
 async function processFactory(executable: string | Launcher, ...initialArgs: ArrayPlusOptions<Primitive, ProgramOptions>): Promise<ProcessFunction>;
 async function processFactory(executable: string | Launcher, ...initialArgs: ArrayPlusOptions<Primitive, ProgramOptions>): Promise<ProcessFunction | CommandFunction> {
     let cmdlineArgs = primitives(initialArgs);
+
     let opts = options(initialArgs);
+
     let fullPath: Promise<string>;
 
     if (typeof executable === 'string') {
@@ -86,6 +88,7 @@ async function processFactory(executable: string | Launcher, ...initialArgs: Arr
                 opts.choices ??= lazy(async () => new Finder(executable).scan(...await searchPaths).results);
                 // but before we look at any of that, let's see if someone else wants to take that off our hands
                 const bin = await emitNow<string>('select-binary', Descriptors.none, executable, is.promise(opts.choices) ? await opts.choices : new Set());
+
                 return await filepath.isExecutable(bin) || // we have a good one coming back from the event
                     await filepath.isExecutable(first(opts.choices)) || // we're gonna pick the first one in the choices, if there are any.
                     fail(new Error(`Unable to find full path to binary '${executable}'`)); // we're out of options.
@@ -98,6 +101,7 @@ async function processFactory(executable: string | Launcher, ...initialArgs: Arr
             asserts.isAbsolute(bin);
             // ensure that the executable exists and is executable
             await asserts.isExecutable(bin);
+
             return bin;
         });
     } else {
@@ -107,6 +111,7 @@ async function processFactory(executable: string | Launcher, ...initialArgs: Arr
     }
 
     let result: ProcessFunction | CommandFunction;
+
     if (opts.noninteractive) {
         // create launcher for non-interactive commands
         result = (async (...moreArgs: ArrayPlusOptions<Primitive, ProgramOptions>): Promise<CommandResult> => {
@@ -114,6 +119,7 @@ async function processFactory(executable: string | Launcher, ...initialArgs: Arr
 
             // Create Process instance
             const moreOpts = options(moreArgs);
+
             const subscribers = opts.on ? moreOpts.on ? [opts.on, moreOpts.on] : [opts.on] : moreOpts.on ? [moreOpts.on] : [];
 
             const proc = await new Process(
@@ -126,6 +132,7 @@ async function processFactory(executable: string | Launcher, ...initialArgs: Arr
             );
 
             const code = await proc.exitCode;
+
             return {
                 code,
                 stdio: proc.stdio,
@@ -138,7 +145,9 @@ async function processFactory(executable: string | Launcher, ...initialArgs: Arr
         result = (async (...moreArgs: ArrayPlusOptions<Primitive, ProgramOptions>): Promise<Process> => {
             // Create Process instance
             const moreOpts = options(moreArgs);
+
             const subscribers = opts.on ? moreOpts.on ? [opts.on, moreOpts.on] : [opts.on] : moreOpts.on ? [moreOpts.on] : [];
+
             return new Process(
                 await fullPath, // executable
                 [...result.cmdlineArgs, ...primitives(moreArgs)], // arguments
@@ -165,7 +174,9 @@ export const Command = Factory((executable: string | Launcher, ...initialArgs: A
 
 export function cmdlineToArray(text: string, result: string[] = [], matcher = /[^\s"]+|"([^"]*)"/gi, _count = 0): string[] {
     text = text.replace(/\\"/g, '\ufffe');
+
     const match = matcher.exec(text);
+
     return match ? cmdlineToArray(text, result, matcher, result.push(match[1] ? match[1].replace(/\ufffe/g, '\\"') : match[0].replace(/\ufffe/g, '\\"'))) : result;
 }
 

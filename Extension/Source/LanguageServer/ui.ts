@@ -14,6 +14,7 @@ import { ReferencesCommandMode, referencesCommandModeToString } from './referenc
 import { CppSettings } from './settings';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 let ui: LanguageStatusUI;
@@ -112,6 +113,7 @@ export class LanguageStatusUI {
         const item: vscode.LanguageStatusItem = vscode.languages.createLanguageStatusItem(`cpptools.status.${LanguageStatusPriority.High}.intellisense`, util.documentSelector);
         item.name = localize("cpptools.status.intellisense", "C/C++ IntelliSense Status");
         item.text = this.idleIntelliSenseText;
+
         return item;
     }
 
@@ -145,6 +147,7 @@ export class LanguageStatusUI {
             title: this.workspaceRescanText,
             arguments: commandArguments
         };
+
         return item;
     }
 
@@ -174,6 +177,7 @@ export class LanguageStatusUI {
 
     private setIsParsingWorkspace(val: boolean): void {
         this.isParsingWorkspace = val;
+
         if (!val && this.isParsingWorkspacePaused) {
             // Unpause before handling the no longer parsing state.
             this.isParsingWorkspacePaused = false;
@@ -188,6 +192,7 @@ export class LanguageStatusUI {
 
     private setIsParsingWorkspacePaused(val: boolean): void {
         this.isParsingWorkspacePaused = val;
+
         if (this.isParsingWorkspace || this.isParsingFiles) {
             this.setTagParseStatus();
         }
@@ -199,6 +204,7 @@ export class LanguageStatusUI {
         }
         if (this.isParsingWorkspacePaused) {
             const displayTwoStatus: boolean = this.isParsingFiles && this.isParsingWorkspace;
+
             return (this.isParsingFiles ? this.parsingFilesTooltip : "")
               + (displayTwoStatus ? " | " : "")
               + (this.isParsingWorkspace ? this.workspaceParsingPausedText : "");
@@ -214,6 +220,7 @@ export class LanguageStatusUI {
         if (this.isParsingWorkspace || this.isParsingFiles) {
             this.tagParseStatusItem.text = this.dataBaseIcon;
             this.tagParseStatusItem.detail = this.getTagParsingDetail();
+
             if (this.isParsingWorkspace) {
                 // Pausing/resuming is only applicable to parsing workspace.
                 this.tagParseStatusItem.command = this.isParsingWorkspacePaused ? {
@@ -258,6 +265,7 @@ export class LanguageStatusUI {
             title: localize("c.cpp.codeanalysis.statusbar.runNow", "Run Now"),
             arguments: commandArguments
         };
+
         return item;
     }
     private setIsCodeAnalysisPaused(val: boolean): void {
@@ -272,9 +280,11 @@ export class LanguageStatusUI {
 
     private codeAnalysisCurrentMode(): string {
         const settings: CppSettings = new CppSettings((vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) ? vscode.workspace.workspaceFolders[0]?.uri : undefined);
+
         const state: string = (settings.codeAnalysisRunAutomatically && settings.clangTidyEnabled)
             ? localize("mode.codeanalysis.status.automatic", "Automatic")
             : localize("mode.codeanalysis.status.manual", "Manual");
+
         return state;
     }
 
@@ -286,7 +296,9 @@ export class LanguageStatusUI {
         }
         this.isRunningCodeAnalysis = val;
         this.codeAnalysisStatusItem.busy = val;
+
         const activeText: string = this.isCodeAnalysisPaused ? this.codeAnalysisPausedText : this.codeAnalysisRunningText;
+
         const idleText: string = this.codeAnalysisModePrefix + this.codeAnalysisCurrentMode();
         this.codeAnalysisStatusItem.text = val ? activeText : idleText;
         this.codeAnalysisStatusItem.command = val ? {
@@ -318,6 +330,7 @@ export class LanguageStatusUI {
             return; // Occurs when a multi-root workspace is activated.
         }
         this.codeAnalysisProcessed = processed;
+
         if (this.codeAnalysisProcessed > this.codeAnalysisTotal) {
             this.codeAnalysisTotal = this.codeAnalysisProcessed + 1;
         }
@@ -345,7 +358,9 @@ export class LanguageStatusUI {
             items.push({ label: localize("pause.analysis", "Pause"), description: "", index: 1 });
         }
         items.push({ label: localize("another.analysis", "Start Another..."), description: "", index: 3 });
+
         const selection: IndexableQuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
+
         return selection ? selection.index : -1;
     }
 
@@ -357,7 +372,9 @@ export class LanguageStatusUI {
         items.push({ label: localize("active.analysis", "Run Code Analysis on Active File"), description: "", index: 0 });
         items.push({ label: localize("all.analysis", "Run Code Analysis on All Files"), description: "", index: 1 });
         items.push({ label: localize("open.analysis", "Run Code Analysis on Open Files"), description: "", index: 2 });
+
         const selection: IndexableQuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
+
         return selection ? selection.index : -1;
     }
     //#endregion Code analysis language status
@@ -372,6 +389,7 @@ export class LanguageStatusUI {
             title: item.name,
             arguments: commandArguments
         };
+
         return item;
     }
 
@@ -405,6 +423,7 @@ export class LanguageStatusUI {
     //#region Configuration status bar
     private createConfigurationStatusBarItem(): vscode.StatusBarItem {
         const configTooltip: string = localize("c.cpp.configuration.tooltip", "C/C++ Configuration");
+
         const item: vscode.StatusBarItem = vscode.window.createStatusBarItem("c.cpp.configuration.tooltip", vscode.StatusBarAlignment.Right, 0);
         item.name = configTooltip;
         item.tooltip = configTooltip;
@@ -413,6 +432,7 @@ export class LanguageStatusUI {
             title: configTooltip,
             arguments: commandArguments
         };
+
         return item;
     }
 
@@ -432,6 +452,7 @@ export class LanguageStatusUI {
     //#region Configure IntelliSense status bar
     private createConfigureIntelliSenseStatusBarItem(): vscode.StatusBarItem {
         const cppConfigureIntelliSenseText: string = localize("c.cpp.configureIntelliSenseStatus.cppText", "C/C++ Configure IntelliSense");
+
         const item: vscode.StatusBarItem = vscode.window.createStatusBarItem(`c.cpp.configureIntelliSenseStatus.statusbar`, vscode.StatusBarAlignment.Right, 0);
         item.name = cppConfigureIntelliSenseText;
         item.tooltip = cppConfigureIntelliSenseText;
@@ -442,6 +463,7 @@ export class LanguageStatusUI {
             title: cppConfigureIntelliSenseText,
             arguments: ['statusBar']
         };
+
         return item;
     }
 
@@ -455,14 +477,17 @@ export class LanguageStatusUI {
         }
 
         this.showConfigureIntelliSenseButton = show;
+
         if (client !== undefined) {
             client.setShowConfigureIntelliSenseButton(show);
         }
         if (show) {
             const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
             telemetry.logLanguageServerEvent('configureIntelliSenseStatusBar');
+
             if (activeEditor && util.isCppOrRelated(activeEditor.document)) {
                 this.configureIntelliSenseStatusBarItem.show();
+
                 if (!this.configureIntelliSenseTimeout) {
                     this.configureIntelliSenseTimeout = setTimeout(() => {
                         this.configureIntelliSenseStatusBarItem.text = "$(warning)";
@@ -471,6 +496,7 @@ export class LanguageStatusUI {
             }
         } else {
             this.configureIntelliSenseStatusBarItem.hide();
+
             if (this.configureIntelliSenseTimeout) {
                 clearTimeout(this.configureIntelliSenseTimeout);
                 this.configureIntelliSenseStatusBarItem.text = `$(warning) ${this.configureIntelliSenseText}`;
@@ -481,13 +507,16 @@ export class LanguageStatusUI {
 
     public didChangeActiveEditor(): void {
         const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+
         if (!activeEditor) {
             this.ShowConfiguration = false;
+
             if (this.showConfigureIntelliSenseButton) {
                 this.configureIntelliSenseStatusBarItem.hide();
             }
         } else {
             const isCppPropertiesJson: boolean = util.isCppPropertiesJson(activeEditor.document);
+
             if (isCppPropertiesJson) {
                 void vscode.languages.setTextDocumentLanguage(activeEditor.document, "jsonc");
             }
@@ -502,6 +531,7 @@ export class LanguageStatusUI {
             if (this.showConfigureIntelliSenseButton) {
                 if (isCppOrRelated && !!this.currentClient && this.currentClient.getShowConfigureIntelliSenseButton()) {
                     this.configureIntelliSenseStatusBarItem.show();
+
                     if (!this.configureIntelliSenseTimeout) {
                         this.configureIntelliSenseTimeout = setTimeout(() => {
                             this.configureIntelliSenseStatusBarItem.text = "$(warning)";
@@ -520,6 +550,7 @@ export class LanguageStatusUI {
         options.placeHolder = localize("select.a.configuration", "Select a Configuration...");
 
         const items: IndexableQuickPickItem[] = [];
+
         for (let i: number = 0; i < configurationNames.length; i++) {
             items.push({ label: configurationNames[i], description: "", index: i });
         }
@@ -527,17 +558,20 @@ export class LanguageStatusUI {
         items.push({ label: localize("edit.configuration.json", "Edit Configurations (JSON)"), description: "", index: configurationNames.length + 1 });
 
         const selection: IndexableQuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
+
         return selection ? selection.index : -1;
     }
 
     public async showConfigurationProviders(currentProvider?: string): Promise<string | undefined> {
         const options: vscode.QuickPickOptions = {};
         options.placeHolder = localize("select.configuration.provider", "Select a Configuration Provider...");
+
         const providers: CustomConfigurationProviderCollection = getCustomConfigProviders();
 
         const items: KeyedQuickPickItem[] = [];
         providers.forEach(provider => {
             let label: string = provider.name;
+
             if (isSameProviderExtensionId(currentProvider, provider.extensionId)) {
                 label += ` (${localize("active", "active")})`;
             }
@@ -546,6 +580,7 @@ export class LanguageStatusUI {
         items.push({ label: `(${localize("none", "none")})`, description: localize("disable.configuration.provider", "Disable the active configuration provider, if applicable."), key: "" });
 
         const selection: KeyedQuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
+
         return selection ? selection.key : undefined;
     }
 
@@ -557,6 +592,7 @@ export class LanguageStatusUI {
         workspaceNames.forEach(name => items.push({ label: name.name, description: "", key: name.key }));
 
         const selection: KeyedQuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
+
         return selection ? selection.key : "";
     }
 

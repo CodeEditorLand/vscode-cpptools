@@ -12,6 +12,7 @@ import { makeVscodeTextEdits } from '../utils';
 
 export class DocumentRangeFormattingEditProvider implements vscode.DocumentRangeFormattingEditProvider {
     private client: DefaultClient;
+
     constructor(client: DefaultClient) {
         this.client = client;
     }
@@ -19,12 +20,16 @@ export class DocumentRangeFormattingEditProvider implements vscode.DocumentRange
     public async provideDocumentRangeFormattingEdits(document: vscode.TextDocument, range: vscode.Range,
         options: vscode.FormattingOptions, token: vscode.CancellationToken): Promise<vscode.TextEdit[]> {
         const settings: CppSettings = new CppSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+
         if (settings.formattingEngine === "disabled") {
             return [];
         }
         await this.client.ready;
+
         const filePath: string = document.uri.fsPath;
+
         const useVcFormat: boolean = settings.useVcFormat(document);
+
         const configCallBack = async (editorConfigSettings: any | undefined) => {
             const params: FormatParams = {
                 editorConfigSettings: { ...editorConfigSettings },
@@ -45,7 +50,9 @@ export class DocumentRangeFormattingEditProvider implements vscode.DocumentRange
                 },
                 onChanges: false
             };
+
             let response: FormatResult;
+
             try {
                 response = await this.client.languageClient.sendRequest(FormatRangeRequest, params, token);
             } catch (e: any) {
@@ -59,10 +66,12 @@ export class DocumentRangeFormattingEditProvider implements vscode.DocumentRange
             }
             return makeVscodeTextEdits(response.edits);
         };
+
         if (!useVcFormat) {
             return configCallBack(undefined);
         } else {
             const editorConfigSettings: any = getEditorConfigSettings(filePath);
+
             return configCallBack(editorConfigSettings);
         }
     }

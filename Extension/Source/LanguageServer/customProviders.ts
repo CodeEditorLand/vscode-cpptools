@@ -18,6 +18,7 @@ export interface CustomConfigurationProvider1 extends CustomConfigurationProvide
 }
 
 const oldCmakeToolsExtensionId: string = "vector-of-bool.cmake-tools";
+
 const newCmakeToolsExtensionId: string = "ms-vscode.cmake-tools";
 
 /**
@@ -31,6 +32,7 @@ class CustomProviderWrapper implements CustomConfigurationProvider1 {
     constructor(provider: CustomConfigurationProvider, version: Version) {
         this._isReady = version < Version.v2;
         this.provider = provider;
+
         if (provider.extensionId && version === Version.v0) {
             version = Version.v1; // provider implemented the new API but is interfacing with the extension using the old API version.
         }
@@ -47,6 +49,7 @@ class CustomProviderWrapper implements CustomConfigurationProvider1 {
 
     public get isValid(): boolean {
         let valid: boolean = !!this.provider.name && !!this.provider.canProvideConfiguration && !!this.provider.provideConfigurations;
+
         if (valid && this._version > Version.v0) {
             valid = !!this.provider.extensionId && !!this.provider.dispose;
         }
@@ -85,6 +88,7 @@ class CustomProviderWrapper implements CustomConfigurationProvider1 {
 
     public provideBrowseConfiguration(token?: vscode.CancellationToken): Thenable<WorkspaceBrowseConfiguration | null> {
         console.assert(this._version >= Version.v2);
+
         return this._version < Version.v2 ? Promise.resolve({browsePath: []}) : this.provider.provideBrowseConfiguration(token);
     }
 
@@ -94,6 +98,7 @@ class CustomProviderWrapper implements CustomConfigurationProvider1 {
 
     public provideFolderBrowseConfiguration(uri: vscode.Uri, token?: vscode.CancellationToken): Thenable<WorkspaceBrowseConfiguration | null> {
         console.assert(this._version >= Version.v3);
+
         return this._version < Version.v3 ? Promise.resolve({browsePath: []}) : this.provider.provideFolderBrowseConfiguration(uri, token);
     }
 
@@ -109,6 +114,7 @@ export class CustomConfigurationProviderCollection {
 
     private logProblems(provider: CustomConfigurationProvider, version: Version): void {
         const missing: string[] = [];
+
         if (!provider.name) {
             missing.push("'name'");
         }
@@ -148,6 +154,7 @@ export class CustomConfigurationProviderCollection {
             return provider.name;
         } else {
             console.error(`invalid provider: ${provider}`);
+
             return "";
         }
     }
@@ -158,19 +165,25 @@ export class CustomConfigurationProviderCollection {
 
     public add(provider: CustomConfigurationProvider, version: Version): boolean {
         const settings: CppSettings = new CppSettings((vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) ? vscode.workspace.workspaceFolders[0]?.uri : undefined);
+
         if (settings.intelliSenseEngine === "disabled") {
             console.warn("Language service is disabled. Provider will not be registered.");
+
             return false;
         }
 
         const wrapper: CustomProviderWrapper = new CustomProviderWrapper(provider, version);
+
         if (!wrapper.isValid) {
             this.logProblems(provider, version);
+
             return false;
         }
 
         let exists: boolean = false;
+
         const existing: CustomProviderWrapper | undefined = this.providers.get(wrapper.extensionId);
+
         if (existing) {
             exists = existing.version === Version.v0 && wrapper.version === Version.v0;
         }
@@ -210,6 +223,7 @@ export class CustomConfigurationProviderCollection {
 
     public remove(provider: CustomConfigurationProvider): void {
         const id: string = this.getId(provider);
+
         if (this.providers.has(id)) {
             this.providers.delete(id);
         } else {
@@ -222,6 +236,7 @@ export class CustomConfigurationProviderCollection {
             return undefined;
         }
         const found: CustomConfigurationProvider1[] = [];
+
         let noUpdate: boolean = false;
         this.forEach(provider => {
             if (provider.extensionId === providerId) {
@@ -230,6 +245,7 @@ export class CustomConfigurationProviderCollection {
                 found.push(provider);
             }
         });
+
         if (noUpdate) {
             return providerId;
         }

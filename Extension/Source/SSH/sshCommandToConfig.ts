@@ -42,10 +42,13 @@ const flags: {
          * 2. [bind_address:]port:remote_socket
          */
         const parsedArgs: RegExpMatchArray | null = args.match(/^((.*):?\d+)?:(.+?)?$/);
+
         if (parsedArgs) {
             const [, listen, , destination] = parsedArgs;
+
             if (listen && destination) {
                 entries.LocalForward = `${listen} ${destination}`;
+
                 return;
             } else {
                 throw new CommandParseError(
@@ -61,6 +64,7 @@ const flags: {
          */
 
         const delimiter: number = args.indexOf(':');
+
         if (delimiter === -1) {
             throw new CommandParseError(
                 `LocalForward needs a listener and a destination separate by a colon. ${args} does not match.`
@@ -79,6 +83,7 @@ const flags: {
     o: (entries, option) => {
         // Option keys never have equals signs in them, always fine to split the first
         const delimiter: number = option.indexOf('=');
+
         if (delimiter === -1) {
             // `ssh` also fails if missing an argument (doesn't default to "yes", or anything)
             throw new CommandParseError(`Argument missing for option ${option}`);
@@ -135,6 +140,7 @@ export function sshCommandToConfig(command: string, name?: string): { [key: stri
     // here, stop when they reach the end of the flags. When that happens we pull
     // out the host if we can, and restart it to try to read any remaining flags.
     const entries: { [key: string]: string } = {};
+
     for (let offset: number = 0; offset < parts.length; offset++) {
         offset += parseFlags(parts.slice(offset), entries);
 
@@ -164,6 +170,7 @@ export function sshCommandToConfig(command: string, name?: string): { [key: stri
     // in order to nest things correctly. Rewrite the object so that
     // this is the case.
     const { Host, HostName, ...options } = entries;
+
     return { Host, HostName, ...options };
 }
 
@@ -178,6 +185,7 @@ function parseFlags(input: string[], entries: { [key: string]: string }): number
     // eslint-disable-next-line no-constant-condition
     while (true) {
         const next: IParsedOption | undefined = parser.getopt();
+
         if (!next) {
             break;
         }
@@ -191,6 +199,7 @@ function parseFlags(input: string[], entries: { [key: string]: string }): number
         }
 
         const resolver: ((entries: { [key: string]: string }, value: string) => void) | null = flags[next.option];
+
         if (!resolver) {
             continue; // known but ignored flag
         }
@@ -228,6 +237,7 @@ function parseFlags(input: string[], entries: { [key: string]: string }): number
  */
 function parseConnectionString(str: string): { hostname: string; port?: string; username?: string } {
     let url: URL | undefined;
+
     try {
         url = new URL(str);
     } catch {
@@ -245,14 +255,17 @@ function parseConnectionString(str: string): { hostname: string; port?: string; 
     // Manual splitting algorithm, augmented with the ability to remove the password:
     // https://github.com/openssh/openssh-portable/blob/e3b6c966b79c3ea5d51b923c3bbdc41e13b96ea0/ssh.c#L1016-L1030
     const hostDelimiter: number = str.lastIndexOf('@');
+
     if (hostDelimiter === -1) {
         return { hostname: str };
     }
 
     const hostname: string = str.slice(hostDelimiter + 1);
+
     let username: string = str.slice(0, hostDelimiter);
 
     const passwordDelimiter: number = username.indexOf(':');
+
     if (passwordDelimiter !== -1) {
         username = username.slice(0, passwordDelimiter);
     }

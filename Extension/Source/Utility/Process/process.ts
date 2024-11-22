@@ -83,6 +83,7 @@ export class Process extends Async(class Process extends ProcessEvents {
 
         const startTime = Date.now();
         verbose(`Starting '${this.name}' ${args.map((each) => each.toString()).join(' ')}`);
+
         const process = this.#process = spawn(executable, args.map((each) => each.toString()), { cwd, env, stdio: [stdInOpen ? 'pipe' : null, 'pipe', 'pipe'], shell: false }).
             on('error', (err: Error) => {
                 this.exitCode.reject(err);

@@ -29,6 +29,7 @@ export async function install() {
         await mkdir(isolated);
 
         const vscodeExecutablePath = await downloadAndUnzipVSCode(options);
+
         const [cli, ...args] = resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath).filter(each => !each.startsWith('--extensions-dir=') && !each.startsWith('--user-data-dir='));
 
         args.push(`--extensions-dir=${extensionsDir}`, `--user-data-dir=${userDir}`);
@@ -37,7 +38,9 @@ export async function install() {
         // spawnSync(cli, [...args, '--install-extension', 'ms-vscode.cpptools'], { encoding: 'utf-8', stdio: 'ignore' });
         // spawnSync(cli, [...args, '--install-extension', 'twxs.cmake'], { encoding: 'utf-8', stdio: 'ignore' });
         // spawnSync(cli, [...args, '--install-extension', 'ms-vscode.cmake-tools'], { encoding: 'utf-8', stdio: 'ignore' });
+
         const settingsJson = await readJson(settings, {});
+
         if (!settingsJson["workbench.colorTheme"]) {
             settingsJson["workbench.colorTheme"] = "Tomorrow Night Blue";
         }

@@ -10,10 +10,12 @@ import { mkdir, write } from './common';
 export async function main() {
 
     const localizeRepoPath = process.argv[2];
+
     const cpptoolsRepoPath = process.argv[3];
 
     if (!localizeRepoPath || !cpptoolsRepoPath) {
         console.error(`ERROR: Usage: ${path.parse(process.argv[0]).base} ${path.parse(process.argv[1]).base} <Localize repo path> <vscode-cpptools repo path>`);
+
         return;
     }
 
@@ -22,6 +24,7 @@ export async function main() {
 
     if (!fs.existsSync(path.join(localizeRepoPath, ".git"))) {
         console.error("ERROR: Localize repo submodule is not initialized in Localize repo");
+
         return;
     }
 
@@ -44,15 +47,21 @@ export async function main() {
     ];
 
     const locFolderNames = fs.readdirSync(localizeRepoPath).filter(f => fs.lstatSync(path.join(localizeRepoPath, f)).isDirectory());
+
     for (const locFolderName of locFolderNames) {
         const lclPath = path.join(localizeRepoPath, locFolderName, "vc/vc/cpfeui.dll.lcl");
+
         const languageInfo = languages.find(l => l.folderName === locFolderName);
+
         if (!languageInfo) {
             return;
         }
         const languageId = languageInfo.id;
+
         const outputLanguageFolder = path.join(cpptoolsRepoPath, "Extension/bin/messages", languageId);
+
         const outputPath = path.join(outputLanguageFolder, "messages.json");
+
         const sourceContent = fs.readFileSync(lclPath, 'utf-8');
 
         // Scan once, just to determine how many there are the size of the array we need
@@ -62,6 +71,7 @@ export async function main() {
                 if (item.$.ItemId === ";String Table") {
                     item.Item.forEach((subItem) => {
                         const itemId = parseInt(subItem.$.ItemId, 10);
+
                         if (subItem.Str[0].Tgt) {
                             if (highestValue < itemId) {
                                 highestValue = itemId;
@@ -78,8 +88,10 @@ export async function main() {
                 if (item.$.ItemId === ";String Table") {
                     item.Item.forEach((subItem) => {
                         const itemId = parseInt(subItem.$.ItemId, 10);
+
                         if (subItem.Str[0].Tgt) {
                             resultArray[itemId] = subItem.Str[0].Tgt[0].Val[0].replace(/\]5D;/g, "]");
+
                             if (highestValue < itemId) {
                                 highestValue = itemId;
                             }

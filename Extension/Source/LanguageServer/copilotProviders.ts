@@ -29,6 +29,7 @@ export interface CopilotApi {
 
 export async function registerRelatedFilesProvider(): Promise<void> {
     const api = await getCopilotApi();
+
     if (util.extensionContext && api) {
         try {
             for (const languageId of ['c', 'cpp', 'cuda-cpp']) {
@@ -37,6 +38,7 @@ export async function registerRelatedFilesProvider(): Promise<void> {
                     async (_uri: vscode.Uri, context: { flags: Record<string, unknown> }, token: vscode.CancellationToken) => {
 
                         const getIncludesHandler = async () => (await getIncludesWithCancellation(1, token))?.includedFiles.map(file => vscode.Uri.file(file)) ?? [];
+
                         const getTraitsHandler = async () => {
                             const chatContext: ChatContextResult | undefined = await (getActiveClient().getChatContext(token) ?? undefined);
 
@@ -60,6 +62,7 @@ export async function registerRelatedFilesProvider(): Promise<void> {
 
                         // Call both handlers in parallel
                         const traitsPromise = ((context.flags.copilotcppTraits as boolean) ?? false) ? getTraitsHandler() : Promise.resolve(undefined);
+
                         const includesPromise = getIncludesHandler();
 
                         return { entries: await includesPromise, traits: await traitsPromise };
@@ -74,7 +77,9 @@ export async function registerRelatedFilesProvider(): Promise<void> {
 
 async function getIncludesWithCancellation(maxDepth: number, token: vscode.CancellationToken): Promise<GetIncludesResult> {
     const activeClient = getActiveClient();
+
     const includes = await activeClient.getIncludes(maxDepth, token);
+
     const wksFolder = activeClient.RootUri?.toString();
 
     if (!wksFolder) {
@@ -82,11 +87,13 @@ async function getIncludesWithCancellation(maxDepth: number, token: vscode.Cance
     }
 
     includes.includedFiles = includes.includedFiles.filter(header => vscode.Uri.file(header).toString().startsWith(wksFolder));
+
     return includes;
 }
 
 export async function getCopilotApi(): Promise<CopilotApi | undefined> {
     const copilotExtension = vscode.extensions.getExtension<CopilotApi>('github.copilot');
+
     if (!copilotExtension) {
         return undefined;
     }

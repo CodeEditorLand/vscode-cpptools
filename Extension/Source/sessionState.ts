@@ -19,6 +19,7 @@ class SessionStateVariable<T> {
 
     public async set(value: T): Promise<void> {
         this.value = value;
+
         return this.setContext();
     }
 

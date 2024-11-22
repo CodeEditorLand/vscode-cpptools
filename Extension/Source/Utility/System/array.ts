@@ -41,6 +41,7 @@ export function firstOrFail<TElement>(iterable: Promise<Iterable<TElement>>, pre
 
 export function firstOrFail<TElement>(iterable: Iterable<TElement> | undefined | Promise<Iterable<TElement> | undefined>, predicateOrMessage: string | Error | ((element: TElement) => true | undefined) = (e) => e as any, message?: string | Error): TElement | Promise<TElement> | never {
     let result: any;
+
     if (message === undefined) {
         message = predicateOrMessage as string | Error;
         predicateOrMessage = (e) => e as any;

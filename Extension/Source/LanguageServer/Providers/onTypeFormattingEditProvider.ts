@@ -12,18 +12,23 @@ import { makeVscodeTextEdits } from '../utils';
 
 export class OnTypeFormattingEditProvider implements vscode.OnTypeFormattingEditProvider {
     private client: DefaultClient;
+
     constructor(client: DefaultClient) {
         this.client = client;
     }
 
     public async provideOnTypeFormattingEdits(document: vscode.TextDocument, position: vscode.Position, ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken): Promise<vscode.TextEdit[]> {
         const settings: CppSettings = new CppSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+
         if (settings.formattingEngine === "disabled") {
             return [];
         }
         await this.client.ready;
+
         const filePath: string = document.uri.fsPath;
+
         const useVcFormat: boolean = settings.useVcFormat(document);
+
         const configCallBack = async (editorConfigSettings: any | undefined) => {
             const params: FormatParams = {
                 editorConfigSettings: { ...editorConfigSettings },
@@ -44,7 +49,9 @@ export class OnTypeFormattingEditProvider implements vscode.OnTypeFormattingEdit
                 },
                 onChanges: false
             };
+
             let response: FormatResult;
+
             try {
                 response = await this.client.languageClient.sendRequest(FormatOnTypeRequest, params, token);
             } catch (e: any) {
@@ -58,16 +65,19 @@ export class OnTypeFormattingEditProvider implements vscode.OnTypeFormattingEdit
             }
             return makeVscodeTextEdits(response.edits);
         };
+
         if (!useVcFormat) {
             // If not using vcFormat, only process on-type requests for ';'
             if (ch !== ';') {
                 const result: vscode.TextEdit[] = [];
+
                 return result;
             } else {
                 return configCallBack(undefined);
             }
         } else {
             const editorConfigSettings: any = getEditorConfigSettings(filePath);
+
             return configCallBack(editorConfigSettings);
         }
     }

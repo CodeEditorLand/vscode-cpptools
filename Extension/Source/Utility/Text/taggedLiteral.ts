@@ -26,6 +26,7 @@ function parseTaggedLiteral(templateString: string) {
     };
 
     let template = '';
+
     let expression = '';
 
     for (const char of templateString) {
@@ -34,17 +35,22 @@ function parseTaggedLiteral(templateString: string) {
                 switch (char) {
                     case '\\':
                         result.state = 'escape';
+
                         continue;
+
                     case '$':
                         result.state = 'dollar';
+
                         continue;
                 }
                 template += char;
+
                 continue;
 
             case 'escape':
                 template = `${template}\\${char}`;
                 result.state = 'text';
+
                 continue;
 
             case 'dollar':
@@ -52,10 +58,12 @@ function parseTaggedLiteral(templateString: string) {
                     result.state = 'substitution';
                     result.template.push(template);
                     template = '';
+
                     continue;
                 }
                 template = `${template}$${char}`;
                 result.state = 'text';
+
                 continue;
 
             case 'substitution':
@@ -64,6 +72,7 @@ function parseTaggedLiteral(templateString: string) {
                         result.expressions.push(expression);
                         expression = '';
                         result.state = 'text';
+
                         continue;
 
                     case ' ':
@@ -75,22 +84,26 @@ function parseTaggedLiteral(templateString: string) {
                     case ':':
                     case '.':
                         expression += ':';
+
                         continue;
                 }
                 if (expression) {
                     if (isIdentifierPart(char.codePointAt(0)!) || char === '-' || char === '/') {
                         expression += char;
+
                         continue;
                     }
                     // error, fall through
                 } else if (isIdentifierStart(char.codePointAt(0)!) || char === '-' || char === '/') {
                     expression += char;
+
                     continue;
                 }
 
                 // not a valid character for an expression
                 result.state = 'error';
                 result.message = `Unexpected character '${char}' in expression ${expression}`;
+
                 return result;
         }
     }
@@ -99,17 +112,23 @@ function parseTaggedLiteral(templateString: string) {
         case 'escape':
             result.state = 'error';
             result.message = 'Unexpected end of string (trailing backslash)';
+
             return result;
+
         case 'substitution':
             result.state = 'error';
             result.message = 'Unexpected end of string parsing expression ${ ';
+
             return result;
+
         case 'dollar':
             template += '$';
+
             break;
     }
     result.state = 'ok';
     result.template.push(template);
+
     return result;
 }
 
@@ -126,6 +145,7 @@ function resolveValue(expression: string, context: Record<string, any>, customRe
 
     if (prefix) {
         const variable = context[prefix];
+
         if (variable !== undefined && variable !== null) { // did we get back an actual value
             // it's a child of a variable
             return joinIfArray(suffix.includes(':') ? // is the suffix another expression?
@@ -149,12 +169,14 @@ class as {
             return undefined;
         }
         value = parseFloat(value);
+
         return isNaN(value) ? undefined : value;
     }
 
     /** returns the value as an integer number (NOT NaN) or undefined */
     static integer(value: any): number | undefined {
         value = as.number(value);
+
         return value === undefined ? undefined : Math.floor(value);
     }
 
@@ -169,6 +191,7 @@ class as {
             case true:
             case 'true':
                 return true;
+
             case false:
             case 'false':
                 return false;
@@ -226,7 +249,9 @@ export function render(templateString: string | string[], context: Record<string
         return templateString;
     }
     const { template, expressions, state, message } = parseTaggedLiteral(templateString);
+
     const stabilize = asJs ? as.js : (x: string) => as.string(x) ?? '';
+
     return state === 'error' ?
         message : // return the error message if the parse failed. (this is fatal anyways)
         template.reduce((result, each, index) => `${result}${stabilize(resolveValue(expressions[index - 1], context, customResolver))}${each}`); // resolve the inline expressions and join the template
@@ -234,11 +259,13 @@ export function render(templateString: string | string[], context: Record<string
 
 export function evaluateExpression(expression: string, context: Record<string, any>, customResolver = (_prefix: string, _expression: string) => ''): Primitive | undefined {
     const result = expression.match(/\!|==|!=|>=|<=|>|<|\?|\|\||&&/) ? safeEval(render(expression, context, customResolver, true)) as Primitive : render(expression, context, customResolver);
+
     return result === '' || result === 'undefined' || result === 'null' || result === null ? undefined : result;
 }
 
 export function recursiveRender<T extends Record<string, any>>(obj: T, context: Record<string, any>, customResolver = (_prefix: string, _expression: string) => ''): T {
     const result = (is.array(obj) ? [] : {}) as Record<string, any>;
+
     for (const [key, value] of Object.entries(obj)) {
         const newKey = is.string(key) && key.includes('${') ? render(key, context, customResolver) : key;
 

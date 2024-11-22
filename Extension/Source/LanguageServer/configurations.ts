@@ -27,6 +27,7 @@ import { ConfigurationType, getUI } from './ui';
 import escapeStringRegExp = require('escape-string-regexp');
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 const configVersion: number = 4;
@@ -74,12 +75,14 @@ export interface Configuration {
     includePath?: string[];
     macFrameworkPath?: string[];
     windowsSdkVersion?: string;
+
     dotConfig?: string;
     defines?: string[];
     intelliSenseMode?: string;
     intelliSenseModeIsExplicit?: boolean;
     compileCommandsInCppPropertiesJson?: string;
     compileCommands?: string;
+
     forcedInclude?: string[];
     configurationProviderInCppPropertiesJson?: string;
     configurationProvider?: string;
@@ -94,8 +97,10 @@ export interface ConfigurationErrors {
     includePath?: string;
     intelliSenseMode?: string;
     macFrameworkPath?: string;
+
     forcedInclude?: string;
     compileCommands?: string;
+
     dotConfig?: string;
     browsePath?: string;
     databaseFilename?: string;
@@ -169,14 +174,18 @@ export class CppProperties {
     constructor(client: DefaultClient, rootUri?: vscode.Uri, workspaceFolder?: vscode.WorkspaceFolder) {
         this.client = client;
         this.rootUri = rootUri;
+
         const rootPath: string = rootUri ? rootUri.fsPath : "";
+
         if (workspaceFolder) {
             this.currentConfigurationIndex = new PersistentFolderState<number>("CppProperties.currentConfigurationIndex", -1, workspaceFolder);
         }
         this.configFolder = path.join(rootPath, ".vscode");
         this.diagnosticCollection = vscode.languages.createDiagnosticCollection(rootPath);
         void this.buildVcpkgIncludePath();
+
         const userSettings: CppSettings = new CppSettings();
+
         if (userSettings.addNodeAddonIncludePaths) {
             void this.readNodeAddonIncludeLocations(rootPath);
         }
@@ -200,6 +209,7 @@ export class CppProperties {
 
     public get ConfigurationNames(): string[] | undefined {
         const result: string[] = [];
+
         if (this.configurationJson) {
             this.configurationJson.configurations.forEach((config: Configuration) => {
                 result.push(config.name);
@@ -214,6 +224,7 @@ export class CppProperties {
         // to the language server until the default include paths and frameworks have been sent.
 
         const configFilePath: string = path.join(this.configFolder, "c_cpp_properties.json");
+
         if (this.rootUri !== null && fs.existsSync(configFilePath)) {
             this.propertiesFile = vscode.Uri.file(configFilePath);
         } else {
@@ -249,6 +260,7 @@ export class CppProperties {
             editors.forEach(editor => {
                 if (editor.document.uri.fsPath === settingsPath) {
                     this.isCppPropertiesJsonVisible = true;
+
                     if (!wasVisible) {
                         void this.handleSquiggles().catch(logAndReturn.undefined);
                     }
@@ -265,11 +277,15 @@ export class CppProperties {
             // Even in this case make sure we send the telemetry information only once,
             // not for each notifying folder.
             const savedDocWorkspaceFolder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(doc.uri);
+
             const notifyingWorkspaceFolder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(settingsPath));
+
             if ((!savedDocWorkspaceFolder && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0 && notifyingWorkspaceFolder === vscode.workspace.workspaceFolders[0])
                 || savedDocWorkspaceFolder === notifyingWorkspaceFolder) {
                 let fileType: string | undefined;
+
                 const documentPath: string = doc.uri.fsPath.toLowerCase();
+
                 if (documentPath.endsWith("cmakelists.txt")) {
                     fileType = "CMakeLists";
                 } else if (documentPath.endsWith("cmakecache.txt")) {
@@ -334,9 +350,11 @@ export class CppProperties {
 
     private resetToDefaultSettings(resetIndex: boolean): void {
         this.configurationJson = getDefaultCppProperties();
+
         if (resetIndex || this.CurrentConfigurationIndex < 0 ||
             this.CurrentConfigurationIndex >= this.configurationJson.configurations.length) {
             const index: number | undefined = this.getConfigIndexForPlatform(this.configurationJson);
+
             if (this.currentConfigurationIndex !== undefined) {
                 if (index === undefined) {
                     this.currentConfigurationIndex.setDefault();
@@ -351,6 +369,7 @@ export class CppProperties {
     private async applyDefaultIncludePathsAndFrameworks() {
         if (this.configurationIncomplete && this.defaultIncludes && this.defaultFrameworks && this.vcpkgPathReady) {
             const configuration: Configuration | undefined = this.CurrentConfiguration;
+
             if (configuration) {
                 this.applyDefaultConfigurationValues(configuration);
                 this.configurationIncomplete = false;
@@ -370,6 +389,7 @@ export class CppProperties {
         // Only add settings from the default compiler if user hasn't explicitly set the corresponding VS Code setting.
 
         const rootFolder: string = "${workspaceFolder}/**";
+
         const defaultFolder: string = "${default}";
         // We don't add system includes to the includePath anymore. The language server has this information.
         if (isUnset(settings.defaultIncludePath)) {
@@ -418,6 +438,7 @@ export class CppProperties {
 
     private get ExtendedEnvironment(): Environment {
         const result: Environment = {};
+
         if (this.configurationJson?.env) {
             Object.assign(result, this.configurationJson.env);
         }
@@ -427,6 +448,7 @@ export class CppProperties {
         result["pathSeparator"] = (os.platform() === 'win32') ? "\\" : "/";
         result["/"] = (os.platform() === 'win32') ? "\\" : "/";
         result["userHome"] = os.homedir();
+
         if (util.getVcpkgRoot()) {
             result["vcpkgRoot"] = util.getVcpkgRoot();
         }
@@ -437,15 +459,19 @@ export class CppProperties {
         try {
             // Check for vcpkgRoot and include relevant paths if found.
             const vcpkgRoot: string = util.getVcpkgRoot();
+
             if (vcpkgRoot) {
                 const list: string[] = await util.readDir(vcpkgRoot);
+
                 if (list !== undefined) {
                     // For every *directory* in the list (non-recursive). Each directory is basically a platform.
                     list.forEach((entry) => {
                         if (entry !== "vcpkg") {
                             const pathToCheck: string = path.join(vcpkgRoot, entry);
+
                             if (fs.existsSync(pathToCheck)) {
                                 let p: string = path.join(pathToCheck, "include");
+
                                 if (fs.existsSync(p)) {
                                     p = p.replace(/\\/g, "/");
                                     p = p.replace(vcpkgRoot, "${vcpkgRoot}");
@@ -468,8 +494,11 @@ export class CppProperties {
 
     private async readNodeAddonIncludeLocations(rootPath: string): Promise<void> {
         let error: Error | undefined;
+
         let pdjFound: boolean = false;
+
         let packageJson: any;
+
         try {
             packageJson = JSON.parse(await fs.promises.readFile(path.join(rootPath, "package.json"), "utf8"));
             pdjFound = true;
@@ -481,12 +510,14 @@ export class CppProperties {
         if (!error) {
             try {
                 const pathToNode: string = which.sync("node");
+
                 const nodeAddonMap: [string, string][] = [
                     ["node-addon-api", `"${pathToNode}" --no-warnings -p "require('node-addon-api').include"`],
                     ["nan", `"${pathToNode}" --no-warnings -e "require('nan')"`]
                 ];
                 // Yarn (2) PnP support
                 const pathToYarn: string | null = which.sync("yarn", { nothrow: true });
+
                 if (pathToYarn && await util.checkDirectoryExists(path.join(rootPath, ".yarn/cache"))) {
                     nodeAddonMap.push(
                         ["node-addon-api", `"${pathToYarn}" node --no-warnings -p "require('node-addon-api').include"`],
@@ -498,6 +529,7 @@ export class CppProperties {
                     if (dep in packageJson.dependencies) {
                         try {
                             let stdout: string = await util.execChildProcess(execCmd, rootPath);
+
                             if (!stdout) {
                                 continue;
                             }
@@ -516,6 +548,7 @@ export class CppProperties {
                                 // nan returns a path relative to rootPath causing the previous check to fail because this code
                                 // is executing in vscode's working directory.
                                 stdout = path.join(rootPath, stdout);
+
                                 if (!await util.checkDirectoryExists(stdout)) {
                                     error = new Error(`${dep} directory ${stdout} doesn't exist`);
                                     stdout = '';
@@ -550,6 +583,7 @@ export class CppProperties {
             return undefined;
         }
         let plat: string;
+
         if (process.platform === 'darwin') {
             plat = "Mac";
         } else if (process.platform === 'win32') {
@@ -595,13 +629,16 @@ export class CppProperties {
             return "";
         }
         const resolvedCompilerPath: string = this.resolvePath(configuration.compilerPath, false, false);
+
         const settings: CppSettings = new CppSettings(this.rootUri);
+
         const compilerPathAndArgs: util.CompilerPathAndArgs = util.extractCompilerPathAndArgs(!!settings.legacyCompilerArgsBehavior, resolvedCompilerPath);
 
         const isValid: boolean = (compilerPathAndArgs.compilerName.toLowerCase() === "cl.exe" || compilerPathAndArgs.compilerName.toLowerCase() === "cl") === configuration.intelliSenseMode.includes("msvc")
             // We can't necessarily determine what host compiler nvcc will use, without parsing command line args (i.e. for -ccbin)
             // to determine if the user has set it to something other than the default. So, we don't squiggle IntelliSenseMode when using nvcc.
             || (compilerPathAndArgs.compilerName.toLowerCase() === "nvcc.exe") || (compilerPathAndArgs.compilerName.toLowerCase() === "nvcc");
+
         if (isValid) {
             return "";
         } else {
@@ -613,8 +650,10 @@ export class CppProperties {
         void this.handleConfigurationEditCommand(() => {
             this.parsePropertiesFile(); // Clear out any modifications we may have made internally.
             const config: Configuration | undefined = this.CurrentConfiguration;
+
             if (config) {
                 telemetry.logLanguageServerEvent("addToIncludePath");
+
                 if (config.includePath === undefined) {
                     config.includePath = ["${default}"];
                 }
@@ -649,12 +688,14 @@ export class CppProperties {
     public async updateCustomConfigurationProvider(providerId: string): Promise<void> {
         if (!this.propertiesFile) {
             const settings: CppSettings = new CppSettings(this.rootUri);
+
             if (providerId) {
                 settings.update("default.configurationProvider", providerId);
             } else {
                 settings.update("default.configurationProvider", undefined); // delete the setting
             }
             const config: Configuration | undefined = this.CurrentConfiguration;
+
             if (config) {
                 config.configurationProvider = providerId;
             }
@@ -664,6 +705,7 @@ export class CppProperties {
         return this.handleConfigurationEditJSONCommand(() => {
             this.parsePropertiesFile(); // Clear out any modifications we may have made internally.
             const config: Configuration | undefined = this.CurrentConfiguration;
+
             if (config) {
                 if (providerId) {
                     config.configurationProvider = providerId;
@@ -683,6 +725,7 @@ export class CppProperties {
         return this.handleConfigurationEditJSONCommand(() => {
             this.parsePropertiesFile(); // Clear out any modifications we may have made internally.
             const config: Configuration | undefined = this.CurrentConfiguration;
+
             if (config) {
                 config.compileCommands = path;
                 this.writeToJson();
@@ -697,10 +740,12 @@ export class CppProperties {
         if (this.configurationJson) {
             if (index === this.configurationJson.configurations.length) {
                 void this.handleConfigurationEditUICommand(() => { }, vscode.window.showTextDocument).catch(logAndReturn.undefined);
+
                 return;
             }
             if (index === this.configurationJson.configurations.length + 1) {
                 void this.handleConfigurationEditJSONCommand(() => { }, vscode.window.showTextDocument).catch(logAndReturn.undefined);
+
                 return;
             }
         }
@@ -724,11 +769,13 @@ export class CppProperties {
                 result.push(entry);
             }
         });
+
         return result;
     }
 
     private resolveDefaultsDictionary(entries: { [key: string]: string }, defaultValue: { [key: string]: string } | undefined, env: Environment): { [key: string]: string } {
         const result: { [key: string]: string } = {};
+
         for (const property in entries) {
             if (property === "${default}") {
                 if (defaultValue) {
@@ -747,10 +794,12 @@ export class CppProperties {
 
     private resolve(entries: string[] | undefined, defaultValue: string[] | undefined, env: Environment): string[] {
         let result: string[] = [];
+
         if (entries) {
             entries = this.resolveDefaults(entries, defaultValue);
             entries.forEach(entry => {
                 const entriesResolved: string[] = [];
+
                 const entryResolved: string = util.resolveVariables(entry, env, entriesResolved);
                 result = result.concat(entriesResolved.length === 0 ? entryResolved : entriesResolved);
             });
@@ -760,12 +809,14 @@ export class CppProperties {
 
     private resolveAndSplit(paths: string[] | undefined, defaultValue: string[] | undefined, env: Environment, assumeRelative: boolean = true, glob: boolean = false): string[] {
         const resolvedVariables: string[] = [];
+
         if (paths === undefined) {
             return resolvedVariables;
         }
         paths = this.resolveDefaults(paths, defaultValue);
         paths.forEach(entry => {
             const resolvedVariable: string = util.resolveVariables(entry, env);
+
             if (resolvedVariable.includes("env:")) {
                 // Do not futher try to resolve a "${env:VAR}"
                 resolvedVariables.push(resolvedVariable);
@@ -774,13 +825,17 @@ export class CppProperties {
                 resolvedVariables.push(...entries);
             }
         });
+
         if (!glob) {
             return resolvedVariables;
         }
         const resolvedGlob: string[] = [];
+
         for (let res of resolvedVariables) {
             let counter: number = 0;
+
             let slashFound: boolean = false;
+
             const lastIndex: number = res.length - 1;
             // Detect all wildcard variations by looking at last character in the path first.
             for (let i: number = lastIndex; i >= 0; i--) {
@@ -789,28 +844,34 @@ export class CppProperties {
                 } else if (res[i] === '/' || (isWindows && res[i] === '\\')) {
                     counter++;
                     slashFound = true;
+
                     break;
                 } else {
                     break;
                 }
             }
             let suffix: string = '';
+
             if (slashFound) {
                 suffix = res.slice(res.length - counter);
                 res = res.slice(0, res.length - counter);
             }
             let normalized = res;
+
             let cwd: string = this.rootUri?.fsPath ?? '';
+
             if (isWindows) {
                 normalized = res.replace(/\\/g, '/');
                 cwd = cwd.replace(/\\/g, '/');
             }
             const isGlobPattern: boolean = normalized.includes('*');
+
             if (isGlobPattern) {
                 // fastGlob silently strips non-found paths. Limit that behavior to dynamic paths only.
                 const matches: string[] = fastGlob.isDynamicPattern(normalized) ?
                     fastGlob.sync(normalized, { onlyDirectories: true, cwd, suppressErrors: true, deep: 15 }) : [res];
                 resolvedGlob.push(...matches.map(s => s + suffix));
+
                 if (resolvedGlob.length === 0) {
                     resolvedGlob.push(normalized);
                 }
@@ -889,11 +950,14 @@ export class CppProperties {
     private getDotconfigDefines(dotConfigPath: string): string[] {
         if (dotConfigPath !== undefined) {
             const path: string = this.resolvePath(dotConfigPath);
+
             try {
                 const configContent: string[] = fs.readFileSync(path, "utf-8").split("\n");
+
                 return configContent.filter(i => !i.startsWith("#") && i !== "");
             } catch (errJS) {
                 const err: Error = errJS as Error;
+
                 getOutputChannelLogger().appendLine(`Invalid input, cannot resolve .config path: ${err.message}`);
             }
         }
@@ -908,12 +972,16 @@ export class CppProperties {
 
     private updateServerOnFolderSettingsChange(): void {
         this.configProviderAutoSelected = false;
+
         if (!this.configurationJson) {
             return;
         }
         const settings: CppSettings = new CppSettings(this.rootUri);
+
         const userSettings: CppSettings = new CppSettings();
+
         const env: Environment = this.ExtendedEnvironment;
+
         for (let i: number = 0; i < this.configurationJson.configurations.length; i++) {
             const configuration: Configuration = this.configurationJson.configurations[i];
             configuration.compilerPathInCppPropertiesJson = configuration.compilerPath;
@@ -922,6 +990,7 @@ export class CppProperties {
             configuration.includePath = this.updateConfigurationPathsArray(configuration.includePath, settings.defaultIncludePath, env);
             // in case includePath is reset below
             const origIncludePath: string[] | undefined = configuration.includePath;
+
             if (userSettings.addNodeAddonIncludePaths) {
                 const includePath: string[] = origIncludePath || [];
                 configuration.includePath = includePath.concat(this.nodeAddonIncludes.filter(i => includePath.indexOf(i) < 0));
@@ -930,6 +999,7 @@ export class CppProperties {
 
             // in case we have dotConfig
             configuration.dotConfig = this.updateConfigurationString(configuration.dotConfig, settings.defaultDotconfig, env);
+
             if (configuration.dotConfig !== undefined) {
                 configuration.defines = configuration.defines || [];
                 configuration.defines = configuration.defines.concat(this.getDotconfigDefines(configuration.dotConfig));
@@ -947,15 +1017,18 @@ export class CppProperties {
             configuration.cStandardIsExplicit = configuration.cStandardIsExplicit || settings.defaultCStandard !== "";
             configuration.cppStandardIsExplicit = configuration.cppStandardIsExplicit || settings.defaultCppStandard !== "";
             configuration.mergeConfigurations = this.updateConfigurationBoolean(configuration.mergeConfigurations, settings.defaultMergeConfigurations);
+
             if (!configuration.compileCommands) {
                 // compile_commands.json already specifies a compiler. compilerPath overrides the compile_commands.json compiler so
                 // don't set a default when compileCommands is in use.
                 configuration.compilerPath = this.updateConfigurationString(configuration.compilerPath, settings.defaultCompilerPath, env, true);
                 configuration.compilerPathIsExplicit = configuration.compilerPathIsExplicit || settings.defaultCompilerPath !== null;
+
                 if (configuration.compilerPath === undefined) {
                     if (!!this.defaultCompilerPath && this.trustedCompilerFound) {
                         // If no config value yet set for these, pick up values from the defaults, but don't consider them explicit.
                         configuration.compilerPath = this.defaultCompilerPath;
+
                         if (!configuration.cStandard && !!this.defaultCStandard) {
                             configuration.cStandard = this.defaultCStandard;
                             configuration.cStandardIsExplicit = false;
@@ -1013,6 +1086,7 @@ export class CppProperties {
                 } else if (configuration.includePath) {
                     // If the user doesn't set browse.path, copy the includePath over. Make sure ${workspaceFolder} is in there though...
                     configuration.browse.path = configuration.includePath.slice(0);
+
                     if (configuration.includePath.findIndex((value: string) =>
                         !!value.match(/^\$\{(workspaceRoot|workspaceFolder)\}(\\\*{0,2}|\/\*{0,2})?$/g)) === -1
                     ) {
@@ -1032,6 +1106,7 @@ export class CppProperties {
                 // If there is no c_cpp_properties.json, there are no relevant C_Cpp.default.* settings set,
                 // and there is only 1 registered custom config provider, default to using that provider.
                 const providers: CustomConfigurationProviderCollection = getCustomConfigProviders();
+
                 const hasEmptyConfiguration: boolean = !this.propertiesFile
                     && !settings.defaultIncludePath
                     && !settings.defaultDefines
@@ -1048,10 +1123,12 @@ export class CppProperties {
                 // Only keep a cached custom browse config if there is an empty configuration,
                 // or if a specified provider ID has not changed.
                 let keepCachedBrowseConfig: boolean = true;
+
                 if (hasEmptyConfiguration) {
                     if (providers.size === 1) {
                         providers.forEach(provider => { configuration.configurationProvider = provider.extensionId; });
                         this.configProviderAutoSelected = true;
+
                         if (this.client.lastCustomBrowseConfigurationProviderId !== undefined) {
                             keepCachedBrowseConfig = configuration.configurationProvider === this.client.lastCustomBrowseConfigurationProviderId.Value;
                         }
@@ -1063,12 +1140,14 @@ export class CppProperties {
                 }
                 if (!keepCachedBrowseConfig && this.client.lastCustomBrowseConfiguration !== undefined) {
                     this.client.lastCustomBrowseConfiguration.Value = undefined;
+
                     if (this.client.lastCustomBrowseConfigurationProviderId) {
                         this.client.lastCustomBrowseConfigurationProviderId.Value = undefined;
                     }
                 }
 
                 const showButtonSender: string = "configChange";
+
                 if (configuration.configurationProvider !== undefined) {
                     const configType: ConfigurationType = this.configProviderAutoSelected ? ConfigurationType.AutoConfigProvider : ConfigurationType.ConfigProvider;
                     void getUI().ShowConfigureIntelliSenseButton(false, this.client, configType, showButtonSender);
@@ -1093,6 +1172,7 @@ export class CppProperties {
 
             if (configuration.compileCommands) {
                 configuration.compileCommands = this.resolvePath(configuration.compileCommands);
+
                 if (!this.compileCommandsFileWatcherFallbackTime.has(configuration.compileCommands)) {
                     // Start tracking the fallback time for a new path.
                     this.compileCommandsFileWatcherFallbackTime.set(configuration.compileCommands, new Date());
@@ -1110,6 +1190,7 @@ export class CppProperties {
 
         this.clearStaleCompileCommandsFileWatcherFallbackTimes();
         this.updateCompileCommandsFileWatchers();
+
         if (!this.configurationIncomplete) {
             this.onConfigurationsChanged();
         }
@@ -1121,6 +1202,7 @@ export class CppProperties {
         const trackedCompileCommandsPaths: Set<string> = new Set();
         this.configurationJson?.configurations.forEach((config: Configuration) => {
             const path = this.resolvePath(config.compileCommands);
+
             if (path.length > 0) {
                 trackedCompileCommandsPaths.add(path);
             }
@@ -1146,11 +1228,13 @@ export class CppProperties {
             this.configurationJson.configurations.forEach(c => {
                 if (c.compileCommands) {
                     const fileSystemCompileCommandsPath: string = this.resolvePath(c.compileCommands);
+
                     if (fs.existsSync(fileSystemCompileCommandsPath)) {
                         filePaths.add(fileSystemCompileCommandsPath);
                     }
                 }
             });
+
             try {
                 filePaths.forEach((path: string) => {
                     this.compileCommandsFileWatchers.push(fs.watch(path, () => {
@@ -1163,6 +1247,7 @@ export class CppProperties {
                             this.compileCommandsFileWatcherFiles.forEach((path: string) => {
                                 this.onCompileCommandsChanged(path);
                             });
+
                             if (this.compileCommandsFileWatcherTimer) {
                                 clearInterval(this.compileCommandsFileWatcherTimer);
                             }
@@ -1181,6 +1266,7 @@ export class CppProperties {
     // onBeforeOpen will be called after c_cpp_properties.json have been created (if it did not exist), but before the document is opened.
     public async handleConfigurationEditCommand(onBeforeOpen: (() => void) | undefined, showDocument: ((document: vscode.TextDocument, column?: vscode.ViewColumn) => Thenable<vscode.TextEditor>) | (() => void), viewColumn?: vscode.ViewColumn): Promise<void> {
         const otherSettings: OtherSettings = new OtherSettings(this.rootUri);
+
         if (otherSettings.workbenchSettingsEditor === "ui") {
             await this.handleConfigurationEditUICommand(onBeforeOpen, showDocument, viewColumn);
         } else {
@@ -1192,12 +1278,14 @@ export class CppProperties {
     public async handleConfigurationEditJSONCommand(onBeforeOpen: (() => void) | undefined, showDocument: ((document: vscode.TextDocument, column?: vscode.ViewColumn) => Thenable<vscode.TextEditor>) | (() => void), viewColumn?: vscode.ViewColumn): Promise<void> {
         await this.ensurePropertiesFile();
         console.assert(this.propertiesFile);
+
         if (onBeforeOpen) {
             onBeforeOpen();
         }
         // Directly open the json file
         if (this.propertiesFile) {
             const document: vscode.TextDocument = await vscode.workspace.openTextDocument(this.propertiesFile);
+
             if (showDocument) {
                 await showDocument(document, viewColumn);
             }
@@ -1224,14 +1312,17 @@ export class CppProperties {
     // onBeforeOpen will be called after c_cpp_properties.json have been created (if it did not exist), but before the document is opened.
     public async handleConfigurationEditUICommand(onBeforeOpen: (() => void) | undefined, showDocument: ((document: vscode.TextDocument, column?: vscode.ViewColumn) => Thenable<vscode.TextEditor>) | (() => void), viewColumn?: vscode.ViewColumn): Promise<void> {
         await this.ensurePropertiesFile();
+
         if (this.propertiesFile) {
             if (onBeforeOpen) {
                 onBeforeOpen();
             }
             if (this.parsePropertiesFile()) {
                 this.ensureSettingsPanelInitlialized();
+
                 if (this.settingsPanel) {
                     const configNames: string[] | undefined = this.ConfigurationNames;
+
                     if (configNames && this.configurationJson) {
                         // Use the active configuration as the default selected configuration to load on UI editor
                         this.settingsPanel.selectedConfigIndex = this.CurrentConfigurationIndex;
@@ -1244,6 +1335,7 @@ export class CppProperties {
             } else {
                 // Parse failed, open json file
                 const document: vscode.TextDocument = await vscode.workspace.openTextDocument(this.propertiesFile);
+
                 if (showDocument) {
                     void showDocument(document, viewColumn);
                 }
@@ -1257,9 +1349,11 @@ export class CppProperties {
     private async onSettingsPanelActivated(): Promise<void> {
         if (this.configurationJson) {
             await this.ensurePropertiesFile();
+
             if (this.propertiesFile) {
                 if (this.parsePropertiesFile()) {
                     const configNames: string[] | undefined = this.ConfigurationNames;
+
                     if (configNames && this.settingsPanel && this.configurationJson) {
                         // The settings UI became visible or active.
                         // Ensure settingsPanel has copy of latest current configuration
@@ -1286,8 +1380,10 @@ export class CppProperties {
             return undefined;
         }
         const trimmedPaths = [];
+
         for (const value of paths) {
             const fullPath = this.resolvePath(value);
+
             if (fs.existsSync(fullPath.trim()) && !fs.existsSync(fullPath)) {
                 trimmedPaths.push(value.trim());
             } else {
@@ -1313,6 +1409,7 @@ export class CppProperties {
 
     private onConfigSelectionChanged(): void {
         const configNames: string[] | undefined = this.ConfigurationNames;
+
         if (configNames && this.settingsPanel && this.configurationJson) {
             this.settingsPanel.updateConfigUI(configNames,
                 this.configurationJson.configurations[this.settingsPanel.selectedConfigIndex],
@@ -1326,7 +1423,9 @@ export class CppProperties {
         // Create default config and add to list of configurations
         const newConfig: Configuration = { name: configName };
         this.applyDefaultConfigurationValues(newConfig);
+
         const configNames: string[] | undefined = this.ConfigurationNames;
+
         if (configNames && this.settingsPanel && this.configurationJson) {
             this.configurationJson.configurations.push(newConfig);
 
@@ -1349,11 +1448,13 @@ export class CppProperties {
             return; // Occurs when propertiesFile hasn't been checked yet.
         }
         this.configFileWatcherFallbackTime = new Date();
+
         if (this.parsePropertiesFile() && this.configurationJson) {
             if (this.CurrentConfigurationIndex < 0 ||
                 this.CurrentConfigurationIndex >= this.configurationJson.configurations.length) {
                 // If the index is out of bounds (during initialization or due to removal of configs), fix it.
                 const index: number | undefined = this.getConfigIndexForPlatform(this.configurationJson);
+
                 if (this.currentConfigurationIndex !== undefined) {
                     if (!index) {
                         this.currentConfigurationIndex.setDefault();
@@ -1385,7 +1486,9 @@ export class CppProperties {
                 // Since the properties files does not exist, there will be exactly 1 configuration.
                 // If we have decided to use a custom config provider, propagate that to the new config.
                 const settings: CppSettings = new CppSettings(this.rootUri);
+
                 let providerId: string | undefined = settings.defaultConfigurationProvider;
+
                 if (this.configurationJson) {
                     if (!providerId) {
                         providerId = this.configurationJson.configurations[0].configurationProvider;
@@ -1393,6 +1496,7 @@ export class CppProperties {
                     this.resetToDefaultSettings(true);
                 }
                 void this.applyDefaultIncludePathsAndFrameworks().catch(logAndReturn.undefined);
+
                 if (providerId) {
                     if (this.configurationJson) {
                         this.configurationJson.configurations[0].configurationProvider = providerId;
@@ -1405,6 +1509,7 @@ export class CppProperties {
 
             } catch (errJS) {
                 const err: Error = errJS as Error;
+
                 const failedToCreate: string = localize("failed.to.create.config.folder", 'Failed to create "{0}"', this.configFolder);
                 void vscode.window.showErrorMessage(`${failedToCreate}: ${err.message}`);
             }
@@ -1415,11 +1520,14 @@ export class CppProperties {
     private parsePropertiesFile(): boolean {
         if (!this.propertiesFile) {
             this.configurationJson = undefined;
+
             return false;
         }
         let success: boolean = true;
+
         try {
             const readResults: string = fs.readFileSync(this.propertiesFile.fsPath, 'utf8');
+
             if (readResults === "") {
                 return false; // Repros randomly when the file is initially created. The parse will get called again after the file is written.
             }
@@ -1427,6 +1535,7 @@ export class CppProperties {
             // Try to use the same configuration as before the change.
             // TODO?: Handle when jsonc.parse() throws an exception due to invalid JSON contents.
             const newJson: ConfigurationJson = jsonc.parse(readResults, undefined, true) as any;
+
             if (!newJson || !newJson.configurations || newJson.configurations.length === 0) {
                 throw { message: localize("invalid.configuration.file", "Invalid configuration file. There must be at least one configuration present in the array.") };
             }
@@ -1442,8 +1551,10 @@ export class CppProperties {
                 }
             }
             this.configurationJson = newJson;
+
             if (this.CurrentConfigurationIndex < 0 || this.CurrentConfigurationIndex >= newJson.configurations.length) {
                 const index: number | undefined = this.getConfigIndexForPlatform(newJson);
+
                 if (this.currentConfigurationIndex !== undefined) {
                     if (index === undefined) {
                         this.currentConfigurationIndex.setDefault();
@@ -1454,8 +1565,10 @@ export class CppProperties {
             }
 
             let dirty: boolean = false;
+
             for (let i: number = 0; i < this.configurationJson.configurations.length; i++) {
                 const newId: string | undefined = getCustomConfigProviders().checkId(this.configurationJson.configurations[i].configurationProvider);
+
                 if (newId !== this.configurationJson.configurations[i].configurationProvider) {
                     dirty = true;
                     this.configurationJson.configurations[i].configurationProvider = newId;
@@ -1478,6 +1591,7 @@ export class CppProperties {
 
             if (this.configurationJson.version !== configVersion) {
                 dirty = true;
+
                 if (this.configurationJson.version === undefined) {
                     this.updateToVersion2();
                 }
@@ -1507,6 +1621,7 @@ export class CppProperties {
                     || (this.configurationJson.configurations[i].cppStandardIsExplicit !== undefined)
                     || (this.configurationJson.configurations[i].intelliSenseModeIsExplicit !== undefined)) {
                     dirty = true;
+
                     break;
                 }
             }
@@ -1530,6 +1645,7 @@ export class CppProperties {
 
         } catch (errJS) {
             const err: Error = errJS as Error;
+
             const failedToParse: string = localize("failed.to.parse.properties", 'Failed to parse "{0}"', this.propertiesFile.fsPath);
             void vscode.window.showErrorMessage(`${failedToParse}: ${err.message}`);
             success = false;
@@ -1547,6 +1663,7 @@ export class CppProperties {
 
         // first resolve variables
         result = util.resolveVariables(input_path, this.ExtendedEnvironment);
+
         if (this.rootUri) {
             if (result.includes("${workspaceFolder}")) {
                 result = result.replace("${workspaceFolder}", this.rootUri.fsPath);
@@ -1562,6 +1679,7 @@ export class CppProperties {
 
         if (assumeRelative) {
             let quoted = false;
+
             if (result.startsWith('"') && result.endsWith('"')) {
                 quoted = true;
                 result = result.slice(1, -1);
@@ -1581,14 +1699,17 @@ export class CppProperties {
 
     private getErrorsForConfigUI(configIndex: number): ConfigurationErrors {
         const errors: ConfigurationErrors = {};
+
         if (!this.configurationJson) {
             return errors;
         }
         const isWindows: boolean = os.platform() === 'win32';
+
         const config: Configuration = this.configurationJson.configurations[configIndex];
 
         // Check if config name is unique.
         errors.name = this.isConfigNameUnique(config.name);
+
         let resolvedCompilerPath: string | undefined | null;
         // Validate compilerPath
         if (config.compilerPath) {
@@ -1599,7 +1720,9 @@ export class CppProperties {
             resolvedCompilerPath = this.resolvePath(config.compilerPath);
         }
         const settings: CppSettings = new CppSettings(this.rootUri);
+
         const compilerPathAndArgs: util.CompilerPathAndArgs = util.extractCompilerPathAndArgs(!!settings.legacyCompilerArgsBehavior, resolvedCompilerPath);
+
         if (resolvedCompilerPath
             // Don't error cl.exe paths because it could be for an older preview build.
             && compilerPathAndArgs.compilerName.toLowerCase() !== "cl.exe"
@@ -1616,15 +1739,19 @@ export class CppProperties {
                 compilerPathAndArgs.compilerPath.includes(" ");
 
             const compilerPathErrors: string[] = [];
+
             if (compilerPathNeedsQuotes) {
                 compilerPathErrors.push(localize("path.with.spaces", 'Compiler path with spaces and arguments is missing double quotes " around the path.'));
             }
 
             // Get compiler path without arguments before checking if it exists
             resolvedCompilerPath = compilerPathAndArgs.compilerPath ?? undefined;
+
             if (resolvedCompilerPath) {
                 let pathExists: boolean = true;
+
                 const existsWithExeAdded: (path: string) => boolean = (path: string) => isWindows && !path.startsWith("/") && fs.existsSync(path + ".exe");
+
                 if (!fs.existsSync(resolvedCompilerPath)) {
                     if (existsWithExeAdded(resolvedCompilerPath)) {
                         resolvedCompilerPath += ".exe";
@@ -1633,6 +1760,7 @@ export class CppProperties {
                     } else {
                         // Check again for a relative path.
                         const relativePath: string = this.rootUri.fsPath + path.sep + resolvedCompilerPath;
+
                         if (!fs.existsSync(relativePath)) {
                             if (existsWithExeAdded(resolvedCompilerPath)) {
                                 resolvedCompilerPath += ".exe";
@@ -1676,6 +1804,7 @@ export class CppProperties {
         // Validate intelliSenseMode
         if (isWindows) {
             const intelliSenesModeError: string = this.validateIntelliSenseMode(config);
+
             if (intelliSenesModeError.length > 0) {
                 errors.intelliSenseMode = intelliSenesModeError;
             }
@@ -1690,7 +1819,9 @@ export class CppProperties {
         }
 
         let errorMsg: string | undefined;
+
         const errors: string[] = [];
+
         let paths: string[] = [];
 
         if (util.isString(input)) {
@@ -1704,7 +1835,9 @@ export class CppProperties {
 
         for (const p of paths) {
             let pathExists: boolean = true;
+
             let resolvedPath: string = this.resolvePath(p);
+
             if (!resolvedPath) {
                 continue;
             }
@@ -1718,6 +1851,7 @@ export class CppProperties {
                 } else {
                     // Check for relative path if resolved path does not exists
                     const relativePath: string = this.rootUri.fsPath + path.sep + resolvedPath;
+
                     if (!fs.existsSync(relativePath)) {
                         pathExists = false;
                     } else {
@@ -1729,6 +1863,7 @@ export class CppProperties {
             if (!pathExists) {
                 const message: string = localize('cannot.find', "Cannot find: {0}", resolvedPath);
                 errors.push(message);
+
                 continue;
             }
 
@@ -1753,6 +1888,7 @@ export class CppProperties {
         let errorMsg: string | undefined;
         // TODO: make configName non-case sensitive.
         const occurrences: number | undefined = this.ConfigurationNames?.filter(function (name): boolean { return name === configName; }).length;
+
         if (occurrences && occurrences > 1) {
             errorMsg = localize('duplicate.name', "{0} is a duplicate. The configuration name should be unique.", configName);
         }
@@ -1768,12 +1904,14 @@ export class CppProperties {
         // this.configurationJson.enableConfigurationSquiggles is false OR
         // this.configurationJson.enableConfigurationSquiggles is undefined and settings.defaultEnableConfigurationSquiggles is false.
         const settings: CppSettings = new CppSettings(this.rootUri);
+
         if (!this.configurationJson) {
             return;
         }
         if ((this.configurationJson.enableConfigurationSquiggles !== undefined && !this.configurationJson.enableConfigurationSquiggles) ||
             (this.configurationJson.enableConfigurationSquiggles === undefined && !settings.defaultEnableConfigurationSquiggles)) {
             this.diagnosticCollection.clear();
+
             return;
         }
         const document = await vscode.workspace.openTextDocument(this.propertiesFile);
@@ -1788,18 +1926,23 @@ export class CppProperties {
         const configurationsText: string = util.escapeForSquiggles(curText);
         // TODO?: Handle when jsonc.parse() throws an exception due to invalid JSON contents.
         const configurations: ConfigurationJson = jsonc.parse(configurationsText, undefined, true) as any;
+
         const currentConfiguration: Configuration = configurations.configurations[this.CurrentConfigurationIndex];
 
         let curTextStartOffset: number = 0;
+
         if (!currentConfiguration.name) {
             return;
         }
 
         // Get env text
         let envText: string = "";
+
         const envStart: number = curText.search(/\"env\"\s*:\s*\{/);
+
         if (envStart >= 0) {
             const envEnd: number = curText.indexOf("},", envStart);
+
             if (envEnd >= 0) {
                 envText = curText.substring(envStart, envEnd);
             }
@@ -1808,22 +1951,34 @@ export class CppProperties {
 
         // Check if all config names are unique.
         let allConfigText: string = curText;
+
         let allConfigTextOffset: number = envTextStartOffSet;
+
         const nameRegex: RegExp = new RegExp(`{\\s*"name"\\s*:\\s*".*"`);
+
         let configStart: number = allConfigText.search(new RegExp(nameRegex));
+
         let configNameStart: number;
+
         let configNameEnd: number;
+
         let configName: string;
+
         const configNames: Map<string, vscode.Range[]> = new Map<string, []>();
+
         let dupErrorMsg: string;
+
         while (configStart !== -1) {
             allConfigText = allConfigText.substring(configStart);
             allConfigTextOffset += configStart;
             configNameStart = allConfigText.indexOf('"', allConfigText.indexOf(':') + 1) + 1;
             configNameEnd = allConfigText.indexOf('"', configNameStart);
             configName = allConfigText.substring(configNameStart, configNameEnd);
+
             const newRange: vscode.Range = new vscode.Range(0, allConfigTextOffset + configNameStart, 0, allConfigTextOffset + configNameEnd);
+
             const allRanges: vscode.Range[] | undefined = configNames.get(configName);
+
             if (allRanges) {
                 allRanges.push(newRange);
                 configNames.set(configName, allRanges);
@@ -1849,8 +2004,10 @@ export class CppProperties {
 
         // Get current config text
         configStart = curText.search(new RegExp(`{\\s*"name"\\s*:\\s*"${escapeStringRegExp(currentConfiguration.name)}"`));
+
         if (configStart === -1) {
             telemetry.logLanguageServerEvent("ConfigSquiggles", { "error": "config name not first" });
+
             return;
         }
         curTextStartOffset = configStart + 1;
@@ -1858,12 +2015,16 @@ export class CppProperties {
         const nameEnd: number = curText.indexOf(":");
         curTextStartOffset += nameEnd + 1;
         curText = curText.substring(nameEnd + 1);
+
         const nextNameStart: number = curText.search(new RegExp('"name"\\s*:\\s*"'));
+
         if (nextNameStart !== -1) {
             curText = curText.substring(0, nextNameStart + 6); // Remove later configs.
             const nextNameStart2: number = curText.search(new RegExp('\\s*}\\s*,\\s*{\\s*"name"'));
+
             if (nextNameStart2 === -1) {
                 telemetry.logLanguageServerEvent("ConfigSquiggles", { "error": "next config name not first" });
+
                 return;
             }
             curText = curText.substring(0, nextNameStart2);
@@ -1872,6 +2033,7 @@ export class CppProperties {
             this.prevSquiggleMetrics.set(currentConfiguration.name, { PathNonExistent: 0, PathNotAFile: 0, PathNotADirectory: 0, CompilerPathMissingQuotes: 0, CompilerModeMismatch: 0, MultiplePathsNotAllowed: 0 });
         }
         const newSquiggleMetrics: { [key: string]: number } = { PathNonExistent: 0, PathNotAFile: 0, PathNotADirectory: 0, CompilerPathMissingQuotes: 0, CompilerModeMismatch: 0, MultiplePathsNotAllowed: 0 };
+
         const isWindows: boolean = os.platform() === 'win32';
 
         // TODO: Add other squiggles.
@@ -1880,13 +2042,17 @@ export class CppProperties {
         if (isWindows) {
             // cl.exe is only available on Windows
             const intelliSenseModeStart: number = curText.search(/\s*\"intelliSenseMode\"\s*:\s*\"/);
+
             if (intelliSenseModeStart !== -1) {
                 const intelliSenseModeValueStart: number = curText.indexOf('"', curText.indexOf(":", intelliSenseModeStart));
+
                 const intelliSenseModeValueEnd: number = intelliSenseModeStart === -1 ? -1 : curText.indexOf('"', intelliSenseModeValueStart + 1) + 1;
 
                 const intelliSenseModeError: string = this.validateIntelliSenseMode(currentConfiguration);
+
                 if (intelliSenseModeError.length > 0) {
                     const message: string = intelliSenseModeError;
+
                     const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(
                         new vscode.Range(document.positionAt(curTextStartOffset + intelliSenseModeValueStart),
                             document.positionAt(curTextStartOffset + intelliSenseModeValueEnd)),
@@ -1899,7 +2065,9 @@ export class CppProperties {
 
         // Check for path-related squiggles.
         const paths: string[] = [];
+
         let compilerPath: string | undefined;
+
         for (const pathArray of [currentConfiguration.browse ? currentConfiguration.browse.path : undefined, currentConfiguration.includePath, currentConfiguration.macFrameworkPath]) {
             if (pathArray) {
                 for (const curPath of pathArray) {
@@ -1911,6 +2079,7 @@ export class CppProperties {
         if (currentConfiguration.forcedInclude) {
             for (const file of currentConfiguration.forcedInclude) {
                 const resolvedFilePath: string = this.resolvePath(file);
+
                 if (path.isAbsolute(resolvedFilePath)) {
                     paths.push(`${file}`);
                 }
@@ -1929,22 +2098,36 @@ export class CppProperties {
 
         // Get the start/end for properties that are file-only.
         const forcedIncludeStart: number = curText.search(/\s*\"forcedInclude\"\s*:\s*\[/);
+
         const forcedeIncludeEnd: number = forcedIncludeStart === -1 ? -1 : curText.indexOf("]", forcedIncludeStart);
+
         const compileCommandsStart: number = curText.search(/\s*\"compileCommands\"\s*:\s*\"/);
+
         const compileCommandsEnd: number = compileCommandsStart === -1 ? -1 : curText.indexOf('"', curText.indexOf('"', curText.indexOf(":", compileCommandsStart)) + 1);
+
         const compilerPathStart: number = curText.search(/\s*\"compilerPath\"\s*:\s*\"/);
+
         const compilerPathValueStart: number = curText.indexOf('"', curText.indexOf(":", compilerPathStart));
+
         const compilerPathEnd: number = compilerPathStart === -1 ? -1 : curText.indexOf('"', compilerPathValueStart + 1) + 1;
+
         const dotConfigStart: number = curText.search(/\s*\"dotConfig\"\s*:\s*\"/);
+
         const dotConfigValueStart: number = curText.indexOf('"', curText.indexOf(":", dotConfigStart));
+
         const dotConfigEnd: number = dotConfigStart === -1 ? -1 : curText.indexOf('"', dotConfigValueStart + 1) + 1;
+
         const processedPaths: Set<string> = new Set<string>();
 
         // Validate compiler paths
         let compilerPathNeedsQuotes: boolean = false;
+
         let compilerMessage: string | undefined;
+
         const compilerPathAndArgs: util.CompilerPathAndArgs = util.extractCompilerPathAndArgs(!!settings.legacyCompilerArgsBehavior, compilerPath);
+
         const compilerLowerCase: string = compilerPathAndArgs.compilerName.toLowerCase();
+
         const isClCompiler: boolean = compilerLowerCase === "cl" || compilerLowerCase === "cl.exe";
         // Don't squiggle for invalid cl and cl.exe paths.
         if (compilerPathAndArgs.compilerPath && !isClCompiler) {
@@ -1965,6 +2148,7 @@ export class CppProperties {
             }
         }
         let compilerPathExists: boolean = true;
+
         if (this.rootUri && !isClCompiler) {
             const checkPathExists: any = util.checkPathExistsSync(compilerPath, this.rootUri.fsPath + path.sep, isWindows, true);
             compilerPathExists = checkPathExists.pathExists;
@@ -1984,17 +2168,22 @@ export class CppProperties {
 
         // validate .config path
         let dotConfigPath: string | undefined;
+
         let dotConfigPathExists: boolean = true;
+
         let dotConfigMessage: string | undefined;
 
         dotConfigPath = currentConfiguration.dotConfig;
+
         dotConfigPath = this.resolvePath(dotConfigPath).trim();
         // does not try resolve if the dotConfig property is empty
         dotConfigPath = dotConfigPath !== '' ? dotConfigPath : undefined;
 
         if (dotConfigPath && this.rootUri) {
             const checkPathExists: any = util.checkPathExistsSync(dotConfigPath, this.rootUri.fsPath + path.sep, isWindows, true);
+
             dotConfigPathExists = checkPathExists.pathExists;
+
             dotConfigPath = checkPathExists.path;
         }
         if (!dotConfigPathExists) {
@@ -2035,9 +2224,11 @@ export class CppProperties {
             // Create a pattern to search for the path with either a quote or semicolon immediately before and after,
             // and extend that pattern to the next quote before and next quote after it.
             const pattern: RegExp = new RegExp(`"[^"]*?(?<="|;)${escapedPath}(?="|;).*?"`, "g");
+
             const configMatches: string[] | null = curText.match(pattern);
 
             const expandedPaths: string[] = this.resolveAndSplit([curPath], undefined, this.ExtendedEnvironment, true, true);
+
             const incorrectExpandedPaths: string[] = [];
 
             if (expandedPaths.length <= 0) {
@@ -2053,6 +2244,7 @@ export class CppProperties {
                     }
 
                     const checkPathExists: any = util.checkPathExistsSync(expandedPaths[index], this.rootUri.fsPath + path.sep, isWindows, false);
+
                     if (!checkPathExists.pathExists) {
                         // If there are multiple paths, store any non-existing paths to squiggle later on.
                         incorrectExpandedPaths.push(expandedPaths[index]);
@@ -2074,7 +2266,9 @@ export class CppProperties {
             // Iterate through the text and apply squiggles.
 
             let globPath: boolean = false;
+
             const asteriskPosition = curPath.indexOf("*");
+
             if (asteriskPosition !== -1) {
                 if (asteriskPosition !== curPath.length - 1 && asteriskPosition !== curPath.length - 2) {
                     globPath = true;
@@ -2087,20 +2281,25 @@ export class CppProperties {
 
             if (configMatches && !globPath) {
                 let curOffset: number = 0;
+
                 let endOffset: number = 0;
+
                 for (const curMatch of configMatches) {
                     curOffset = curText.substring(endOffset).search(pattern) + endOffset;
                     endOffset = curOffset + curMatch.length;
+
                     if (curOffset >= compilerPathStart && curOffset <= compilerPathEnd) {
                         continue;
                     }
                     let message: string = "";
+
                     if (!pathExists) {
                         if (curOffset >= forcedIncludeStart && curOffset <= forcedeIncludeEnd
                             && !path.isAbsolute(expandedPaths[0])) {
                             continue; // Skip the error, because it could be resolved recursively.
                         }
                         let badPath = "";
+
                         if (incorrectExpandedPaths.length > 0) {
                             badPath = incorrectExpandedPaths.map(s => `"${s}"`).join(', ');
                         } else {
@@ -2117,6 +2316,7 @@ export class CppProperties {
                                 newSquiggleMetrics.MultiplePathsNotAllowed++;
                             } else {
                                 const resolvedPath = this.resolvePath(expandedPaths[0]);
+
                                 if (util.checkFileExistsSync(resolvedPath)) {
                                     continue;
                                 }
@@ -2126,14 +2326,17 @@ export class CppProperties {
                             }
                         } else {
                             const mismatchedPaths: string[] = [];
+
                             for (const expandedPath of expandedPaths) {
                                 const resolvedPath = this.resolvePath(expandedPath);
+
                                 if (!util.checkDirectoryExistsSync(resolvedPath)) {
                                     mismatchedPaths.push(expandedPath);
                                 }
                             }
 
                             let badPath = "";
+
                             if (mismatchedPaths.length > 1) {
                                 badPath = mismatchedPaths.map(s => `"${s}"`).join(', ');
                                 message = localize('paths.are.not.directories', "Paths are not directories: {0}", badPath);
@@ -2156,16 +2359,22 @@ export class CppProperties {
             } else if (envText) {
                 // TODO: This never matches. https://github.com/microsoft/vscode-cpptools/issues/9140
                 const envMatches: string[] | null = envText.match(pattern);
+
                 if (envMatches) {
                     let curOffset: number = 0;
+
                     let endOffset: number = 0;
+
                     for (const curMatch of envMatches) {
                         curOffset = envText.substring(endOffset).search(pattern) + endOffset;
                         endOffset = curOffset + curMatch.length;
+
                         let message: string;
+
                         if (!pathExists) {
                             message = localize('cannot.find', "Cannot find: {0}", expandedPaths[0]);
                             newSquiggleMetrics.PathNonExistent++;
+
                             const diagnostic: vscode.Diagnostic = new vscode.Diagnostic(
                                 new vscode.Range(document.positionAt(envTextStartOffSet + curOffset),
                                     document.positionAt(envTextStartOffSet + endOffset)),
@@ -2185,6 +2394,7 @@ export class CppProperties {
 
         // Send telemetry on squiggle changes.
         const changedSquiggleMetrics: { [key: string]: number } = {};
+
         if (newSquiggleMetrics.PathNonExistent !== this.prevSquiggleMetrics.get(currentConfiguration.name)?.PathNonExistent) {
             changedSquiggleMetrics.PathNonExistent = newSquiggleMetrics.PathNonExistent;
         }
@@ -2220,6 +2430,7 @@ export class CppProperties {
     private updateToVersion3(): void {
         if (this.configurationJson) {
             this.configurationJson.version = 3;
+
             for (let i: number = 0; i < this.configurationJson.configurations.length; i++) {
                 const config: Configuration = this.configurationJson.configurations[i];
                 // Look for Mac configs and extra configs on Mac systems
@@ -2241,6 +2452,7 @@ export class CppProperties {
             // Update intelliSenseMode, compilerPath, cStandard, and cppStandard with the defaults if they're missing.
             // If VS Code settings exist for these properties, don't add them to c_cpp_properties.json
             const settings: CppSettings = new CppSettings(this.rootUri);
+
             for (let i: number = 0; i < this.configurationJson.configurations.length; i++) {
                 const config: Configuration = this.configurationJson.configurations[i];
 
@@ -2264,25 +2476,32 @@ export class CppProperties {
     private writeToJson(): void {
         // Set aside IsExplicit values, and restore them after writing.
         const savedCompilerPathIsExplicit: boolean[] = [];
+
         const savedCStandardIsExplicit: boolean[] = [];
+
         const savedCppStandardIsExplicit: boolean[] = [];
+
         const savedIntelliSenseModeIsExplicit: boolean[] = [];
 
         if (this.configurationJson) {
             this.configurationJson.configurations.forEach(e => {
                 savedCompilerPathIsExplicit.push(!!e.compilerPathIsExplicit);
+
                 if (e.compilerPathIsExplicit !== undefined) {
                     delete e.compilerPathIsExplicit;
                 }
                 savedCStandardIsExplicit.push(!!e.cStandardIsExplicit);
+
                 if (e.cStandardIsExplicit !== undefined) {
                     delete e.cStandardIsExplicit;
                 }
                 savedCppStandardIsExplicit.push(!!e.cppStandardIsExplicit);
+
                 if (e.cppStandardIsExplicit !== undefined) {
                     delete e.cppStandardIsExplicit;
                 }
                 savedIntelliSenseModeIsExplicit.push(!!e.intelliSenseModeIsExplicit);
+
                 if (e.intelliSenseModeIsExplicit !== undefined) {
                     delete e.intelliSenseModeIsExplicit;
                 }
@@ -2290,6 +2509,7 @@ export class CppProperties {
         }
 
         console.assert(this.propertiesFile);
+
         if (this.propertiesFile) {
             fs.writeFileSync(this.propertiesFile.fsPath, jsonc.stringify(this.configurationJson, null, 4));
         }
@@ -2326,6 +2546,7 @@ export class CppProperties {
     public checkCompileCommands(): void {
         // Check for changes in case of file watcher failure.
         const compileCommands: string | undefined = this.CurrentConfiguration?.compileCommands;
+
         if (!compileCommands) {
             return;
         }
@@ -2340,6 +2561,7 @@ export class CppProperties {
                 }
             } else {
                 const compileCommandsLastChanged: Date | undefined = this.compileCommandsFileWatcherFallbackTime.get(compileCommandsFile);
+
                 if (compileCommandsLastChanged !== undefined && stats.mtime > compileCommandsLastChanged) {
                     this.compileCommandsFileWatcherFallbackTime.set(compileCommandsFile, new Date());
                     this.onCompileCommandsChanged(compileCommandsFile);

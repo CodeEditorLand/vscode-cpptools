@@ -9,6 +9,7 @@ import * as vscode from "vscode";
 import * as nls from 'vscode-nls';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 // Registers DebugAdapterDescriptorFactory for `cppdbg` and `cppvsdbg`. If it is not ready, it will prompt a wait for the download dialog.
@@ -41,6 +42,7 @@ export class CppvsdbgDebugAdapterDescriptorFactory extends AbstractDebugAdapterD
     async createDebugAdapterDescriptor(_session: vscode.DebugSession, _executable?: vscode.DebugAdapterExecutable): Promise<vscode.DebugAdapterDescriptor | null> {
         if (os.platform() !== 'win32') {
             void vscode.window.showErrorMessage(localize("debugger.not.available", "Debugger type '{0}' is not available for non-Windows machines.", "cppvsdbg"));
+
             return null;
         } else {
             return new vscode.DebugAdapterExecutable(

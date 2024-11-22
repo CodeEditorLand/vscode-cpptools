@@ -18,6 +18,7 @@ export class ManualSignal<T> implements Promise<T>, Resetable<T> {
     [Symbol.toStringTag] = 'Promise';
 
     private promise = new ManualPromise<T>();
+
     constructor(initiallyReset = false) {
         if (!initiallyReset) {
             // initially not reset.

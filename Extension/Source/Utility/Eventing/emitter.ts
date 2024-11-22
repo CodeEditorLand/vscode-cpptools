@@ -13,6 +13,7 @@ import { ArbitraryObject, Callback, Cancelled, Continue, EventStatus, Subscripti
 
 export interface EventOptions<TOutput = any> {
     now?: boolean;
+
     default?: TOutput | Promise<TOutput> | (() => TOutput) | (() => Promise<TOutput>);
     cancel?(): TOutput | never;
     descriptors?: Record<string, string | string[]>;
@@ -142,6 +143,7 @@ export abstract class Emitter {
     protected newEvent<TText extends string, TData, TOutput>(eventName: string, options?: EventOptions<TOutput> & WithDefault<TOutput>): (text: TText, data: TData) => Promise<EventStatus | TOutput> {
         eventName = smash(eventName);
         this.#knownEvents.add(eventName);
+
         const descriptors = options?.descriptors ? new Descriptors(this.descriptors, options.descriptors) : this.descriptors;
         // is it an immediate event?
         if (options?.now) {
@@ -205,6 +207,7 @@ export abstract class Emitter {
     protected newNotification<TText extends string, TData>(eventName: string, options?: EventOptions): (text: TText, data: TData) => void {
         eventName = smash(eventName);
         this.#knownEvents.add(eventName);
+
         const descriptors = options?.descriptors ? new Descriptors(this.descriptors, options.descriptors) : this.descriptors;
         // is it an immediate event?
         if (options?.now) {

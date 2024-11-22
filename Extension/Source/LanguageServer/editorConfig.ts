@@ -68,25 +68,34 @@ export function matchesSection(pathPrefix: string, filePath: string, section: st
     const matchOptions = { matchBase: true, dot: true };
     pathPrefix = pathPrefix.replace(/[?*+@!()|[\]{}]/g, '\\$&');
     pathPrefix = pathPrefix.replace(/^#/, '\\#');
+
     switch (section.indexOf('/')) {
         case -1:
             section = `**/${section}`;
+
             break;
+
         case 0:
             section = section.substring(1);
+
             break;
+
         default:
             break;
     }
     section = section.replace(/\\\\/g, '\\\\\\\\');
     section = section.replace(/\*\*/g, '{*,**/**/**}');
+
     const matcher = new Minimatch(`${pathPrefix}/${section}`, matchOptions);
+
     return matcher.match(filePath);
 }
 
 function parseEditorConfigContent(content: string): Record<string, any> {
     const lines = content.split(/\r?\n/);
+
     const config: Record<string, any> = {};
+
     let currentSection: string | null = '*'; // Use '*' for sectionless (global) settings.
 
     lines.forEach(line => {
@@ -104,8 +113,10 @@ function parseEditorConfigContent(content: string): Record<string, any> {
         } else {
             // Key-value pair (e.g., indent_style = space).
             const [key, ...values] = line.split('=');
+
             if (key && values.length > 0) {
                 const trimmedKey = key.trim();
+
                 let value: any = values.join('=').trim();
 
                 // Convert boolean-like and numeric values.
@@ -133,8 +144,11 @@ function parseEditorConfigContent(content: string): Record<string, any> {
 
 function getEditorConfig(filePath: string): any {
     let combinedConfig: any = {};
+
     let globalConfig: any = {};
+
     let currentDir: string = path.dirname(filePath);
+
     const rootDir: string = path.parse(currentDir).root;
 
     if (isWindows) {
@@ -144,8 +158,10 @@ function getEditorConfig(filePath: string): any {
     // Traverse from the file's directory to the root directory.
     for (; ;) {
         const editorConfigPath: string = path.join(currentDir, '.editorconfig');
+
         if (fs.existsSync(editorConfigPath)) {
             const configFileContent: string = fs.readFileSync(editorConfigPath, 'utf-8');
+
             const configData = parseEditorConfigContent(configFileContent);
 
             // Extract global (sectionless) entries.
@@ -157,6 +173,7 @@ function getEditorConfig(filePath: string): any {
             }
 
             let currentDirForwardSlashes: string = currentDir;
+
             if (isWindows) {
                 currentDirForwardSlashes = currentDir.replace(/\\/g, '/');
             }
@@ -193,6 +210,7 @@ function getEditorConfig(filePath: string): any {
 // This is intentionally not async to avoid races due to multiple entrancy.
 export function getEditorConfigSettings(fsPath: string): Promise<any> {
     let editorConfigSettings: any = cachedEditorConfigSettings.get(fsPath);
+
     if (!editorConfigSettings) {
         editorConfigSettings = getEditorConfig(fsPath);
         cachedEditorConfigSettings.set(fsPath, editorConfigSettings);

@@ -34,6 +34,7 @@ const cache = new Map<string, File | FolderWithChildren | Promise<FolderWithChil
 async function readDirectory(fullPath: string, executableExtensions: Set<string> = process.platform === 'win32' ? new Set(['.exe'/* ,'.cmd','.bat' */]) : new Set()): Promise<Map<string, File | FolderWithChildren> | undefined> {
     // have we already read this directory?
     let folder = cache.get(fullPath) as FolderWithChildren | undefined;
+
     let promise: ManualPromise<FolderWithChildren | undefined> | undefined;
 
     if (!folder) {
@@ -46,6 +47,7 @@ async function readDirectory(fullPath: string, executableExtensions: Set<string>
         if (!stats?.isDirectory()) {
             // no results, return undefined.
             promise.resolve(folder);
+
             return undefined;
         }
 
@@ -83,7 +85,9 @@ async function readDirectory(fullPath: string, executableExtensions: Set<string>
         // process all the entries, and add them to the cache and the children map
         await foreach(readdir(fullPath, { withFileTypes: true }).catch(returns.none), async (direntry: Dirent) => {
             const name = direntry.name;
+
             const fp = `${fullPath}${sep}${name}`;
+
             if (cache.has(fp)) {
                 return;
             }
@@ -105,6 +109,7 @@ async function readDirectory(fullPath: string, executableExtensions: Set<string>
                     entry.basename = basename(name);
                     // in non-Windows platforms, we need to check the file mode to see if it's executable.
                     const stats = await stat(entry.fullPath).catch(returns.undefined);
+
                     if (!stats) {
                         return;
                     }
@@ -122,6 +127,7 @@ async function readDirectory(fullPath: string, executableExtensions: Set<string>
 
         });
         cache.set(fullPath, folder as FolderWithChildren);
+
         if (!promise!.isResolved) {
             promise!.resolve(folder as FolderWithChildren);
         }
@@ -168,18 +174,26 @@ export class Finder implements AsyncIterable<string> {
     private promises = new Array<Promise<void>>();
 
     constructor(executableName: string);
+
     constructor(executableRegEx: RegExp);
+
     constructor(fileMatcher: (file: File) => Promise<boolean> | boolean);
+
     constructor(binary: string | RegExp | ((file: File) => Promise<boolean> | boolean)) {
         switch (typeof binary) {
             case 'string':
                 this.match = (file: File) => file.isExecutable && file.basename === binary;
+
                 break;
+
             case 'function':
                 this.match = binary;
+
                 break;
+
             case 'object':
                 this.match = (file: File) => file.isExecutable && !!file.basename.match(binary);
+
                 break;
         }
     }
@@ -203,17 +217,20 @@ export class Finder implements AsyncIterable<string> {
     scan(...location: (Promise<string> | string | number)[]): Finder {
         const depth = typeof location[0] === 'number' ? location.shift() as number : 0;
         this.promises.push(...location.map(each => scanFolder(each.toString(), depth, this.match, (f) => !this.#excludedFolders.has(f.name), this.#files)));
+
         return this;
     }
 
     [Symbol.asyncIterator](): AsyncIterator<string> {
         this.#files.complete();
+
         return this.#files[Symbol.asyncIterator]();
     }
 
     get results(): Promise<Set<string>> {
         return Promise.all(this.promises).then(async () => {
             const result = new Set<string>();
+
             for await (const file of this) {
                 result.add(file);
             }

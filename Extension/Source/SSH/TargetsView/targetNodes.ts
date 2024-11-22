@@ -10,6 +10,7 @@ import { extensionContext, ISshConfigHostInfo, pathAccessible } from "../../comm
 import { LabelLeafNode } from "./common";
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export const workspaceState_activeSshTarget: string = 'workspaceState_activeSshTarget';
@@ -19,6 +20,7 @@ export const workspaceState_activeSshTarget: string = 'workspaceState_activeSshT
 export const filesWritable: Map<string, boolean> = new Map<string, boolean>();
 async function isWritable(file: string): Promise<boolean> {
     let cachedWritable: boolean | undefined = filesWritable.get(file);
+
     if (cachedWritable === undefined) {
         const writable: boolean = await pathAccessible(file, constants.W_OK);
         filesWritable.set(file, writable);
@@ -34,9 +36,12 @@ export class TargetLeafNode extends LabelLeafNode {
 
     async getTreeItem(): Promise<TreeItem> {
         const item: TreeItem = await super.getTreeItem();
+
         const removable: boolean = await isWritable(this.sshConfigHostInfo.file);
+
         if (_activeTarget === this.name) {
             item.description = localize('ssh.target.active.description', '[Active]');
+
             if (removable) {
                 item.contextValue = 'CppSshTargetsView.targetLeafRemovable';
             }

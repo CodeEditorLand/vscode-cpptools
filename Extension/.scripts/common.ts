@@ -49,6 +49,7 @@ export const GitClean = async (...args: Parameters<Awaited<CommandFunction>>) =>
 
 export async function getModifiedIgnoredFiles() {
     const {code, error, stdio } = await GitClean('-Xd', '-n');
+
     if (code) {
         throw new Error(`\n${error.all().join('\n')}`);
     }
@@ -59,6 +60,7 @@ export async function getModifiedIgnoredFiles() {
 
 export async function rimraf(...paths: string[]) {
     const all = [];
+
     for (const each of paths) {
         if (!each) {
             continue;
@@ -66,6 +68,7 @@ export async function rimraf(...paths: string[]) {
         if (await filepath.isFolder(each)) {
             verbose(`Removing folder ${red(each)}`);
             all.push(rm(each, {recursive: true, force: true}));
+
             continue;
         }
         verbose(`Removing file ${red(each)}`);
@@ -76,6 +79,7 @@ export async function rimraf(...paths: string[]) {
 
 export async function mkdir(filePath: string) {
     const [fullPath, info] = await filepath.stats(filePath, $root);
+
     if (info) {
         if (info.isDirectory()) {
             return fullPath;
@@ -84,6 +88,7 @@ export async function mkdir(filePath: string) {
     }
 
     await md(fullPath, { recursive: true });
+
     return fullPath;
 }
 
@@ -94,6 +99,7 @@ export async function write(filePath: string, data: Buffer | string) {
 
     if (await filepath.isFile(filePath)) {
         const content = await readFile(filePath);
+
         if (is.string(data)) {
             // if we're passed a text file, we should match the line endings of the existing file.
             const textContent = content.toString();
@@ -104,12 +110,14 @@ export async function write(filePath: string, data: Buffer | string) {
             // if the text content is a match, we don't have to change anything
             if (textContent === data) {
                 verbose(`Text file at '${filePath}' is up to date.`);
+
                 return;
             }
         } else {
             // if the binary content is a match, we don't have to change anything
             if (content.equals(data)) {
                 verbose(`File at '${filePath}' is up to date.`);
+
                 return;
             }
         }
@@ -123,6 +131,7 @@ export async function updateFiles(files: string[], dest: string | Promise<string
     const target = is.promise(dest) ? await dest : dest;
     await Promise.all(files.map(async (each) => {
         const sourceFile = await filepath.isFile(each, $root);
+
         if (sourceFile) {
             const targetFile = resolve(target, each);
             await write(targetFile, await readFile(sourceFile));
@@ -135,9 +144,11 @@ export async function go() {
         // loop through the args and pick out the first non --arg and remove it from the $args and set $cmd
         for (let i = 0; i < $args.length; i++) {
             const each = $args[i];
+
             if (!each.startsWith('--') && require.main.exports[each]) {
                 $cmd = each;
                 $args.splice(i, 1);
+
                 break;
             }
         }
@@ -151,6 +162,7 @@ void then(go);
 export async function read(filename: string) {
     const content = await readFile(filename);
     ok(content, `File '${filename}' has no content`);
+
     return content.toString();
 }
 
@@ -168,11 +180,13 @@ export async function writeJson(filename: string, object: CommentJSONValue) {
 
 export function error(text: string) {
     console.error(`\n${red('ERROR')}: ${text}`);
+
     return true;
 }
 
 export function warn(text: string) {
     console.error(`\n${yellow('WARNING')}: ${text}`);
+
     return true;
 }
 
@@ -226,8 +240,10 @@ export function heading(text: string, level = 1) {
     switch (level) {
         case 1:
             return `${underline(bold(text))}`;
+
         case 2:
             return `${brightGreen(text)}`;
+
         case 3:
             return `${green(text)}`;
     }
@@ -260,10 +276,13 @@ export function position(text: string) {
 
 export async function assertAnyFolder(oneOrMoreFolders: string | string[], errorMessage?: string): Promise<string> {
     oneOrMoreFolders = is.array(oneOrMoreFolders) ? oneOrMoreFolders : [oneOrMoreFolders];
+
     for (const each of oneOrMoreFolders) {
         const result = await filepath.isFolder(each, $root);
+
         if (result) {
             verbose(`Folder ${brightGreen(each)} exists.`);
+
             return result;
         }
     }
@@ -277,10 +296,13 @@ export async function assertAnyFolder(oneOrMoreFolders: string | string[], error
 
 export async function assertAnyFile(oneOrMoreFiles: string | string[], errorMessage?: string): Promise<string> {
     oneOrMoreFiles = is.array(oneOrMoreFiles) ? oneOrMoreFiles : [oneOrMoreFiles];
+
     for (const each of oneOrMoreFiles) {
         const result = await filepath.isFile(each, $root);
+
         if (result) {
             verbose(`Folder ${brightGreen(each)} exists.`);
+
             return result;
         }
     }

@@ -15,6 +15,7 @@ export async function main() {
 
 export async function watch() {
     const source = await filepath.isFolder('walkthrough/images', $root);
+
     if (source) {
         verbose(`Watching ${source} folder for changes.`);
         console.log('Press Ctrl+C to exit.');

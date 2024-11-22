@@ -9,6 +9,7 @@ import * as nls from 'vscode-nls';
 import { configPrefix } from '../LanguageServer/extension';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export function isDebugLaunchStr(str: string): boolean {
@@ -85,6 +86,7 @@ function formatString(format: string, args: string[]): string {
     args.forEach((arg: string, index: number) => {
         format = format.replace("{" + index + "}", arg);
     });
+
     return format;
 }
 
@@ -224,6 +226,7 @@ export class PipeTransportConfigurations extends Configuration {
 \t${indentJsonString(createPipeTransportString(this.pipeProgram, this.MIMode))},
 \t"MIMode": "${this.MIMode}"{0}
 }`, [this.additionalProperties ? `,${os.EOL}\t${indentJsonString(this.additionalProperties)}` : ""]);
+
         return {
             "label": configPrefix + name,
             "description": localize("pipe.attach.with", "Pipe Attach with {0}.", this.MIMode).replace(/"/g, ''),

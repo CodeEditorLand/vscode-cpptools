@@ -21,5 +21,6 @@ export type Initializer<T> = T | (() => Promise<T>) | (() => T) | (new () => T);
 export type Instance<T> = Awaited<T>;
 export interface AsyncConstructor<TClass extends new (...args: ConstructorParameters<TClass>) => ConstructorReturn<TClass>> {
     new(...args: ConstructorParameters<TClass>): Promise<ConstructorReturn<TClass>>;
+
     class: TClass;
 }

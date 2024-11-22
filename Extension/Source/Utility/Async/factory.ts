@@ -18,6 +18,7 @@ export function Factory<TFactory extends (...args: Parameters<TFactory>) => Retu
 
             // if .init is a function, call it, if it's a promise, await it
             const pInit = typeof instance.init === 'function' ? instance.init(args) : instance.init;
+
             if (is.promise(pInit)) {
                 await pInit;
             }
@@ -27,11 +28,13 @@ export function Factory<TFactory extends (...args: Parameters<TFactory>) => Retu
 
     class AsyncFactory extends Promise<ReturnType<TFactory>> {
         protected factory: TFactory;
+
         constructor(...args: any[]) {
             if (args.length === 1 && typeof args[0] === 'function') {
                 // this is being called because a new Promise is being created for an async function invocation (not user code)
                 super(args[0]);
                 this.factory = factory;
+
                 return;
             }
 

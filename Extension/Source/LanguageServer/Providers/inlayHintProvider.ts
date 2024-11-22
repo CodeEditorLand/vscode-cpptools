@@ -46,8 +46,11 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
 
     public async provideInlayHints(document: vscode.TextDocument, _range: vscode.Range, token: vscode.CancellationToken): Promise<vscode.InlayHint[]> {
         const uri: vscode.Uri = document.uri;
+
         const uriString: string = uri.toString();
+
         let fileData: FileData | undefined = this.allFileData.get(uriString);
+
         if (fileData) {
             if (fileData.promise.isCompleted) {
                 // Make sure file hasn't been changed since the last set of results.
@@ -72,6 +75,7 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
                     fileData.inlayHintsParameterNamesSuppressName = settings.inlayHintsParameterNamesSuppressName;
                     fileData.inlayHintsReferenceOperator = settings.inlayHintsReferenceOperator;
                     fileData.inlayHintsReferenceOperatorShowSpace = settings.inlayHintsReferenceOperatorShowSpace;
+
                     if (settings.inlayHintsAutoDeclarationTypes) {
                         const resolvedTypeHints: vscode.InlayHint[] = this.resolveTypeHints(settings, fileData.typeHints);
                         Array.prototype.push.apply(fileData.inlayHints, resolvedTypeHints);
@@ -83,6 +87,7 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
                     fileData.promise = new ManualPromise<vscode.InlayHint[]>();
                     fileData.promise.resolve(fileData.inlayHints);
                     this.onDidChangeInlayHintsEvent.fire();
+
                     return fileData.promise;
                 }
             } else {
@@ -107,11 +112,13 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
         const currentPromise = fileData.promise;
         token.onCancellationRequested(() => {
             const fileData: FileData | undefined = this.allFileData.get(uriString);
+
             if (fileData && currentPromise === fileData.promise) {
                 this.allFileData.delete(uriString);
                 currentPromise.reject(new vscode.CancellationError());
             }
         });
+
         return currentPromise;
     }
 
@@ -121,15 +128,19 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
         }
 
         const editor: vscode.TextEditor | undefined = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uriString);
+
         if (!editor) {
             this.allFileData.get(uriString)?.promise.resolve([]);
+
             return;
         }
 
         // Use a lambda to remove ambiguity about whether fileData may be undefined.
         const [fileData, wasNewPromiseCreated]: [FileData, boolean] = (() => {
             let fileData = this.allFileData.get(uriString);
+
             let newPromiseCreated = false;
+
             if (!fileData) {
                 fileData = {
                     version: editor.document.version,
@@ -155,7 +166,9 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
             }
             return [fileData, newPromiseCreated];
         })();
+
         const settings: CppSettings = new CppSettings(vscode.Uri.parse(uriString));
+
         if (startNewSet) {
             fileData.inlayHints = [];
             fileData.typeHints = [];
@@ -170,6 +183,7 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
         }
 
         const newTypeHints: CppInlayHint[] = cppInlayHints.filter(h => h.inlayHintKind === InlayHintKind.Type);
+
         const newParameterHints: CppInlayHint[] = cppInlayHints.filter(h => h.inlayHintKind === InlayHintKind.Parameter);
         Array.prototype.push.apply(fileData.typeHints, newTypeHints);
         Array.prototype.push.apply(fileData.parameterHints, newParameterHints);
@@ -184,6 +198,7 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
         }
 
         fileData?.promise.resolve(fileData.inlayHints);
+
         if (wasNewPromiseCreated) {
             this.onDidChangeInlayHintsEvent.fire();
         }
@@ -191,6 +206,7 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
 
     public removeFile(uriString: string): void {
         const fileData: FileData | undefined = this.allFileData.get(uriString);
+
         if (!fileData) {
             return;
         }
@@ -202,8 +218,10 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
 
     private resolveTypeHints(settings: CppSettings, hints: CppInlayHint[]): vscode.InlayHint[] {
         const resolvedHints: vscode.InlayHint[] = [];
+
         for (const hint of hints) {
             const showOnLeft: boolean = settings.inlayHintsAutoDeclarationTypesShowOnLeft && hint.identifierLength > 0;
+
             const inlayHint: vscode.InlayHint = new vscode.InlayHint(
                 new vscode.Position(hint.line, hint.character +
                     (showOnLeft ? 0 : hint.identifierLength)),
@@ -218,16 +236,21 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
 
     private resolveParameterHints(settings: CppSettings, hints: CppInlayHint[]): vscode.InlayHint[] {
         const resolvedHints: vscode.InlayHint[] = [];
+
         for (const hint of hints) {
             // Build parameter label based on settings.
             let paramHintLabel: string = "";
+
             if (settings.inlayHintsParameterNames) {
                 paramHintLabel = (settings.inlayHintsParameterNamesSuppressName && hint.hasParamName) ? "" : hint.label;
+
                 if (paramHintLabel !== "" && settings.inlayHintsParameterNamesHideLeadingUnderscores) {
                     let nonUnderscoreIndex: number = 0;
+
                     for (let i: number = 0; i < paramHintLabel.length; ++i) {
                         if (paramHintLabel[i] !== '_') {
                             nonUnderscoreIndex = i;
+
                             break;
                         }
                     }
@@ -237,6 +260,7 @@ export class InlayHintsProvider implements vscode.InlayHintsProvider {
                 }
             }
             let refOperatorString: string = "";
+
             if (settings.inlayHintsReferenceOperator && hint.isValueRef) {
                 refOperatorString = (paramHintLabel !== "" && settings.inlayHintsReferenceOperatorShowSpace) ? "& " : "&";
             }

@@ -28,17 +28,21 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
     }
     async provideFoldingRanges(document: vscode.TextDocument, context: vscode.FoldingContext, token: vscode.CancellationToken): Promise<vscode.FoldingRange[] | undefined> {
         await this.client.ready;
+
         const settings: CppSettings = new CppSettings();
+
         if (!settings.codeFolding) {
             return [];
         }
 
         const pendingRequest: FoldingRangeRequestInfo | undefined = this.pendingRequests.get(document.uri.toString());
+
         if (pendingRequest !== undefined) {
             if (pendingRequest.promise === undefined) {
                 pendingRequest.promise = new ManualPromise<vscode.FoldingRange[] | undefined>();
             }
             console.log("Redundant folding ranges request received for: " + document.uri.toString());
+
             return pendingRequest.promise;
         }
         const foldingRangeRequestInfo: FoldingRangeRequestInfo = {
@@ -49,6 +53,7 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
         const promise: Promise<vscode.FoldingRange[] | undefined> = this.requestRanges(document.uri.toString(), token);
         await promise;
         this.pendingRequests.delete(document.uri.toString());
+
         if (foldingRangeRequestInfo.promise !== undefined) {
             promise.then(() => {
                 foldingRangeRequestInfo.promise?.resolve(promise);
@@ -65,6 +70,7 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
         };
 
         let response: GetFoldingRangesResult;
+
         try {
             response = await this.client.languageClient.sendRequest(GetFoldingRangesRequest, params, token);
         } catch (e: any) {
@@ -82,21 +88,29 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
                 start: r.range.startLine,
                 end: r.range.endLine
             };
+
             switch (r.kind) {
                 case FoldingRangeKind.Comment:
                     foldingRange.kind = vscode.FoldingRangeKind.Comment;
+
                     break;
+
                 case FoldingRangeKind.Imports:
                     foldingRange.kind = vscode.FoldingRangeKind.Imports;
+
                     break;
+
                 case FoldingRangeKind.Region:
                     foldingRange.kind = vscode.FoldingRangeKind.Region;
+
                     break;
+
                 default:
                     break;
             }
             result.push(foldingRange);
         });
+
         return result;
     }
 

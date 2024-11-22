@@ -7,6 +7,7 @@ import { is } from '../System/guards';
 
 class Lazy<T> extends Promise<T> {
     #promise!: Promise<T>;
+
     constructor(private initializer: T | (() => Promise<T>) | (() => T) | (new () => T)) {
         super(resolve => resolve(undefined as any));
     }

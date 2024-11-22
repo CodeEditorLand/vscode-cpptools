@@ -15,6 +15,7 @@ import { getOutputChannel } from './logger';
 import * as test from './testHook';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export class CppTools implements CppToolsTestApi {
@@ -35,6 +36,7 @@ export class CppTools implements CppToolsTestApi {
     private addNotifyReadyTimer(provider: CustomConfigurationProvider1): void {
         if (this.version >= Version.v2) {
             const timeout: number = 30;
+
             const timer: NodeJS.Timeout = global.setTimeout(() => {
                 console.warn(`registered provider ${provider.extensionId} did not call 'notifyReady' within ${timeout} seconds`);
             }, timeout * 1000);
@@ -45,6 +47,7 @@ export class CppTools implements CppToolsTestApi {
     private removeNotifyReadyTimer(provider: CustomConfigurationProvider1): void {
         if (this.version >= Version.v2) {
             const timer: NodeJS.Timeout | undefined = this.timers.get(provider.extensionId);
+
             if (timer) {
                 this.timers.delete(provider.extensionId);
                 clearTimeout(timer);
@@ -58,10 +61,13 @@ export class CppTools implements CppToolsTestApi {
 
     public registerCustomConfigurationProvider(provider: CustomConfigurationProvider): void {
         const providers: CustomConfigurationProviderCollection = getCustomConfigProviders();
+
         if (providers.add(provider, this.version)) {
             const added: CustomConfigurationProvider1 | undefined = providers.get(provider);
+
             if (added) {
                 const settings: CppSettings = new CppSettings();
+
                 if (getNumericLoggingLevel(settings.loggingLevel) >= 5) {
                     getOutputChannel().appendLine(localize("provider.registered", "Custom configuration provider '{0}' registered", added.name));
                 }
@@ -76,6 +82,7 @@ export class CppTools implements CppToolsTestApi {
 
     public notifyReady(provider: CustomConfigurationProvider): void {
         const providers: CustomConfigurationProviderCollection = getCustomConfigProviders();
+
         const p: CustomConfigurationProvider1 | undefined = providers.get(provider);
 
         if (p) {
@@ -94,6 +101,7 @@ export class CppTools implements CppToolsTestApi {
 
     public didChangeCustomConfiguration(provider: CustomConfigurationProvider): void {
         const providers: CustomConfigurationProviderCollection = getCustomConfigProviders();
+
         const p: CustomConfigurationProvider1 | undefined = providers.get(provider);
 
         if (p) {
@@ -110,6 +118,7 @@ export class CppTools implements CppToolsTestApi {
 
     public didChangeCustomBrowseConfiguration(provider: CustomConfigurationProvider): void {
         const providers: CustomConfigurationProviderCollection = getCustomConfigProviders();
+
         const p: CustomConfigurationProvider1 | undefined = providers.get(provider);
 
         if (p) {

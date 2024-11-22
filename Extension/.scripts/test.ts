@@ -20,6 +20,7 @@ import { install, isolated, options } from './vscode';
 export { install, reset } from './vscode';
 
 const sowrite = process.stdout.write.bind(process.stdout) as (...args: unknown[]) => boolean;
+
 const sewrite = process.stderr.write.bind(process.stderr) as (...args: unknown[]) => boolean;
 
 const filters = [
@@ -45,6 +46,7 @@ function filterStdio() {
         }
         if (args[0] instanceof Buffer) {
             const text = args[0].toString();
+
             if (filters.some(each => text.match(each))) {
                 return true;
             }
@@ -62,6 +64,7 @@ function filterStdio() {
         }
         if (args[0] instanceof Buffer) {
             const text = args[0].toString();
+
             if (filters.some(each => text.match(each))) {
                 return true;
             }
@@ -74,9 +77,12 @@ filterStdio();
 
 async function unitTests() {
     await assertAnyFolder('dist/test/unit', `The folder '${$root}/dist/test/unit is missing. You should run ${brightGreen("yarn compile")}\n\n`);
+
     const mocha = await assertAnyFile(["node_modules/.bin/mocha.cmd", "node_modules/.bin/mocha"], `Can't find the mocha testrunner. You might need to run ${brightGreen("yarn install")}\n\n`);
+
     const result = spawnSync(mocha, [`${$root}/dist/test/unit/**/*.test.js`, '--timeout', '30000'], { stdio:'inherit', shell: true });
     verbose(`\n${green("NOTE:")} If you want to run a scenario test (end-to-end) use ${cmdSwitch('scenario=<NAME>')} \n\n`);
+
     return result.status;
 }
 
@@ -97,8 +103,11 @@ async function scenarioTests(assets: string, name: string, workspace: string) {
 
 export async function main() {
     await assertAnyFolder('dist/test/', `The folder '${$root}/dist/test is missing. You should run ${brightGreen("yarn compile")}\n\n`);
+
     const arg = $args.find(each => !each.startsWith("--"));
+
     const specifiedScenario = $scenario || env.SCENARIO || await getScenarioFolder(arg);
+
     const testInfo = await getTestInfo(specifiedScenario);
 
     if (!testInfo) {
@@ -134,13 +143,16 @@ export async function all() {
     }
     try {
         const scenarios = await getScenarioNames();
+
         for (const each of scenarios) {
             if (await filepath.isFolder(`${$root}/test/scenarios/${each}/tests`)) {
                 const ti = await getTestInfo(each);
 
                 if (ti) {
                     console.log(`\n\nRunning scenario ${each}`);
+
                     const result = await scenarioTests(ti.assets, ti.name, ti.workspace);
+
                     if (result) {
                         console.log(finished.join('\n'));
                         console.log(`  ${cyan(`${ti.name} Tests:`)}${red("failed")}`);
@@ -174,8 +186,11 @@ export async function getScenarioFolder(scenarioName: string) {
 
 export async function list() {
     console.log(`\n${cyan("Scenarios: ")}\n`);
+
     const names = await getScenarioNames();
+
     const max = names.reduce((max, each) => Math.max(max, each), 0);
+
     for (const each of names) {
         console.log(`  ${green(each.padEnd(max))}: ${gray(await getScenarioFolder(each))}`);
     }
@@ -184,7 +199,9 @@ export async function list() {
 export async function regen() {
     // update the .vscode/launch.json file with the scenarios
     const scenarios = await getScenarioNames();
+
     const launch = await readJson(`${$root}/.vscode/launch.json`) as CommentObject;
+
     if (!is.object(launch)) {
         return error(`The file ${$root}/.vscode/launch.json is not valid json`);
     }
@@ -193,11 +210,14 @@ export async function regen() {
     }
 
     const inputs = launch.inputs as unknown as CommentArray<Input>;
+
     const pickScenario = inputs.find(each => each.id === 'pickScenario');
+
     if (!pickScenario) {
         return error(`The file ${$root}/.vscode/launch.json is missing the 'pickScenario' input`);
     }
     const pickWorkspace = inputs.find(each => each.id === 'pickWorkspace');
+
     if (!pickWorkspace) {
         return error(`The file ${$root}/.vscode/launch.json is missing the 'pickWorkspace' input`);
     }
@@ -208,11 +228,14 @@ export async function regen() {
 
         if (await filepath.isFolder(`${$root}/test/scenarios/${scenarioFolder}/tests`)) {
             const testInfo = await getTestInfo(scenarioFolder);
+
             if (testInfo) {
                 const label = `${scenarioFolder}   `;
+
                 const value = testInfo.workspace.replace(/\\/g, '/').replace(prefix, '${workspaceFolder}');
 
                 const scenario = pickScenario.options.find(s => s.label === label);
+
                 if (!scenario) {
                     console.log(`Adding scenario ${green(scenarioFolder)} to pickScenario`);
                     pickScenario.options.push({ label, value });
@@ -221,6 +244,7 @@ export async function regen() {
                 }
 
                 const wrkspace = pickWorkspace.options.find(s => s.label === label);
+
                 if (!wrkspace) {
                     console.log(`Adding workspace ${green(scenarioFolder)} to pickWorkspace`);
                     pickWorkspace.options.push({ label, value });

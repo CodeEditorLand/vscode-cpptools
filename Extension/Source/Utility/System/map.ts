@@ -15,10 +15,12 @@ export function getOrAdd<TKey, TValue>(map: Map<TKey, TValue>, key: TKey, defaul
 export function getOrAdd<TKey, TValue>(map: Map<TKey, TValue>, key: TKey, defaultValue: InitialValue<TValue>): TValue;
 export function getOrAdd<TKey, TValue>(map: Map<TKey, TValue> | WeakMap<any, TValue>, key: TKey, defaultValue: InitialValue<TValue | Promise<TValue>>): TValue | Promise<TValue> {
     const value = map.get(key);
+
     if (!is.nullish(value)) {
         return value;
     }
     const initializer = defaultValue instanceof Function ? defaultValue() : defaultValue;
+
     if (is.promise(initializer)) {
         return initializer.then(v => {
             if (v !== undefined) {

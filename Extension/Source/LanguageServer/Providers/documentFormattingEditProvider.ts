@@ -12,23 +12,29 @@ import { makeVscodeTextEdits } from '../utils';
 
 export class DocumentFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
     private client: DefaultClient;
+
     constructor(client: DefaultClient) {
         this.client = client;
     }
 
     public async provideDocumentFormattingEdits(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken): Promise<vscode.TextEdit[]> {
         const settings: CppSettings = new CppSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+
         if (settings.formattingEngine === "disabled") {
             return [];
         }
         await this.client.ready;
+
         const filePath: string = document.uri.fsPath;
+
         if (options.onChanges) {
             let insertSpacesSet: boolean = false;
+
             let tabSizeSet: boolean = false;
             // Even when preserveFocus is true, VS Code is making the document active (when we don't want that).
             // The workaround is for the code invoking the formatting to call showTextDocument again afterwards on the previously active document.
             const editor: vscode.TextEditor = await vscode.window.showTextDocument(document, { preserveFocus: options.preserveFocus as boolean });
+
             if (editor.options.insertSpaces && typeof editor.options.insertSpaces === "boolean") {
                 options.insertSpaces = editor.options.insertSpaces;
                 insertSpacesSet = true;
@@ -40,6 +46,7 @@ export class DocumentFormattingEditProvider implements vscode.DocumentFormatting
 
             if (!insertSpacesSet || !tabSizeSet) {
                 const settings: OtherSettings = new OtherSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+
                 if (!insertSpacesSet) {
                     options.insertSpaces = settings.editorInsertSpaces ?? true;
                 }
@@ -49,6 +56,7 @@ export class DocumentFormattingEditProvider implements vscode.DocumentFormatting
             }
         }
         const useVcFormat: boolean = settings.useVcFormat(document);
+
         const configCallBack = async (editorConfigSettings: any | undefined) => {
             const params: FormatParams = {
                 editorConfigSettings: { ...editorConfigSettings },
@@ -69,7 +77,9 @@ export class DocumentFormattingEditProvider implements vscode.DocumentFormatting
                 },
                 onChanges: options.onChanges === true
             };
+
             let response: FormatResult;
+
             try {
                 response = await this.client.languageClient.sendRequest(FormatDocumentRequest, params, token);
             } catch (e: any) {
@@ -86,6 +96,7 @@ export class DocumentFormattingEditProvider implements vscode.DocumentFormatting
             if (document.lineCount > 0 && editorConfigSettings !== undefined && editorConfigSettings.insert_final_newline) {
                 // Check if there is already a newline at the end.  If so, formatting edits should not replace it.
                 const lastLine: vscode.TextLine = document.lineAt(document.lineCount - 1);
+
                 if (!lastLine.isEmptyOrWhitespace) {
                     const endPosition: vscode.Position = lastLine.range.end;
                     // Check if there is an existing edit that extends the end of the file.
@@ -96,6 +107,7 @@ export class DocumentFormattingEditProvider implements vscode.DocumentFormatting
                             lastEdit = edit;
                         }
                     });
+
                     if (lastEdit === undefined) {
                         results.push({
                             range: new vscode.Range(endPosition, endPosition),
@@ -110,10 +122,12 @@ export class DocumentFormattingEditProvider implements vscode.DocumentFormatting
             }
             return results;
         };
+
         if (!useVcFormat) {
             return configCallBack(undefined);
         } else {
             const editorConfigSettings: any = getEditorConfigSettings(filePath);
+
             return configCallBack(editorConfigSettings);
         }
     }

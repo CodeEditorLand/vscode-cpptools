@@ -22,6 +22,7 @@ export function pathsFromVariable(environmentVariable: string = 'PATH'): string[
 
 export async function filterToFolders(paths: string[]): Promise<string[]> {
     const set = new Set(paths);
+
     for (const each of [...set.keys()]) {
         if (!each || !await filepath.isFolder(each)) {
             set.delete(each);
@@ -73,6 +74,7 @@ export class filepath {
 
     static async info(name: string | undefined | Promise<string | undefined>, baseFolder?: string, executableExtensions: Set<string> = process.platform === 'win32' ? new Set(['.exe'/* ,'.cmd','.bat' */]) : new Set()): Promise<undefined | File | Folder> {
         const [fullPath, stats] = await filepath.stats(name, baseFolder);
+
         if (!stats) {
             return undefined;
         }
@@ -93,12 +95,14 @@ export class filepath {
                 entry.extension = extname(fp);
                 entry.basename = basename(fp, entry.extension);
                 entry.isExecutable = executableExtensions.has(entry.extension);
+
                 return entry;
             }
             entry.extension = extname(fullPath);
             entry.basename = basename(fullPath, entry.extension);
             // eslint-disable-next-line no-bitwise
             entry.isExecutable = !!(stats.mode & (constants.S_IXUSR | constants.S_IXGRP | constants.S_IXOTH));
+
             return entry;
         }
         if (entry.isFolder) {
@@ -110,21 +114,25 @@ export class filepath {
 
     static async isFile(name: any | string | undefined | Promise<string | undefined>, baseFolder?: string): Promise<undefined | string> {
         const [fullName, stats] = await filepath.stats(name, baseFolder);
+
         return stats?.isFile() ? fullName : undefined;
     }
 
     static async isFolder(name: string | undefined | Promise<string | undefined>, baseFolder?: string): Promise<undefined | string> {
         const [fullName, stats] = await filepath.stats(name, baseFolder);
+
         return stats?.isDirectory() ? fullName : undefined;
     }
 
     static async exists(name: string | undefined | Promise<string | undefined>, baseFolder?: string): Promise<undefined | string> {
         const [fullName, stats] = await filepath.stats(name, baseFolder);
+
         return stats ? fullName : undefined;
     }
 
     static async isExecutable(name: string | undefined | Promise<string | undefined>, baseFolder?: string): Promise<undefined | string> {
         const info = await filepath.info(name, baseFolder);
+
         return info?.isFile && info.isExecutable ? info.fullPath : undefined;
     }
 

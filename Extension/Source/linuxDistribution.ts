@@ -21,6 +21,7 @@ export class LinuxDistribution {
         const linuxDistro: Promise<LinuxDistribution> = LinuxDistribution.getDistroInformationFromFile('/etc/os-release')
             .catch(() => LinuxDistribution.getDistroInformationFromFile('/usr/lib/os-release'))
             .catch(() => Promise.resolve(new LinuxDistribution('unknown', 'unknown'))); // couldn't get distro information;
+
         return linuxDistro;
     }
 
@@ -29,6 +30,7 @@ export class LinuxDistribution {
             fs.readFile(path, 'utf8', (error, data) => {
                 if (error) {
                     reject(error);
+
                     return;
                 }
                 resolve(LinuxDistribution.getDistroInformation(data));
@@ -39,13 +41,18 @@ export class LinuxDistribution {
     // Only public for tests.
     public static getDistroInformation(data: string): LinuxDistribution {
         const idKey: string = 'ID';
+
         const versionKey: string = 'VERSION_ID';
+
         let distroName: string = 'unknown';
+
         let distroVersion: string = 'unknown';
 
         const keyValues: string[] = data.split(os.EOL);
+
         for (let i: number = 0; i < keyValues.length; i++) {
             const keyValue: string[] = keyValues[i].split('=');
+
             if (keyValue.length === 2) {
                 if (keyValue[0] === idKey) {
                     distroName = keyValue[1];

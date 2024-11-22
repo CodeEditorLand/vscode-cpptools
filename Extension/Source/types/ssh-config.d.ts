@@ -5,6 +5,7 @@
 
 declare module 'ssh-config' {
     export type LeafConfigurationEntry = ConfigurationDirective | ConfigurationComment;
+
     export type ConfigurationEntry = HostConfigurationDirective | LeafConfigurationEntry;
 
     export const enum Type {

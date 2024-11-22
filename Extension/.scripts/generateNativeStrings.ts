@@ -14,16 +14,22 @@ import { read, write } from './common';
 // ****************************
 export async function main() {
     const $root = resolve(`${__dirname}/..`);
+
     const stringTable = parse(await read(`${$root}/src/nativeStrings.json`)) as any;
 
     let nativeEnumContent = "";
+
     let nativeStringTableContent = "";
+
     let typeScriptSwitchContent = "";
 
     let stringIndex = 1;
+
     for (const property in stringTable) {
         let stringValue = stringTable[property];
+
         let hintValue;
+
         if (typeof stringValue !== "string") {
             hintValue = stringValue.hint;
             stringValue = stringValue.text;
@@ -40,14 +46,17 @@ export async function main() {
         if (stringValue !== "") {
             // It's possible that a translation may skip "{#}" entries, so check for up to 50 of them.
             let numArgs = 0;
+
             for (let i = 0; i < 50; i++) {
                 if (stringValue.includes(`{${i}}`)) {
                     numArgs = i + 1;
                 }
             }
             typeScriptSwitchContent += `        case ${stringIndex}:\n`;
+
             if (numArgs !== 0) {
                 typeScriptSwitchContent += `            if (stringArgs) {\n`;
+
                 if (hintValue) {
                     typeScriptSwitchContent += `                message = localize({ key: ${JSON.stringify(property)}, comment: [${JSON.stringify(hintValue)}] }, ${JSON.stringify(stringValue)}`;
                 } else {
@@ -84,12 +93,14 @@ export async function main() {
 import * as nls from 'vscode-nls';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export const localizedStringCount: number = ${stringIndex};
 
 export function lookupString(stringId: number, stringArgs?: string[]): string {
     let message: string = "";
+
     switch (stringId) {
         case 0:
             // Special case for blank string
@@ -97,6 +108,7 @@ export function lookupString(stringId: number, stringArgs?: string[]): string {
 ${typeScriptSwitchContent}
         default:
             console.assert(\"Unrecognized string ID\");
+
             break;
     }
     return message;

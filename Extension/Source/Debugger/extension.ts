@@ -24,17 +24,22 @@ import { NativeAttachItemsProviderFactory } from './nativeAttach';
 
 // The extension deactivate method is asynchronous, so we handle the disposables ourselves instead of using extensionContext.subscriptions.
 const disposables: vscode.Disposable[] = [];
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 let sshTargetsViewEnabled: boolean = false;
+
 let sshTargetsViewSetting: string | undefined;
+
 let sshConfigWatcher: chokidar.FSWatcher | undefined;
 
 export async function initialize(context: vscode.ExtensionContext): Promise<void> {
     // Activate Process Picker Commands
     const attachItemsProvider: AttachItemsProvider = NativeAttachItemsProviderFactory.Get();
+
     const attacher: AttachPicker = new AttachPicker(attachItemsProvider);
     disposables.push(vscode.commands.registerCommand('extension.pickNativeProcess', () => attacher.ShowAttachEntries()));
+
     const remoteAttacher: RemoteAttachPicker = new RemoteAttachPicker();
     disposables.push(vscode.commands.registerCommand('extension.pickRemoteNativeProcess', (any) => remoteAttacher.ShowAttachEntries(any)));
 
@@ -44,6 +49,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<void
     // Register DebugConfigurationProviders for "Run and Debug" in Debug Panel.
     // On Windows platforms, the cppvsdbg debugger will also be registered for initial configurations.
     let cppVsDebugProvider: DebugConfigurationProvider | null = null;
+
     if (os.platform() === 'win32') {
         cppVsDebugProvider = new DebugConfigurationProvider(assetProvider, DebuggerType.cppvsdbg);
         disposables.push(vscode.debug.registerDebugConfigurationProvider(DebuggerType.cppvsdbg, cppVsDebugProvider, vscode.DebugConfigurationProviderTriggerKind.Dynamic));
@@ -60,6 +66,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<void
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     disposables.push(vscode.commands.registerTextEditorCommand("C_Cpp.AddDebugConfiguration", async (textEditor: vscode.TextEditor, _edit: vscode.TextEditorEdit, ..._args: any[]) => {
         const folder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(textEditor.document.uri);
+
         if (!folder) {
             void vscode.window.showWarningMessage(localize("add.debug.configuration.not.available.for.single.file", "Add debug configuration is not available for single file."));
         }
@@ -83,6 +90,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<void
 
     // SSH Targets View
     await initializeSshTargets();
+
     const sshTargetsProvider: SshTargetsProvider = new SshTargetsProvider();
     disposables.push(vscode.window.registerTreeDataProvider('CppSshTargetsView', sshTargetsProvider));
     disposables.push(vscode.commands.registerCommand(addSshTargetCmd, () => enableSshTargetsViewAndRun(addSshTargetImpl)));
@@ -96,7 +104,9 @@ export async function initialize(context: vscode.ExtensionContext): Promise<void
     disposables.push(vscode.commands.registerCommand('C_Cpp.selectSshTarget', () => enableSshTargetsViewAndRun(selectSshTarget)));
     disposables.push(vscode.commands.registerCommand('C_Cpp.selectActiveSshTarget', async () => {
         await enableSshTargetsView();
+
         const name: string | undefined = await selectSshTarget();
+
         if (name) {
             await setActiveSshTarget(name);
             await vscode.commands.executeCommand(refreshCppSshTargetsViewCmd);
@@ -117,6 +127,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<void
     disposables.push(vscode.workspace.onDidChangeConfiguration(async (e: vscode.ConfigurationChangeEvent) => {
         if (e.affectsConfiguration('C_Cpp.sshTargetsView')) {
             sshTargetsViewSetting = new CppSettings().sshTargetsView;
+
             if (sshTargetsViewSetting === 'enabled' || (sshTargetsViewSetting === 'default' && await getActiveSshTarget(false))) {
                 await enableSshTargetsView();
             } else if (sshTargetsViewSetting === 'disabled') {
@@ -142,6 +153,7 @@ function sshTerminal(node: TargetLeafNode): void {
 
 async function enableSshTargetsViewAndRun<T>(func: (...paras: any[]) => T | Promise<T>, ...args: any[]): Promise<T> {
     await enableSshTargetsView();
+
     return func(...args);
 }
 
@@ -159,6 +171,7 @@ async function enableSshTargetsView(): Promise<void> {
 
 async function disableSshTargetsView(): Promise<void> {
     await vscode.commands.executeCommand('setContext', 'cpptools.enableSshTargetsView', false);
+
     if (sshConfigWatcher) {
         void sshConfigWatcher.close();
         sshConfigWatcher = undefined;
@@ -168,6 +181,7 @@ async function disableSshTargetsView(): Promise<void> {
 
 async function addSshTargetImpl(): Promise<string> {
     const validConfigFiles: string[] = [];
+
     for (const configFile of getSshConfigurationFiles()) {
         if (await pathAccessible(configFile) && parseFailures.get(configFile)) {
             getSshChannel().appendLine(localize('cannot.modify.config.file', 'Cannot modify SSH configuration file because of parse failure "{0}".', configFile));
@@ -184,6 +198,7 @@ async function addSshTargetImpl(): Promise<string> {
         placeHolder: localize('ssh.target.name.place.holder', 'Example: `mySSHTarget`'),
         ignoreFocusOut: true
     });
+
     if (name === undefined) {
         // Cancelled
         return '';
@@ -194,6 +209,7 @@ async function addSshTargetImpl(): Promise<string> {
         placeHolder: localize('ssh.connection.command.place.holder', 'Example: `ssh hello@microsoft.com -A`'),
         ignoreFocusOut: true
     });
+
     if (!command) {
         return '';
     }
@@ -201,6 +217,7 @@ async function addSshTargetImpl(): Promise<string> {
     const newEntry: { [key: string]: string } = sshCommandToConfig(command, name);
 
     const targetFile: string | undefined = await vscode.window.showQuickPick(validConfigFiles, { title: localize('select.ssh.config.file', 'Select an SSH configuration file') });
+
     if (!targetFile) {
         return '';
     }
@@ -214,8 +231,11 @@ async function addSshTargetImpl(): Promise<string> {
 
 async function removeSshTargetImpl(node: TargetLeafNode): Promise<boolean> {
     const labelYes: string = localize('yes', 'Yes');
+
     const labelNo: string = localize('no', 'No');
+
     const confirm: string | undefined = await vscode.window.showInformationMessage(localize('ssh.target.delete.confirmation', 'Are you sure you want to permanently delete "{0}"?', node.name), labelYes, labelNo);
+
     if (!confirm || confirm === labelNo) {
         return false;
     }

@@ -12,6 +12,7 @@ import { CppSourceStr } from './LanguageServer/extension';
 import { getLocalizedString, LocalizeStringParams } from './LanguageServer/localization';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 // This is used for testing purposes
@@ -29,6 +30,7 @@ export class Logger {
 
     public append(message: string): void {
         this.writer(message);
+
         if (Subscriber) {
             Subscriber(message);
         }
@@ -36,6 +38,7 @@ export class Logger {
 
     public appendLine(message: string): void {
         this.writer(message + os.EOL);
+
         if (Subscriber) {
             Subscriber(message + os.EOL);
         }
@@ -84,7 +87,9 @@ export function getOutputChannel(): vscode.OutputChannel {
         outputChannel = vscode.window.createOutputChannel(CppSourceStr);
         // Do not use CppSettings to avoid circular require()
         const settings: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("C_Cpp", null);
+
         const loggingLevel: string | undefined = settings.get<string>("loggingLevel");
+
         if (getNumericLoggingLevel(loggingLevel) > 1) {
             outputChannel.appendLine(`loggingLevel: ${loggingLevel}`);
         }
@@ -157,13 +162,16 @@ export interface ShowWarningParams {
 
 export function showWarning(params: ShowWarningParams): void {
     const message: string = getLocalizedString(params.localizeStringParams);
+
     let showChannel: boolean = false;
+
     if (!warningChannel) {
         warningChannel = vscode.window.createOutputChannel(`${localize("c.cpp.warnings", "C/C++ Configuration Warnings")}`);
         showChannel = true;
     }
     // Append before showing the channel, to avoid a delay.
     warningChannel.appendLine(`[${new Date().toLocaleString()}] ${message}`);
+
     if (showChannel) {
         warningChannel.show(true);
     }

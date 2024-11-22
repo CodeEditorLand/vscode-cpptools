@@ -13,15 +13,18 @@ import { CreateOptions, ScriptError } from './interfaces';
  */
 export function createSandbox(): <T>(code: string, context?: any) => T {
     const sandbox = createContext({});
+
     return (code: string, context?: any) => {
         const response = `SAFE_EVAL_${Math.floor(Math.random() * 1000000)}`;
         sandbox[response] = {};
+
         if (context) {
             Object.keys(context).forEach((key) => sandbox[key] = context[key]);
             runInContext(
                 `try {  ${response} = ${code} } catch (e) { ${response} = undefined }`,
                 sandbox
             );
+
             for (const key of Object.keys(context)) {
                 // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete sandbox[key];

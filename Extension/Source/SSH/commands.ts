@@ -10,10 +10,12 @@ import { defaultSystemInteractor } from './commandInteractors';
 import { runSshTerminalCommandWithLogin } from './sshCommandRunner';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export async function scp(files: vscode.Uri[], host: ISshHostInfo, targetDir: string, recursive: boolean = true, scpPath?: string, jumpHosts?: ISshHostInfo[], cancellationToken?: vscode.CancellationToken): Promise<ProcessReturnType> {
     const args: string[] = [];
+
     if (recursive) {
         args.push('-r');
     }
@@ -38,6 +40,7 @@ export async function rsync(files: vscode.Uri[], host: ISshHostInfo, targetDir: 
     // --verbose, -v          Verbose.
     // --compress, -z         Compress file data during the transfer.
     const args: string[] = ['-lKpvz'];
+
     if (recursive) {
         args.push('-r');
     }
@@ -55,6 +58,7 @@ export async function rsync(files: vscode.Uri[], host: ISshHostInfo, targetDir: 
 
 export function ssh(host: ISshHostInfo, command: string, sshPath?: string, jumpHosts?: ISshHostInfo[], localForwards?: ISshLocalForwardInfo[], continueOn?: string, cancellationToken?: vscode.CancellationToken): Promise<ProcessReturnType> {
     const args: string[] = [];
+
     if (jumpHosts && jumpHosts.length > 0) {
         args.push('-J', jumpHosts.map(getFullHostAddress).join(','));
     }
@@ -95,6 +99,7 @@ function localForwardToArgs(localForward: ISshLocalForwardInfo): string[] {
     }
 
     let arg: string = '';
+
     if (localForward.localSocket) {
         arg += `${localForward.localSocket}:`;
     }

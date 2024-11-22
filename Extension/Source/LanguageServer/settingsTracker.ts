@@ -26,24 +26,33 @@ export class SettingsTracker {
 
     public getUserModifiedSettings(): { [key: string]: string } {
         const filter: FilterFunction = (key: string, val: string, settings: vscode.WorkspaceConfiguration) => !this.areEqual(val, settings.inspect(key)?.defaultValue);
+
         return this.collectSettings(filter);
     }
 
     public getChangedSettings(): { [key: string]: string } {
         const filter: FilterFunction = (key: string, val: string) => !(key in this.previousCppSettings) || !this.areEqual(val, this.previousCppSettings[key]);
+
         return this.collectSettings(filter);
     }
 
     private collectSettings(filter: FilterFunction): { [key: string]: string } {
         const settingsResourceScope: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("C_Cpp", this.resource);
+
         const settingsNonScoped: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("C_Cpp");
+
         const selectCorrectlyScopedSettings = (rawSetting: any): vscode.WorkspaceConfiguration =>
             (!rawSetting || rawSetting.scope === "resource" || rawSetting.scope === "machine-overridable") ? settingsResourceScope : settingsNonScoped;
+
         const result: { [key: string]: string } = {};
+
         for (const key in settingsResourceScope) {
             const rawSetting: any = util.getRawSetting("C_Cpp." + key);
+
             const correctlyScopedSettings: vscode.WorkspaceConfiguration = selectCorrectlyScopedSettings(rawSetting);
+
             const val: any = this.getSetting(correctlyScopedSettings, key);
+
             if (val === undefined) {
                 continue;
             }
@@ -56,9 +65,13 @@ export class SettingsTracker {
                 }
                 for (const subKey in val) {
                     const newKey: string = key + "." + subKey;
+
                     const newRawSetting: any = util.getRawSetting("C_Cpp." + newKey);
+
                     const correctlyScopedSubSettings: vscode.WorkspaceConfiguration = selectCorrectlyScopedSettings(newRawSetting);
+
                     const subVal: any = this.getSetting(correctlyScopedSubSettings, newKey);
+
                     if (subVal === undefined) {
                         continue;
                     }
@@ -66,18 +79,22 @@ export class SettingsTracker {
                         collectSettingsRecursive(newKey, subVal, depth + 1);
                     } else {
                         const entry: KeyValuePair | undefined = this.filterAndSanitize(newKey, subVal, correctlyScopedSubSettings, filter);
+
                         if (entry?.key && entry.value !== undefined) {
                             result[entry.key] = entry.value;
                         }
                     }
                 }
             };
+
             if (rawSetting === undefined && val instanceof Object) {
                 collectSettingsRecursive(key, val, 1);
+
                 continue;
             }
 
             const entry: KeyValuePair | undefined = this.filterAndSanitize(key, val, correctlyScopedSettings, filter);
+
             if (entry && entry.key && entry.value) {
                 result[entry.key] = entry.value;
             }
@@ -90,19 +107,23 @@ export class SettingsTracker {
         // Ignore methods and settings that don't exist
         if (settings.inspect(key)?.defaultValue !== undefined) {
             const val: any = settings.get(key);
+
             if (val instanceof Object) {
                 return val; // It's a sub-section.
             }
 
             // Only return values that match the setting's type and enum (if applicable).
             const curSetting: any = util.getRawSetting("C_Cpp." + key);
+
             if (curSetting) {
                 const type: string | undefined = this.typeMatch(val, curSetting["type"]);
+
                 if (type) {
                     if (type !== "string") {
                         return val;
                     }
                     const curEnum: any[] = curSetting["enum"];
+
                     if (curEnum && curEnum.indexOf(val) === -1
                         && (key !== "loggingLevel" || util.getNumericLoggingLevel(val) === -1)) {
                         return "<invalid>";
@@ -122,6 +143,7 @@ export class SettingsTracker {
             if (type instanceof Array) {
                 for (let i: number = 0; i < type.length; i++) {
                     const t: string = type[i];
+
                     if (t) {
                         if (typeof value === t) {
                             return t;
@@ -153,10 +175,12 @@ export class SettingsTracker {
         if (filter(key, val, settings)) {
             let value: string;
             this.previousCppSettings[key] = val;
+
             switch (key) {
                 case "clang_format_style":
                 case "clang_format_fallbackStyle": {
                     const newKey: string = key + "2";
+
                     if (val) {
                         switch (String(val).toLowerCase()) {
                             case "emulated visual studio":
@@ -169,10 +193,12 @@ export class SettingsTracker {
                             case "file":
                             case "none": {
                                 value = String(this.previousCppSettings[key]);
+
                                 break;
                             }
                             default: {
                                 value = "...";
+
                                 break;
                             }
                         }
@@ -180,6 +206,7 @@ export class SettingsTracker {
                         value = "null";
                     }
                     key = newKey;
+
                     break;
                 }
                 case "commentContinuationPatterns": {

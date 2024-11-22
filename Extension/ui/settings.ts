@@ -57,7 +57,9 @@ const elementId: { [key: string]: string } = {
 
 interface VsCodeApi {
     postMessage(msg: Record<string, any>): void;
+
     setState(state: Record<string, any>): void;
+
     getState(): any;
 }
 
@@ -76,18 +78,22 @@ class SettingsApp {
         // Add event listeners to UI elements
         this.addEventsToConfigNameChanges();
         this.addEventsToInputValues();
+
         document.getElementById(elementId.knownCompilers)?.addEventListener("change", this.onKnownCompilerSelect.bind(this));
 
         // Set view state of advanced settings and add event
         const oldState: any = this.vsCodeApi.getState();
+
         const advancedShown: boolean = oldState && oldState.advancedShown;
 
         const advancedSection: HTMLElement | null = document.getElementById(elementId.advancedSection);
+
         if (advancedSection) {
             advancedSection.style.display = advancedShown ? "block" : "none";
         }
 
         document.getElementById(elementId.showAdvanced)?.classList.toggle(advancedShown ? "collapse" : "expand", true);
+
         document.getElementById(elementId.showAdvanced)?.addEventListener("click", this.onShowAdvanced.bind(this));
         this.vsCodeApi.postMessage({
             command: "initialized"
@@ -102,14 +108,19 @@ class SettingsApp {
 
         // Special case for checkbox elements
         document.getElementById(elementId.limitSymbolsToIncludedHeaders)?.addEventListener("change", this.onChangedCheckbox.bind(this, elementId.limitSymbolsToIncludedHeaders));
+
         document.getElementById(elementId.mergeConfigurations)?.addEventListener("change", this.onChangedCheckbox.bind(this, elementId.mergeConfigurations));
     }
 
     private addEventsToConfigNameChanges(): void {
         document.getElementById(elementId.configName)?.addEventListener("change", this.onConfigNameChanged.bind(this));
+
         document.getElementById(elementId.configSelection)?.addEventListener("change", this.onConfigSelect.bind(this));
+
         document.getElementById(elementId.addConfigBtn)?.addEventListener("click", this.onAddConfigBtn.bind(this));
+
         document.getElementById(elementId.addConfigOk)?.addEventListener("click", this.onAddConfigConfirm.bind(this, true));
+
         document.getElementById(elementId.addConfigCancel)?.addEventListener("click", this.onAddConfigConfirm.bind(this, false));
     }
 
@@ -155,6 +166,7 @@ class SettingsApp {
         // If request is yes, send message to create new config
         if (request) {
             const el: HTMLInputElement = <HTMLInputElement>document.getElementById(elementId.addConfigName);
+
             if (el.value !== undefined && el.value !== "") {
                 this.vsCodeApi.postMessage({
                     command: "addConfig",
@@ -172,10 +184,12 @@ class SettingsApp {
         }
 
         const configName: HTMLInputElement = <HTMLInputElement>document.getElementById(elementId.configName);
+
         const list: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.configSelection);
 
         if (configName.value === "") {
             (<HTMLInputElement>document.getElementById(elementId.configName)).value = list.options[list.selectedIndex].value;
+
             return;
         }
 
@@ -218,10 +232,13 @@ class SettingsApp {
     // This function ensures that the select control is updated when the text box is changed.
     private fixKnownCompilerSelection(): void {
         const compilerPath = (<HTMLInputElement>document.getElementById(elementId.compilerPath)).value.toLowerCase();
+
         const knownCompilers = <HTMLSelectElement>document.getElementById(elementId.knownCompilers);
+
         for (let n = 0; n < knownCompilers.options.length; n++) {
             if (compilerPath === knownCompilers.options[n].value.toLowerCase()) {
                 knownCompilers.value = knownCompilers.options[n].value;
+
                 return;
             }
         }
@@ -247,6 +264,7 @@ class SettingsApp {
         }
 
         const el: HTMLInputElement = <HTMLInputElement>document.getElementById(id);
+
         if (id === elementId.compilerPath) {
             this.fixKnownCompilerSelection();
         }
@@ -262,21 +280,29 @@ class SettingsApp {
         switch (message.command) {
             case 'updateConfig':
                 this.updateConfig(message.config);
+
                 break;
+
             case 'updateErrors':
                 this.updateErrors(message.errors);
+
                 break;
+
             case 'setKnownCompilers':
                 this.setKnownCompilers(message.compilers);
+
                 break;
+
             case 'updateConfigSelection':
                 this.updateConfigSelection(message);
+
                 break;
         }
     }
 
     private updateConfig(config: any): void {
         this.updating = true;
+
         try {
             const joinEntries: (input: any) => string = (input: string[]) => (input && input.length) ? input.join("\n") : "";
 
@@ -318,6 +344,7 @@ class SettingsApp {
 
     private updateErrors(errors: any): void {
         this.updating = true;
+
         try {
             this.showErrorWithInfo(elementId.configNameInvalid, errors.name);
             this.showErrorWithInfo(elementId.intelliSenseModeInvalid, errors.intelliSenseMode);
@@ -342,6 +369,7 @@ class SettingsApp {
 
     private updateConfigSelection(message: any): void {
         this.updating = true;
+
         try {
             const list: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.configSelection);
 
@@ -364,6 +392,7 @@ class SettingsApp {
 
     private setKnownCompilers(compilers: string[]): void {
         this.updating = true;
+
         try {
             const list: HTMLSelectElement = <HTMLSelectElement>document.getElementById(elementId.knownCompilers);
 
@@ -376,6 +405,7 @@ class SettingsApp {
             if (compilers.length === 0) {
                 // Get HTML element containing the string, as we can't localize strings in HTML js
                 const noCompilerSpan: HTMLSpanElement = <HTMLSpanElement>document.getElementById(elementId.noCompilerPathsDetected);
+
                 const option: HTMLOptionElement = document.createElement("option");
                 option.text = noCompilerSpan.textContent ?? "";
                 option.disabled = true;

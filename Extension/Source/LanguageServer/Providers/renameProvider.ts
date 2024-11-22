@@ -12,6 +12,7 @@ import { CancellationSender, ReferenceType, ReferencesParams, ReferencesResult, 
 import { CppSettings } from '../settings';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 const RenameRequest: RequestType<ReferencesParams, ReferencesResult, void> =
@@ -29,8 +30,10 @@ export class RenameProvider implements vscode.RenameProvider {
         workspaceReferences.cancelCurrentReferenceRequest(CancellationSender.NewRequest);
 
         const settings: CppSettings = new CppSettings();
+
         if (settings.renameRequiresIdentifier && !util.isValidIdentifier(newName)) {
             void vscode.window.showErrorMessage(localize("invalid.identifier.for.rename", "Invalid identifier provided for the Rename Symbol operation."));
+
             return undefined;
         }
 
@@ -38,17 +41,22 @@ export class RenameProvider implements vscode.RenameProvider {
         // use a local cancellation source to explicitly cancel a token.
         // Don't listen to the token from the provider, as it will cancel when the cursor is moved to a different position.
         const cancelSource: vscode.CancellationTokenSource = new vscode.CancellationTokenSource();
+
         const requestCanceledListener: vscode.Disposable = workspaceReferences.onCancellationRequested(_sender => { cancelSource.cancel(); });
 
         // Send the request to the language server.
         workspaceReferences.startRename();
+
         const workspaceEditResult: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+
         const params: ReferencesParams = {
             newName: newName,
             position: Position.create(position.line, position.character),
             textDocument: { uri: document.uri.toString() }
         };
+
         let response: ReferencesResult;
+
         try {
             response = await this.client.languageClient.sendRequest(RenameRequest, params, cancelSource.token);
         } catch (e: any) {
@@ -72,8 +80,10 @@ export class RenameProvider implements vscode.RenameProvider {
         } else {
             for (const reference of response.referenceInfos) {
                 const uri: vscode.Uri = vscode.Uri.file(reference.file);
+
                 const range: vscode.Range = new vscode.Range(reference.position.line, reference.position.character,
                     reference.position.line, reference.position.character + response.text.length);
+
                 const metadata: vscode.WorkspaceEditEntryMetadata = {
                     needsConfirmation: reference.type !== ReferenceType.Confirmed,
                     label: getReferenceTagString(reference.type, false, true),

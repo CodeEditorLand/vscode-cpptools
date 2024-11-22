@@ -15,6 +15,7 @@ import { CppSettings } from '../settings';
 import { makeVscodeRange } from '../utils';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 interface GetCodeActionsRequestParams {
@@ -41,6 +42,7 @@ export const GetCodeActionsRequest: RequestType<GetCodeActionsRequestParams, Get
 
 export class CodeActionProvider implements vscode.CodeActionProvider {
     private client: DefaultClient;
+
     constructor(client: DefaultClient) {
         this.client = client;
     }
@@ -52,7 +54,9 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
     public async provideCodeActions(document: vscode.TextDocument, range: vscode.Range | vscode.Selection,
         context: vscode.CodeActionContext, token: vscode.CancellationToken): Promise<(vscode.Command | vscode.CodeAction)[]> {
         await this.client.ready;
+
         let r: Range;
+
         if (range instanceof vscode.Selection) {
             if (range.active.isBefore(range.anchor)) {
                 r = Range.create(Position.create(range.active.line, range.active.character),
@@ -72,6 +76,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
         };
 
         let response: GetCodeActionsResult;
+
         try {
             response = await this.client.languageClient.sendRequest(GetCodeActionsRequest, params, token);
         } catch (e: any) {
@@ -86,8 +91,11 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
         }
 
         const resultCodeActions: vscode.CodeAction[] = [];
+
         let hasSelectIntelliSenseConfiguration: boolean = false;
+
         const settings: CppSettings = new CppSettings(this.client.RootUri);
+
         const hasConfigurationSet: boolean = settings.defaultCompilerPath !== null ||
             !!settings.defaultCompileCommands || !!settings.defaultConfigurationProvider ||
             this.client.configuration.CurrentConfiguration?.compilerPath !== undefined ||
@@ -99,16 +107,22 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 
         // Convert to vscode.CodeAction array
         let hasInlineMacro: boolean = false;
+
         const processCommand = (command: CodeActionCommand) => {
             let title: string = getLocalizedString(command.localizeStringParams);
+
             let wsEdit: vscode.WorkspaceEdit | undefined;
+
             let codeActionKind: vscode.CodeActionKind = vscode.CodeActionKind.QuickFix;
+
             if (command.edit) {
                 wsEdit = new vscode.WorkspaceEdit();
+
                 if (command.command === 'C_Cpp.AddMissingInclude') {
                     command.edit.newText += "\n";
                 }
                 wsEdit.replace(document.uri, makeVscodeRange(command.edit.range), command.edit.newText);
+
                 if (command.command === "edit") {
                     // Inline macro feature.
                     codeActionKind = CodeActionProvider.inlineMacroKind;
@@ -117,14 +131,20 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
             } else if (command.command === "C_Cpp.RemoveAllCodeAnalysisProblems" && command.uri !== undefined) {
                 // The "RemoveAll" message is sent for all code analysis squiggles.
                 const vsCodeRange: vscode.Range = makeVscodeRange(r);
+
                 const codeActionDiagnosticInfo: CodeActionDiagnosticInfo[] | undefined = codeAnalysisFileToCodeActions.get(command.uri);
+
                 if (codeActionDiagnosticInfo === undefined) {
                     return;
                 }
                 const fixCodeActions: vscode.CodeAction[] = [];
+
                 const disableCodeActions: vscode.CodeAction[] = [];
+
                 const removeCodeActions: vscode.CodeAction[] = [];
+
                 const docCodeActions: vscode.CodeAction[] = [];
+
                 const showClear: string = new CppSettings().clangTidyCodeActionShowClear;
 
                 // Check which code actions to show.  This can get called a lot
@@ -134,6 +154,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
                         continue;
                     }
                     let codeActionCodeInfo: CodeActionCodeInfo | undefined;
+
                     if (codeAnalysisCodeToFixes.has(codeAction.code)) {
                         codeActionCodeInfo = codeAnalysisCodeToFixes.get(codeAction.code);
                     }
@@ -141,6 +162,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
                         // Potentially we could make the "fix all" or "fix all type" preferred instead.
                         codeAction.fixCodeAction.isPreferred = true;
                         fixCodeActions.push(codeAction.fixCodeAction);
+
                         if (codeActionCodeInfo !== undefined) {
                             if (codeActionCodeInfo.fixAllTypeCodeAction !== undefined &&
                                 (codeActionCodeInfo.uriToInfo.size > 1 ||
@@ -154,6 +176,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
                         continue;
                     }
                     let removeAllTypeAvailable: boolean = false;
+
                     if (codeActionCodeInfo !== undefined) {
                         if (codeActionCodeInfo.disableAllTypeCodeAction !== undefined) {
                             disableCodeActions.push(codeActionCodeInfo.disableAllTypeCodeAction);
@@ -184,6 +207,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
                 }
                 if (fixCodeActions.length > 0) {
                     resultCodeActions.push(...fixCodeActions);
+
                     if (codeAnalysisAllFixes.fixAllCodeAction.command?.arguments?.[1] !== undefined) {
                         // Only show "fix all" if there are multiple types of fixes.
                         // The arguments[1] only gets set when there are multiple types.
@@ -192,6 +216,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
                 }
                 if (showClear !== "None") {
                     let showClearAllAvailable: boolean = false;
+
                     if (codeActionDiagnosticInfo.length > 1 || codeAnalysisFileToCodeActions.size > 1) {
                         showClearAllAvailable = true;
                     }
@@ -204,6 +229,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
                 }
                 resultCodeActions.push(...disableCodeActions);
                 resultCodeActions.push(...docCodeActions);
+
                 return;
             } else if ((command.command === 'C_Cpp.CreateDeclarationOrDefinition' || command.command === 'C_Cpp.CopyDeclarationOrDefinition')
                 && (command.arguments ?? []).length === 0 && command.range !== undefined) {
@@ -212,6 +238,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
             } else if (command.command === "C_Cpp.SelectIntelliSenseConfiguration") {
                 command.arguments = ['codeAction'];
                 hasSelectIntelliSenseConfiguration = true;
+
                 if (hasConfigurationSet) {
                     return;
                 }
@@ -251,14 +278,17 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
         if (!hasInlineMacro && context.only?.value === "refactor.inline.macro") {
             const processInlineMacro = async (): Promise<boolean> => {
                 const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+
                 if (!editor) {
                     return false;
                 }
                 const result: vscode.Hover[] = (await vscode.commands.executeCommand('vscode.executeHoverProvider', document.uri, range.start)) as vscode.Hover[];
+
                 if (result.length === 0) {
                     return false;
                 }
                 const hoverResult: vscode.MarkdownString = result[0].contents[0] as vscode.MarkdownString;
+
                 if (!hoverResult.value.includes(localize("expands.to", "Expands to:"))) {
                     return false;
                 }
@@ -276,11 +306,13 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
                 for (const command of response.commands) {
                     if (command.edit) {
                         processCommand(command);
+
                         return true;
                     }
                 }
                 return false;
             };
+
             if (!await processInlineMacro()) {
                 const disabledCodeAction: vscode.CodeAction = {
                     title: localize({ key: "inline.macro", comment: ["'Inline' is a command and not an adjective, i.e. like 'Expand macro'."] }, "Inline macro"),

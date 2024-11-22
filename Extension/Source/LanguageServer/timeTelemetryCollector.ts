@@ -35,6 +35,7 @@ export class TimeTelemetryCollector {
         const curTimeStamps: TimeStampSequence = this.getTimeStamp(uri.path);
         curTimeStamps.setup = new Date().getTime();
         this.cachedTimeStamps.set(uri.path, curTimeStamps);
+
         if (curTimeStamps.didOpen && curTimeStamps.updateRange) {
             this.logTelemetry(uri.path, curTimeStamps);
         }
@@ -42,6 +43,7 @@ export class TimeTelemetryCollector {
 
     public setUpdateRangeTime(uri: vscode.Uri): void {
         const curTimeStamps: TimeStampSequence = this.getTimeStamp(uri.path);
+
         if (!curTimeStamps.updateRange) {
             curTimeStamps.updateRange = new Date().getTime();
             this.cachedTimeStamps.set(uri.path, curTimeStamps);
@@ -67,12 +69,15 @@ export class TimeTelemetryCollector {
 
     private logTelemetry(uri: string, timeStamps: TimeStampSequence): void {
         const startTime: number = timeStamps.firstFile ? timeStamps.firstFile : timeStamps.didOpen;
+
         let properties: any = {};
+
         let metrics: any = {
             "setupTime": timeStamps.setup - timeStamps.didOpen,
             "updateRangeTime": timeStamps.updateRange - timeStamps.setup,
             "totalTime": timeStamps.updateRange - startTime
         };
+
         if (timeStamps.firstFile) {
             properties = { "coldstart": "true" };
             metrics = { "activationTime": timeStamps.didOpen - startTime, ...metrics };

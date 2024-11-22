@@ -83,6 +83,7 @@ export class AsyncMap<TKey, TValue> {
     }
     set(key: TKey, value: Promise<TValue> | TValue): this {
         this.map.set(key, value);
+
         return this;
     }
 }

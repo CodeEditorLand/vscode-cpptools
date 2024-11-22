@@ -23,6 +23,7 @@ import {
 } from './commandInteractors';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export class CanceledError extends Error {
@@ -42,7 +43,9 @@ export function showPassphraseInputBox(
     cancelToken?: vscode.CancellationToken
 ): Promise<string | undefined> {
     const keyStr: string = keyName ? `"${keyName}"` : '';
+
     const msg: string = localize('ssh.passphrase.input.box', 'Enter passphrase for ssh key {0}', keyStr);
+
     return showInputBox(msg, prompt, cancelToken);
 }
 
@@ -52,6 +55,7 @@ export function showPasswordInputBox(
     cancelToken?: vscode.CancellationToken
 ): Promise<string | undefined> {
     const msg: string = user ? localize('ssh.enter.password.for.user', 'Enter password for user "{0}"', user) : localize('ssh.message.enter.password', 'Enter password');
+
     return showInputBox(msg, prompt, cancelToken);
 }
 
@@ -78,6 +82,7 @@ export async function showInputBox(
 
         quickPick.onDidAccept(() => {
             isAccepted = true;
+
             const passphrase: string = quickPick.value;
             quickPick.dispose();
             resolve(passphrase);
@@ -103,6 +108,7 @@ export async function showInputBox(
 class ConfirmationItem implements vscode.QuickPickItem, vscode.MessageItem {
     title: string;
     isCloseAffordance: boolean = true;
+
     constructor(public label: string, public value: string) {
         this.title = label;
     }
@@ -145,6 +151,7 @@ async function showConfirmationPicker(
 
         quickPick.onDidAccept(async () => {
             isAccepted = true;
+
             const value: string = quickPick.selectedItems[0].value;
             quickPick.dispose();
             resolve(value);
@@ -176,6 +183,7 @@ export interface ITerminalCommandWithLoginArgs {
     interactor?: IInteractor;
     cwd?: string;
     token?: vscode.CancellationToken;
+
     continueOn?: string;
 
     revealTerminal?: vscode.Event<void>;
@@ -252,16 +260,25 @@ export function getResumeLogMarker(uuid: string): string {
 
 export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Promise<ProcessReturnType> {
     const disposables: vscode.Disposable[] = [];
+
     const { systemInteractor, command, interactors, nickname, token } = args;
+
     let logIsPaused: boolean = false;
+
     const loggingLevel: number = getNumericLoggingLevel(new CppSettings().loggingLevel);
+
     const result = new ManualPromise<ProcessReturnType>();
 
     let stdout: string = '';
+
     let windowListener: vscode.Disposable | undefined;
+
     let terminalListener: vscode.Disposable | undefined;
+
     let terminal: vscode.Terminal | undefined;
+
     let tokenListener: vscode.Disposable;
+
     let continueWithoutExiting: boolean = false;
 
     const clean = () => {
@@ -296,6 +313,7 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
         if (cancel) {
             if (continueWithoutExiting) {
                 const warningMessage: string = localize('ssh.continuing.command.canceled', 'Task \'{0}\' is canceled, but the underlying command may not be terminated. Please check manually.', command);
+
                 getSshChannel().appendLine(warningMessage);
                 void vscode.window.showWarningMessage(warningMessage);
             }
@@ -309,7 +327,9 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
 
     const failed = (error?: any) => {
         clean();
+
         const errorMessage: string = localize('ssh.process.failed', '"{0}" process failed: {1}', nickname, error);
+
         getSshChannel().appendLine(errorMessage);
         void vscode.window.showErrorMessage(errorMessage);
         result.reject(error);
@@ -317,15 +337,19 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
 
     const handleOutputLogging = (data: string): void => {
         let nextPauseState: boolean | undefined;
+
         if (args.marker) {
             const pauseMarker: string = getPauseLogMarker(args.marker);
+
             const pauseIdx: number = data.lastIndexOf(pauseMarker);
+
             if (pauseIdx >= 0) {
                 data = data.substring(0, pauseIdx + pauseMarker.length);
                 nextPauseState = true;
             }
 
             const resumeIdx: number = data.lastIndexOf(getResumeLogMarker(args.marker));
+
             if (resumeIdx >= 0) {
                 data = data.substring(resumeIdx);
                 nextPauseState = false;
@@ -374,6 +398,7 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
                         }
 
                         done(true);
+
                         return;
                     }
 
@@ -382,7 +407,9 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
                             args.usedInteractors.add(interactor.id);
                         }
                         continueWithoutExiting = true;
+
                         done(false, true);
+
                         return;
                     }
 
@@ -393,9 +420,11 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
 
                         if (terminal) {
                             terminal.sendText(`${interaction.response}\n`);
+
                             const logOutput: string = interaction.isPassword
                                 ? interaction.response.replace(/./g, '*')
                                 : interaction.response;
+
                             if (loggingLevel >= 5) {
                                 getSshChannel().appendLine(localize('ssh.wrote.data.to.terminal', '"{0}" wrote data to terminal: "{1}".', nickname, logOutput));
                             }
@@ -415,9 +444,11 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
     }
 
     const terminalIsWindows: boolean = typeof args.terminalIsWindows === 'boolean' ? args.terminalIsWindows : isWindows;
+
     try {
         // the terminal process should not fail, but exit cleanly
         let shellArgs: string | string[];
+
         if (args.sendText) {
             shellArgs = '';
         } else {
@@ -460,6 +491,7 @@ export function runInteractiveSshTerminalCommand(args: ITerminalCommandArgs): Pr
             const sendText: string = terminalIsWindows ? `(${args.sendText})\nexit /b %ErrorLevel%` : `${args.sendText}\nexit $?`;
 
             terminal.sendText(sendText);
+
             if (loggingLevel >= 5) {
                 getSshChannel().appendLine(localize('ssh.wrote.data.to.terminal', '"{0}" wrote data to terminal: "{1}".', nickname, args.sendText));
             }
@@ -488,6 +520,7 @@ function getShellPath(_isWindows: boolean): string {
         if (process.env.SystemRoot) {
             // This var should always exist but be paranoid
             const cmdPath: string = path.join(process.env.SystemRoot, 'System32', 'cmd.exe');
+
             return cmdPath;
         } else {
             return 'cmd.exe';
@@ -517,10 +550,13 @@ function lastNonemptyLine(str: string): string | undefined {
 
     if (isWindows) {
         let outputContainingPipeError: string = '';
+
         for (let i: number = lines.length - 1; i >= 0; i--) {
             const strippedLine: string = stripEscapeSequences(lines[i]);
+
             if (strippedLine.match(/The process tried to write to a nonexistent pipe/)) {
                 outputContainingPipeError = strippedLine;
+
                 continue;
             }
             if (strippedLine) {
@@ -534,5 +570,6 @@ function lastNonemptyLine(str: string): string | undefined {
     }
 
     const nonEmptyLines: string[] = lines.filter(l => !!l);
+
     return nonEmptyLines[nonEmptyLines.length - 1];
 }

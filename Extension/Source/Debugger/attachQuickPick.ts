@@ -8,11 +8,13 @@ import * as nls from 'vscode-nls';
 import * as util from '../common';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 class RefreshButton implements vscode.QuickInputButton {
     get iconPath(): { dark: vscode.Uri; light: vscode.Uri } {
         const refreshImagePathDark: string = util.getExtensionFilePath("assets/Refresh_inverse.svg");
+
         const refreshImagePathLight: string = util.getExtensionFilePath("assets/Refresh.svg");
 
         return {
@@ -33,6 +35,7 @@ export interface AttachItem extends vscode.QuickPickItem {
 // We should not await on this function.
 export async function showQuickPick(getAttachItems: () => Promise<AttachItem[]>): Promise<string | undefined> {
     const processEntries: AttachItem[] = await getAttachItems();
+
     return new Promise<string | undefined>((resolve, reject) => {
         const quickPick: vscode.QuickPick<AttachItem> = vscode.window.createQuickPick<AttachItem>();
         quickPick.title = localize("attach.to.process", "Attach to process");
@@ -42,6 +45,7 @@ export async function showQuickPick(getAttachItems: () => Promise<AttachItem[]>)
         quickPick.placeholder = localize("select.process.attach", "Select the process to attach to");
         quickPick.buttons = [new RefreshButton()];
         quickPick.items = processEntries;
+
         const disposables: vscode.Disposable[] = [];
 
         quickPick.onDidTriggerButton(async () => { quickPick.items = await getAttachItems(); }, undefined, disposables);

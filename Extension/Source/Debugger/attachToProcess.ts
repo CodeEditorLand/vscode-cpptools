@@ -15,6 +15,7 @@ import * as util from '../common';
 import * as debugUtils from './utils';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export interface AttachItemsProvider {
@@ -39,11 +40,15 @@ export class RemoteAttachPicker {
 
     public async ShowAttachEntries(config: any): Promise<string | undefined> {
         this._channel.clear();
+
         let processes: AttachItem[];
 
         const pipeTransport: any = config ? config.pipeTransport : undefined;
+
         const useExtendedRemote: any = config ? config.useExtendedRemote : undefined;
+
         const miDebuggerPath: any = config ? config.miDebuggerPath : undefined;
+
         const miDebuggerServerAddress: any = config ? config.miDebuggerServerAddress : undefined;
 
         if (pipeTransport) {
@@ -53,6 +58,7 @@ export class RemoteAttachPicker {
                 pipeTransport.pipeProgram &&
                 !await util.checkFileExists(pipeTransport.pipeProgram)) {
                 const pipeProgramStr: string = pipeTransport.pipeProgram.toLowerCase().trim();
+
                 const expectedArch: debugUtils.ArchType = debugUtils.ArchType[process.arch as keyof typeof debugUtils.ArchType];
 
                 // Check for pipeProgram
@@ -63,6 +69,7 @@ export class RemoteAttachPicker {
                 // If pipeProgram does not get replaced and there is a pipeCwd, concatenate with pipeProgramStr and attempt to replace.
                 if (!pipeProgram && config.pipeTransport.pipeCwd) {
                     const pipeCwdStr: string = config.pipeTransport.pipeCwd.toLowerCase().trim();
+
                     const newPipeProgramStr: string = path.join(pipeCwdStr, pipeProgramStr);
 
                     if (!await util.checkFileExists(newPipeProgramStr)) {
@@ -98,6 +105,7 @@ export class RemoteAttachPicker {
         };
 
         const item: AttachItem | undefined = await vscode.window.showQuickPick(processes, attachPickOptions);
+
         if (item) {
             return item.id;
         } else {
@@ -108,13 +116,19 @@ export class RemoteAttachPicker {
     // Creates a string to run on the host machine which will execute a shell script on the remote machine to retrieve OS and processes
     private getRemoteProcessCommand(): string {
         let innerQuote: string = `'`;
+
         let outerQuote: string = `"`;
+
         let parameterBegin: string = `$(`;
+
         let parameterEnd: string = `)`;
+
         let escapedQuote: string = `\\\"`;
+
         let shPrefix: string = ``;
 
         const settings: CppSettings = new CppSettings();
+
         if (settings.useBacktickCommandSubstitution) {
             parameterBegin = `\``;
             parameterEnd = `\``;
@@ -146,6 +160,7 @@ export class RemoteAttachPicker {
         // OS will be on first line
         // Processes will follow if listed
         const lines: string[] = output.split(/\r?\n/);
+
         if (lines.length === 0) {
             throw new Error(localize("pipe.failed", "Pipe transport failed to get OS and processes."));
         } else {
@@ -160,6 +175,7 @@ export class RemoteAttachPicker {
                 throw new Error(localize("no.process.list", "Transport attach could not obtain processes list."));
             } else {
                 const processes: string[] = lines.slice(1);
+
                 return PsProcessParser.ParseProcessFromPsArray(processes)
                     .sort((a, b) => {
                         if (a.name === undefined) {
@@ -172,7 +188,9 @@ export class RemoteAttachPicker {
                             return -1;
                         }
                         const aLower: string = a.name.toLowerCase();
+
                         const bLower: string = b.name.toLowerCase();
+
                         if (aLower === bLower) {
                             return 0;
                         }
@@ -185,6 +203,7 @@ export class RemoteAttachPicker {
 
     private async getRemoteProcessesExtendedRemote(miDebuggerPath: string, miDebuggerServerAddress: string): Promise<AttachItem[]> {
         const args: string[] = [`-ex "target extended-remote ${miDebuggerServerAddress}"`, '-ex "info os processes"', '-batch'];
+
         let processListOutput: util.ProcessReturnType = await util.spawnChildProcess(miDebuggerPath, args);
         // The device may not be responsive for a while during the restart after image deploy. Retry 5 times.
         for (let i: number = 0; i < 5 && !processListOutput.succeeded && processListOutput.outputError.length === 0; i++) {
@@ -200,6 +219,7 @@ export class RemoteAttachPicker {
         }
 
         const processes: AttachItem[] = this.parseProcessesFromInfoOsProcesses(processListOutput.output);
+
         if (!processes || processes.length === 0) {
             throw new Error(localize('failed.to.parse.processes', 'Failed to parse processes: "{0}".', processListOutput.output));
         }
@@ -220,17 +240,22 @@ export class RemoteAttachPicker {
     */
     private parseProcessesFromInfoOsProcesses(processList: string): AttachItem[] {
         const lines: string[] = processList?.split('\n');
+
         if (!lines?.length) {
             return [];
         }
 
         const processes: AttachItem[] = [];
+
         for (const line of lines) {
             const trimmedLine: string = line.trim();
+
             if (!trimmedLine.endsWith('?')) {
                 const matches: RegExpMatchArray | null = trimmedLine.match(/^(\d+)\s+(.+?)\s+(?:\d+,)*\d+$/);
+
                 if (matches?.length === 3) {
                     const id: string = matches[1];
+
                     const userCommand: string = matches[2];
                     processes.push({ label: userCommand, id, description: id });
                 }

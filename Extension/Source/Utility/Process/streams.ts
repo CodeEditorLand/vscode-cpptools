@@ -18,6 +18,7 @@ import { verbose } from '../Text/streams';
 /** An iterator/iterable wrapper to process a stream of lines. */
 export class LineIterator implements AsyncIterable<string>, AsyncIterator<string> {
     #current = 0;
+
     constructor(private lineBuffer: ReadableLineStream, private initial: number, private stopExpression?: string | RegExp) {
         this.#current = Math.max(initial, lineBuffer.head);
     }
@@ -28,6 +29,7 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
 
     advance() {
         this.#current = Math.max(this.current + 1, this.lineBuffer.head);
+
         return this;
     }
 
@@ -53,12 +55,14 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
      */
     until(expression: string | RegExp) {
         this.stopExpression = expression;
+
         return this;
     }
 
     /** allows the iterator to continue */
     resume() {
         this.stopExpression = undefined;
+
         return this;
     }
 
@@ -75,10 +79,13 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
 
     async filter(expression: string | RegExp) {
         const result = new Array<string>();
+
         const stream = this.tee();
+
         if (expression instanceof RegExp) {
             for await (const line of stream) {
                 const check = expression.exec(line);
+
                 if (check) {
                     result.push(check[1] || check[0]);
                 }
@@ -115,16 +122,20 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
      */
     async skipTo(expression: string | RegExp) {
         this.stopExpression = undefined;
+
         do {
             let line = this.lineBuffer.at(this.current);
+
             while (line === undefined) {
                 await this.lineBuffer.changed;
                 line = this.lineBuffer.at(this.current);
+
                 if (this.lineBuffer.completed) {
                     return this;
                 }
             }
             this.advance();
+
             if (
                 expression instanceof RegExp
                     ? expression.test(line)
@@ -141,11 +152,13 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
      */
     private async line() {
         let line = this.lineBuffer.at(this.current);
+
         while (line === undefined) {
             await this.lineBuffer.changed;
             line = this.lineBuffer.at(this.current);
         }
         this.advance();
+
         return line;
     }
 
@@ -158,6 +171,7 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
     async skip(count: number) {
         do {
             await this.line();
+
             if (--count === 0) {
                 return this;
             }
@@ -185,6 +199,7 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
         do {
             // is the current line (regardless of whether it's full or not) a match
             const value = this.lineBuffer.at(this.current);
+
             if (value !== undefined && this.isMatch(value)) {
                 // we have a match, so we're done
                 return { value: undefined, done: true };
@@ -193,6 +208,7 @@ export class LineIterator implements AsyncIterable<string>, AsyncIterator<string
             // if we have lines to take, take them
             if (this.current < this.lineBuffer.last) {
                 this.advance();
+
                 return { value, done: false };
             }
             // otherwise, we're at the end. if the process is done, then so are we.
@@ -270,6 +286,7 @@ export class ReadableLineStream implements AsyncIterable<string> {
     close() {
         if (!this.#completed) {
             this.push();
+
             for (const each of this.pipes) {
                 this.unpipe(each);
                 each.unpipe(this);
@@ -307,9 +324,11 @@ export class ReadableLineStream implements AsyncIterable<string> {
     /** filters the content to lines that match the expression */
     filter(expression: string | RegExp) {
         const result = new Array<string>();
+
         if (expression instanceof RegExp) {
             for (let i = this.#head; i < this.#buffer.length; i++) {
                 const check = expression.exec(this.#buffer[i]);
+
                 if (check) {
                     result.push(check[1] || check[0]);
                 }
@@ -318,6 +337,7 @@ export class ReadableLineStream implements AsyncIterable<string> {
         }
         for (let i = this.#head; i < this.#buffer.length; i++) {
             const line = this.#buffer[i];
+
             if (line.includes(expression)) {
                 result.push(line);
             }
@@ -329,6 +349,7 @@ export class ReadableLineStream implements AsyncIterable<string> {
         if (this.#partial !== undefined) {
             this.#partial = this.#partial.trimEnd();
             this.#buffer.push(this.#partial);
+
             for (const pipe of this.#pipes) {
                 void pipe.writeln(this.#partial);
             }
@@ -348,6 +369,7 @@ export class ReadableLineStream implements AsyncIterable<string> {
 
         // split into lines
         const incoming = content.split(/\r\n|\n/);
+
         const done = new Array<Promise<any>>();
 
         // carry over any partial line from before
@@ -407,6 +429,7 @@ export class ReadableLineStream implements AsyncIterable<string> {
     /** returns a copy of the entire line buffer */
     all() {
         const result = this.#buffer.slice(this.head);
+
         if (this.#partial) {
             result.push(this.#partial);
         }
@@ -428,7 +451,9 @@ export class ReadWriteLineStream extends ReadableLineStream {
     protected streamWrite?: (text: string) => Promise<EventStatus | string>;
 
     constructor(stream: Duplex);
+
     constructor(readable: Readable, writeable: Writable);
+
     constructor(readable: Readable | Duplex, writeable?: Writable) {
         super(readable);
         this.writeable = writeable || readable as Writable;
@@ -454,6 +479,7 @@ export class ReadWriteLineStream extends ReadableLineStream {
             for (const each of text) {
                 if (each) {
                     const result = await this.streamWrite(each);
+
                     if (!is.cancelled(result)) {
                         content.push(result || each);
                     }
@@ -488,6 +514,7 @@ export class ReadWriteLineStream extends ReadableLineStream {
             for (const each of text) {
                 if (each) {
                     const result = await this.streamWrite(each);
+
                     if (!is.cancelled(result)) {
                         content.push(result || each);
                     }
@@ -540,6 +567,7 @@ export class WriteableLineStream {
                 result.resolve();
             }
         });
+
         return result;
     }
 
@@ -552,6 +580,7 @@ export class WriteableLineStream {
                 result.resolve();
             }
         });
+
         return result;
     }
 }

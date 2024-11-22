@@ -12,13 +12,17 @@ import * as logger from './logger';
 import { SessionState, SupportedWindowsVersions } from './sessionState';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export function GetOSName(processPlatform: string | undefined): string | undefined {
     switch (processPlatform) {
         case "win32": return "Windows";
+
         case "darwin": return "macOS";
+
         case "linux": return "Linux";
+
         default: return undefined;
     }
 }
@@ -28,20 +32,30 @@ export class PlatformInformation {
 
     public static async GetPlatformInformation(): Promise<PlatformInformation> {
         const platform: string = os.platform();
+
         const architecture: string = PlatformInformation.GetArchitecture();
+
         let distribution: LinuxDistribution | undefined;
+
         let version: string | undefined;
+
         switch (platform) {
             case "win32":
                 version = PlatformInformation.GetWindowsVersion();
                 void SessionState.windowsVersion.set(version as SupportedWindowsVersions);
+
                 break;
+
             case "linux":
                 distribution = await LinuxDistribution.GetDistroInformation();
+
                 break;
+
             case "darwin":
                 version = await PlatformInformation.GetDarwinVersion();
+
                 break;
+
             default:
                 throw new Error(localize("unknown.os.platform", "Unknown OS platform"));
         }
@@ -51,13 +65,16 @@ export class PlatformInformation {
 
     public static GetArchitecture(): string {
         const arch: string = os.arch();
+
         switch (arch) {
             case "arm64":
             case "arm":
                 return arch;
+
             case "x32":
             case "ia32":
                 return "x86";
+
             default:
                 return "x64";
         }
@@ -65,12 +82,16 @@ export class PlatformInformation {
 
     private static GetDarwinVersion(): Promise<string> {
         const DARWIN_SYSTEM_VERSION_PLIST: string = "/System/Library/CoreServices/SystemVersion.plist";
+
         let productDarwinVersion: string = "";
+
         let errorMessage: string = "";
 
         if (fs.existsSync(DARWIN_SYSTEM_VERSION_PLIST)) {
             const systemVersionPListBuffer: Buffer = fs.readFileSync(DARWIN_SYSTEM_VERSION_PLIST);
+
             const systemVersionData: any = plist.parse(systemVersionPListBuffer.toString());
+
             if (systemVersionData) {
                 productDarwinVersion = systemVersionData.ProductVersion;
             } else {
@@ -90,6 +111,7 @@ export class PlatformInformation {
 
     private static GetWindowsVersion(): SupportedWindowsVersions {
         const version = os.release().split('.');
+
         if (version.length > 0) {
             if (version[0] === '10') {
                 if (version.length > 2 && version[2].startsWith('1')) {

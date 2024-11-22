@@ -9,18 +9,26 @@ import { resolveEnvironmentVariables } from '../System/environment';
 
 function windows(argsString: string): string[] {
     argsString = resolveEnvironmentVariables(argsString);
+
     const result: string[] = [];
+
     let currentArg: string = "";
+
     let isInQuote: boolean = false;
+
     let wasInQuote: boolean = false;
+
     let i: number = 0;
+
     while (i < argsString.length) {
         let c: string = argsString[i];
+
         if (c === '\"') {
             if (!isInQuote) {
                 isInQuote = true;
                 wasInQuote = true;
                 ++i;
+
                 continue;
             }
             // Need to peek at next character.
@@ -28,6 +36,7 @@ function windows(argsString: string): string[] {
                 break;
             }
             c = argsString[i];
+
             if (c !== '\"') {
                 isInQuote = false;
             }
@@ -35,16 +44,21 @@ function windows(argsString: string): string[] {
         }
         if (c === '\\') {
             let backslashCount: number = 1;
+
             let reachedEnd: boolean = true;
+
             while (++i !== argsString.length) {
                 c = argsString[i];
+
                 if (c !== '\\') {
                     reachedEnd = false;
+
                     break;
                 }
                 ++backslashCount;
             }
             const still_escaping: boolean = (backslashCount % 2) !== 0;
+
             if (!reachedEnd && c === '\"') {
                 backslashCount = Math.floor(backslashCount / 2);
             }
@@ -68,6 +82,7 @@ function windows(argsString: string): string[] {
                     currentArg = "";
                 }
                 i++;
+
                 continue;
             }
         }
@@ -83,15 +98,20 @@ function windows(argsString: string): string[] {
 function posix(argsString: string): string[] {
     // inspired by https://github.com/migueldeicaza/mono-wasm-libc/blob/96eaa7afc23cd675358595e1dd6ab4b6c8f9f07f/src/misc/wordexp.c#L32
     let doubleQuote = false;
+
     let singleQuote = false;
+
     let paren = 0;
+
     let brace = 0;
 
     let arg = '';
+
     let args = ['printf', `%s\\\\n`];
 
     for (let i = 0; i < argsString.length; ++i) {
         const char = argsString[i];
+
         const next = argsString[i + 1];
 
         switch (char) {
@@ -101,10 +121,12 @@ function posix(argsString: string): string[] {
                     if (next === '\\') {
                         arg += '\\\\\\\\';
                         ++i;
+
                         continue;
                     }
                     arg += `\\${next}`;
                     ++i;
+
                     continue;
                 }
                 break;
@@ -114,6 +136,7 @@ function posix(argsString: string): string[] {
                     singleQuote = !singleQuote;
                 }
                 arg += "'";
+
                 continue;
 
             case '"':
@@ -121,12 +144,15 @@ function posix(argsString: string): string[] {
                     doubleQuote = !doubleQuote;
                 }
                 arg += '"';
+
                 continue;
+
             case '(':
                 if (!singleQuote && !doubleQuote) {
                     ++paren;
                 }
                 break;
+
             case ')':
                 if (!singleQuote && !doubleQuote) {
                     --paren;
@@ -138,6 +164,7 @@ function posix(argsString: string): string[] {
                     throw new Error(`Unsupported character: ${char}`);
                 }
                 brace--;
+
                 break;
 
             case '\n':
@@ -152,6 +179,7 @@ function posix(argsString: string): string[] {
                     throw new Error(`Unsupported character: ${char}`);
                 }
                 break;
+
             case '$':
                 if (!singleQuote) {
                     if (next === '(') {
@@ -159,6 +187,7 @@ function posix(argsString: string): string[] {
                             paren += 2;
                             i += 2;
                             arg += '$((';
+
                             continue;
                         }
                         throw new Error(`Nested Commands not supported`);
@@ -167,15 +196,18 @@ function posix(argsString: string): string[] {
                         arg += '${';
                         brace++;
                         i++;
+
                         continue;
                     }
                 }
                 break;
+
             case '`':
                 if (!singleQuote) {
                     throw new Error(`Nested Commands not supported`);
                 }
                 break;
+
             case ' ':
             case '\t':
                 if (doubleQuote || singleQuote || paren || brace) {
@@ -214,6 +246,7 @@ function posix(argsString: string): string[] {
     }
 
     const r = spawnSync(`eval`, args, {shell: process.env['SHELL'] || true});
+
     if (r.error || r.status !== 0) {
         throw new Error('Failed to parse command line');
     }
@@ -222,6 +255,7 @@ function posix(argsString: string): string[] {
     const result = txt.split('\n');
 
     result.length--;
+
     return result;
 }
 
@@ -231,9 +265,11 @@ function posix(argsString: string): string[] {
 */
 export function extractArgs(argsString: string): string[] {
     argsString = argsString.trim();
+
     switch (OperatingSystem) {
         case 'win32':
             return windows(argsString);
+
         case 'linux':
         case 'darwin':
         case 'freebsd':

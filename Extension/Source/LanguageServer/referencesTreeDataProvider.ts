@@ -9,6 +9,7 @@ import { getReferenceItemIconPath, getReferenceTagString, ReferenceType } from '
 import { NodeType, ReferencesModel, TreeNode } from './referencesModel';
 
 nls.config({ messageFormat: nls.MessageFormat.bundle, bundleFormat: nls.BundleFormat.standalone })();
+
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export class ReferencesTreeDataProvider implements vscode.TreeDataProvider<TreeNode> {
@@ -49,7 +50,9 @@ export class ReferencesTreeDataProvider implements vscode.TreeDataProvider<TreeN
                     throw new Error("Undefined referenceType in getTreeItem()");
                 }
                 const label: string = getReferenceTagString(element.referenceType, this.referencesModel.isCanceled, true);
+
                 const resultRefType: vscode.TreeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Expanded);
+
                 return resultRefType;
 
             case NodeType.file:
@@ -68,6 +71,7 @@ export class ReferencesTreeDataProvider implements vscode.TreeDataProvider<TreeN
                         command: 'C_Cpp.ShowReferenceItem',
                         arguments: [element]
                     };
+
                     const tag: string = getReferenceTagString(ReferenceType.ConfirmationInProgress, this.referencesModel.isCanceled);
                     resultFile.tooltip = `[${tag}]\n${element.filename}`;
                     resultFile.collapsibleState = vscode.TreeItemCollapsibleState.None;
@@ -84,6 +88,7 @@ export class ReferencesTreeDataProvider implements vscode.TreeDataProvider<TreeN
                 }
                 const resultRef: vscode.TreeItem = new vscode.TreeItem(element.referenceText, vscode.TreeItemCollapsibleState.None);
                 resultRef.iconPath = getReferenceItemIconPath(element.referenceType, this.referencesModel.isCanceled);
+
                 const tag: string = getReferenceTagString(element.referenceType, this.referencesModel.isCanceled);
                 resultRef.tooltip = `[${tag}]\n${element.referenceText}`;
 

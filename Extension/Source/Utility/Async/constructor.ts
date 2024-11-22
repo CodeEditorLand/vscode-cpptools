@@ -9,12 +9,15 @@ import { ConstructorReturn, Reject, Resolve, AsyncConstructor } from '../System/
 export function Async<TClass extends new (...args: ConstructorParameters<TClass>) => ConstructorReturn<TClass>>(ctor: TClass) {
     class AsyncConstructed extends Promise<TClass> {
         static class: TClass = ctor;
+
         constructor(...args: ConstructorParameters<TClass>);
+
         constructor(...args: any[]) {
 
             if (args.length === 1 && typeof args[0] === 'function') {
                 // this is being called because a new Promise is being created for an async function invocation (not user code)
                 super(args[0]);
+
                 return;
             }
 

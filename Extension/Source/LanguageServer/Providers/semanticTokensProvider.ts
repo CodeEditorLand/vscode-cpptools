@@ -27,8 +27,11 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
 
     public async provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SemanticTokens> {
         const uri: vscode.Uri = document.uri;
+
         const uriString: string = uri.toString();
+
         let fileData: FileData | undefined = this.allFileData.get(uriString);
+
         if (fileData) {
             if (fileData.promise.isCompleted) {
                 // Make sure file hasn't been changed since the last set of results.
@@ -55,6 +58,7 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
         const currentPromise = fileData.promise;
         token.onCancellationRequested(() => {
             const fileData: FileData | undefined = this.allFileData.get(uriString);
+
             if (fileData && currentPromise === fileData.promise) {
                 this.allFileData.delete(uriString);
                 currentPromise.reject(new vscode.CancellationError());
@@ -70,17 +74,22 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
         }
 
         const editor: vscode.TextEditor | undefined = vscode.window.visibleTextEditors.find(e => e.document.uri.toString() === uriString);
+
         if (!editor) {
             const builder: vscode.SemanticTokensBuilder = new vscode.SemanticTokensBuilder();
+
             const tokens: vscode.SemanticTokens = builder.build();
             this.allFileData.get(uriString)?.promise.resolve(tokens);
+
             return;
         }
 
         // Use a lambda to remove ambiguity about whether fileData may be undefined.
         const [fileData, wasNewPromiseCreated]: [FileData, boolean] = (() => {
             let fileData = this.allFileData.get(uriString);
+
             let newPromiseCreated = false;
+
             if (!fileData) {
                 fileData = {
                     version: editor.document.version,
@@ -102,6 +111,7 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
             }
             return [fileData, newPromiseCreated];
         })();
+
         if (startNewSet) {
             fileData.tokenBuilder = new vscode.SemanticTokensBuilder();
         }
@@ -111,6 +121,7 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
         });
 
         fileData?.promise.resolve(fileData.tokenBuilder.build());
+
         if (wasNewPromiseCreated) {
             this.onDidChangeSemanticTokensEvent.fire();
         }
@@ -118,6 +129,7 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
 
     public removeFile(uriString: string): void {
         const fileData: FileData | undefined = this.allFileData.get(uriString);
+
         if (!fileData) {
             return;
         }

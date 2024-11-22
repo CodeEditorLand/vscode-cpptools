@@ -24,6 +24,7 @@ export class FindAllRefsView {
             this.clearData();
         }
         let hasResults: boolean = false;
+
         if (this.referencesModel) {
             hasResults = this.referencesModel.hasResults();
         }
@@ -49,8 +50,11 @@ export class FindAllRefsView {
 
     getResultsAsText(includeConfirmedReferences: boolean): string {
         let results: string[] = [];
+
         const confirmedRefs: string[] = [];
+
         const otherRefs: string[] = [];
+
         const fileRefs: string[] = [];
 
         if (!this.referencesModel) {
@@ -58,10 +62,12 @@ export class FindAllRefsView {
         }
         for (const ref of this.referencesModel.getAllReferenceNodes()) {
             let line: string = "";
+
             if (ref.referenceType !== null && ref.referenceType !== undefined) {
                 line = "[" + getReferenceTagString(ref.referenceType, this.referencesModel.isCanceled) + "] ";
             }
             line += ref.filename;
+
             if (ref.referencePosition !== null && ref.referencePosition !== undefined) {
                 line += ":" + (ref.referencePosition.line + 1) + ":" + (ref.referencePosition.character + 1)
                     + " " + ref.referenceText;
@@ -75,6 +81,7 @@ export class FindAllRefsView {
 
         // Get files with pending references items (location of reference is pending)
         const fileReferences: TreeNode[] = this.referencesModel.getAllFilesWithPendingReferenceNodes();
+
         for (const fileRef of fileReferences) {
             const line: string =
                 "[" + getReferenceTagString(ReferenceType.ConfirmationInProgress, this.referencesModel.isCanceled) + "] "
@@ -83,6 +90,7 @@ export class FindAllRefsView {
         }
 
         results = results.concat(confirmedRefs, otherRefs, fileRefs);
+
         return results.join('\n');
     }
 }

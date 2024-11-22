@@ -262,7 +262,9 @@ export class Scanner implements Token {
 
     private advance(count?: number): number {
         let codeOrChar: number;
+
         let newOffset: number;
+
         let offsetAdvancedBy = 0;
 
         switch (count) {
@@ -276,6 +278,7 @@ export class Scanner implements Token {
                 newOffset = this.#offset + this.#chSz + this.#chNextSz;
                 codeOrChar = this.#text.charCodeAt(newOffset);
                 this.#chNextNext = (this.#chNextNextSz = sizeOf(codeOrChar)) === 1 ? codeOrChar : this.#text.codePointAt(newOffset)!;
+
                 return offsetAdvancedBy;
 
             case 2:
@@ -290,12 +293,14 @@ export class Scanner implements Token {
                 newOffset += this.#chNextSz;
                 codeOrChar = this.#text.charCodeAt(newOffset);
                 this.#chNextNext = (this.#chNextNextSz = sizeOf(codeOrChar)) === 1 ? codeOrChar : this.#text.codePointAt(newOffset)!;
+
                 return offsetAdvancedBy;
 
             default:
             case 3:
                 offsetAdvancedBy = this.#chSz + this.#chNextSz + this.#chNextNextSz;
                 count -= 3;
+
                 while (count) {
                     // skip over characters while we work.
                     offsetAdvancedBy += sizeOf(this.#text.charCodeAt(this.#offset + offsetAdvancedBy));
@@ -315,16 +320,19 @@ export class Scanner implements Token {
                 newOffset += this.#chNextSz;
                 codeOrChar = this.#text.charCodeAt(newOffset);
                 this.#chNextNext = (this.#chNextNextSz = sizeOf(codeOrChar)) === 1 ? codeOrChar : this.#text.codePointAt(newOffset)!;
+
                 return offsetAdvancedBy;
         }
     }
 
     private next(token: Kind, count = 1, value?: string) {
         const originalOffset = this.#offset;
+
         const offsetAdvancedBy = this.advance(count);
         this.text = value || this.#text.substr(originalOffset, offsetAdvancedBy);
 
         this.#column += count;
+
         return this.kind = token;
     }
 
@@ -587,17 +595,20 @@ export class Scanner implements Token {
         }
 
         this.text = '';
+
         return this.kind = Kind.EndOfFile;
     }
 
     take(): Token {
         const result = { ...this };
         this.scan();
+
         return result;
     }
 
     *takeUntil(endToken: Kind, options?: { escape?: Kind[]; nestable?: [Kind, Kind][] }, yieldFinalClose?: boolean): Iterable<Token> {
         const nestable = options?.nestable || [];
+
         const escape = options?.escape || [];
 
         processing: do {
@@ -606,11 +617,13 @@ export class Scanner implements Token {
                     // if we're nested, we need to return the end token, because it's significant to the consumer
                     if (yieldFinalClose) {
                         yield this.take();
+
                         return;
                     }
 
                     // we're done here, lose the last token and get out
                     this.take();
+
                     return;
 
                 case Kind.EndOfFile:
@@ -622,7 +635,9 @@ export class Scanner implements Token {
                 // pull through the escape token
                 // and the next token
                 yield this.take();
+
                 yield this.take();
+
                 continue;
             }
 
@@ -631,6 +646,7 @@ export class Scanner implements Token {
                 if (this.kind === open) {
                     yield this.take(); // yield the open token
                     yield* this.takeUntil(close, options, true);
+
                     continue processing;
                 }
             }
@@ -725,11 +741,13 @@ export class Scanner implements Token {
         this.markPosition();
 
         this.text = this.#text.substring(this.offset, this.#offset);
+
         return this.kind = Kind.Whitespace;
     }
 
     private scanDigits(): string {
         const start = this.#offset;
+
         while (isDigit(this.#ch)) {
             this.advance();
         }
@@ -740,7 +758,9 @@ export class Scanner implements Token {
         const start = this.#offset;
 
         const main = this.scanDigits();
+
         let decimal: string | undefined;
+
         let scientific: string | undefined;
 
         if (this.#ch === CharacterCodes.dot) {
@@ -764,6 +784,7 @@ export class Scanner implements Token {
 
         // update the position
         this.#column += this.#offset - start;
+
         return this.kind = Kind.NumericLiteral;
     }
 
@@ -772,6 +793,7 @@ export class Scanner implements Token {
         this.advance(2);
 
         this.text = `0x${this.scanUntil((ch) => !isHexDigit(ch), 'Hex Digit')}`;
+
         return this.kind = Kind.NumericLiteral;
     }
 
@@ -781,6 +803,7 @@ export class Scanner implements Token {
         this.advance(2);
 
         this.text = `0b${this.scanUntil((ch) => !isBinaryDigit(ch), 'Binary Digit')}`;
+
         return this.kind = Kind.NumericLiteral;
 
     }
@@ -806,6 +829,7 @@ export class Scanner implements Token {
 
             if (this.eof) {
                 this.assert(!expectedClose, `Unexpected end of file while searching for '${expectedClose}'`);
+
                 break;
             }
 
@@ -823,37 +847,48 @@ export class Scanner implements Token {
 
     private scanSingleLineComment() {
         this.text = this.scanUntil(isLineBreak);
+
         return this.kind = Kind.SingleLineComment;
     }
     private scanHashComment() {
         this.text = this.scanUntil(isLineBreak);
+
         return this.kind = Kind.SingleLineHashComment;
     }
     private scanMultiLineComment() {
         this.text = this.scanUntil((ch, chNext) => ch === CharacterCodes.asterisk && chNext === CharacterCodes.slash, '*/', 2);
+
         return this.kind = Kind.MultiLineComment;
     }
     private scanMultiLineHashComment() {
         this.text = this.scanUntil((ch, chNext) => ch === CharacterCodes.hash && chNext === CharacterCodes.greaterThan, '#>', 2);
+
         return this.kind = Kind.MultiLineHashComment;
     }
 
     private scanString() {
         const quote = this.#ch;
+
         const quoteLength = 1;
+
         const closing = String.fromCharCode(this.#ch);
+
         let escaped = false;
+
         let crlf = false;
+
         let isEscaping = false;
 
         const text = this.scanUntil((ch, chNext, _chNextNext) => {
             if (isEscaping) {
                 isEscaping = false;
+
                 return false;
             }
 
             if (ch === CharacterCodes.backslash) {
                 isEscaping = escaped = true;
+
                 return false;
             }
 
@@ -885,6 +920,7 @@ export class Scanner implements Token {
 
         this.text = text;
         this.stringValue = value;
+
         return this.kind = Kind.StringLiteral;
     }
 
@@ -905,14 +941,19 @@ export class Scanner implements Token {
 
     private unescapeString(text: string) {
         let result = '';
+
         let start = 0;
+
         let pos = 0;
+
         const end = text.length;
 
         while (pos < end) {
             let ch = text.charCodeAt(pos);
+
             if (ch !== CharacterCodes.backslash) {
                 pos++;
+
                 continue;
             }
 
@@ -923,25 +964,39 @@ export class Scanner implements Token {
             switch (ch) {
                 case CharacterCodes.r:
                     result += '\r';
+
                     break;
+
                 case CharacterCodes.n:
                     result += '\n';
+
                     break;
+
                 case CharacterCodes.t:
                     result += '\t';
+
                     break;
+
                 case CharacterCodes.singleQuote:
                     result += '\'';
+
                     break;
+
                 case CharacterCodes.doubleQuote:
                     result += '"';
+
                     break;
+
                 case CharacterCodes.backslash:
                     result += '\\';
+
                     break;
+
                 case CharacterCodes.backtick:
                     result += '`';
+
                     break;
+
                 default:
                     throw new ScannerError('Invalid escape sequence', this.position.line, this.position.column);
             }
@@ -951,17 +1006,20 @@ export class Scanner implements Token {
         }
 
         result += text.substring(start, pos);
+
         return result;
     }
 
     scanIdentifier() {
         this.text = this.scanUntil((ch) => !isIdentifierPart(ch));
+
         return this.kind = keywords.get(this.text) ?? Kind.Identifier;
     }
 
     scanVariable() {
         this.text = '$';
         this.text += this.scanUntil((ch) => !isIdentifierPart(ch));
+
         return this.kind = Kind.Variable;
     }
 
@@ -984,11 +1042,13 @@ export class Scanner implements Token {
         while (first <= last) {
             middle = Math.floor((first + last) / 2);
             position = this.#map[middle];
+
             if (position.offset === offset) {
                 return { line: position.line, column: position.column };
             }
             if (position.offset < offset) {
                 first = middle + 1;
+
                 continue;
             }
             last = middle - 1;
@@ -999,6 +1059,7 @@ export class Scanner implements Token {
 
     static * tokensFrom(text: string): Iterable<Token> {
         const scanner = new Scanner(text).start();
+
         while (!scanner.eof) {
             yield scanner.take();
         }
@@ -1007,6 +1068,7 @@ export class Scanner implements Token {
     protected assert(assertion: boolean, message: string) {
         if (!assertion) {
             const p = this.position;
+
             throw new ScannerError(message, p.line, p.column);
         }
     }

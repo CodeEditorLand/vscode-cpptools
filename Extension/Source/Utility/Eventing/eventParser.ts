@@ -27,10 +27,13 @@ export function parse(triggerExpression: string, sourceToBindTo: ArbitraryObject
     //
 
     const scanner = new Scanner(triggerExpression).start();
+
     let token: Token;
 
     let once: boolean = false;
+
     let source: any;
+
     let isSync = false;
 
     // drop any leading whitespace
@@ -41,13 +44,19 @@ export function parse(triggerExpression: string, sourceToBindTo: ArbitraryObject
         switch (token.kind) {
             case Kind.OnceKeyword:
                 once = true;
+
                 break;
+
             case Kind.ThisKeyword:
                 source = sourceToBindTo;
+
                 break;
+
             case Kind.AwaitKeyword:
                 isSync = true;
+
                 break;
+
             default:
                 throw new Error(`unexpected keyword ${token.kind}`);
         }
@@ -59,6 +68,7 @@ export function parse(triggerExpression: string, sourceToBindTo: ArbitraryObject
     function addFilter(name: string) {
         scanner.takeWhiteSpaceAndNewLines();
         token = scanner.take();
+
         if (token.kind === Kind.OpenBracket) {
             // has a filter expression of some kind.
             filters.set(name, generateFilterFn(scanner));
@@ -68,6 +78,7 @@ export function parse(triggerExpression: string, sourceToBindTo: ArbitraryObject
             filters.set(name, true);
         }
         scanner.takeWhiteSpaceAndNewLines();
+
         return token.kind === Kind.EndOfFile;
     }
 
@@ -80,6 +91,7 @@ export function parse(triggerExpression: string, sourceToBindTo: ArbitraryObject
             case Kind.Slash:
                 // separator - skip this token (we can skip over multiple slashes, it's ok...)
                 token = scanner.take();
+
                 continue;
 
             case Kind.Asterisk:
@@ -99,6 +111,7 @@ export function parse(triggerExpression: string, sourceToBindTo: ArbitraryObject
                 // filter without event or discriminator name
                 filters.set('*', generateFilterFn(scanner));
                 token = scanner.take();
+
                 break;
 
             case Kind.Whitespace:
@@ -151,6 +164,7 @@ function generateFilterFn(scanner: Scanner): Filter {
     outer:
     while (inner.length) {
         eatWhitespace(inner);
+
         let token = inner.shift()!;
 
         switch (token.kind) {
@@ -169,6 +183,7 @@ function generateFilterFn(scanner: Scanner): Filter {
                             // now see if there are any flags
                             if (inner.length) {
                                 token = inner[0];
+
                                 if (token.kind === Kind.Identifier) {
                                     rxExpression.push(inner.shift()!);
                                 }
@@ -176,11 +191,13 @@ function generateFilterFn(scanner: Scanner): Filter {
                             // at this point, we should have the whole regex.
                             // turn this into an expression that tests against any $strings
                             expression.push(`(!!$strings.find( ($text)=> { const r = ${rxExpression.map(token => token.text).join('')}.exec($text); if( r ) { $captures.push( ...r ); return true; } } ))`);
+
                             continue outer;
 
                         case Kind.Backslash:
                             // take the next token, and add it to the regex
                             rxExpression.push(inner.shift()!);
+
                             continue;
                     }
 
@@ -198,6 +215,7 @@ function generateFilterFn(scanner: Scanner): Filter {
             case Kind.AmpersandAmpersand:
                 // add that token to the final expression
                 expression.push(token.text!);
+
                 break;
 
             case Kind.StringLiteral:
@@ -205,13 +223,16 @@ function generateFilterFn(scanner: Scanner): Filter {
                 // then we can just use the string literal as a comparison
                 // otherwise it should be part of the JavaScript expression (i.e. ['foo'===bar])
                 eatWhitespace(inner);
+
                 const peek = inner[0];
+
                 if (peek) {
                     switch (peek.kind) {
                         case Kind.BarBar:
                         case Kind.AmpersandAmpersand:
                         case Kind.CloseBracket:
                             expression.push(`$strings.has(${token.text!})`);
+
                             continue outer;
                     }
                 }
@@ -220,17 +241,22 @@ function generateFilterFn(scanner: Scanner): Filter {
             default:
                 // anything else, take all the tokens until we hit a separator/terminator/the end
                 const js = [token];
+
                 while (inner.length) {
                     token = inner.shift()!;
+
                     switch (token.kind) {
                         case Kind.BarBar:
                         case Kind.AmpersandAmpersand:
                         case Kind.CloseBracket:
                             // push the token back on the stack, and we're done
                             inner.unshift(token);
+
                             break;
+
                         default:
                             js.push(token);
+
                             continue;
                     }
                     break;
@@ -239,6 +265,7 @@ function generateFilterFn(scanner: Scanner): Filter {
 
                 // sandbox style, assumes $data is set to Event.data and $strings is the collection of strings for the discriminator or the event itself
                 expression.push(jsExpression.trim());
+
                 break;
         }
     }

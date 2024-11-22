@@ -16,11 +16,13 @@ export class TestHook implements CppToolsTestHook {
     // The StatusChanged event is deprecated in CppToolsTestHook API.
     public get StatusChanged(): vscode.Event<Status> {
         ok(!this.disposed, "TestHook is disposed.");
+
         return this.statusChangedEvent.event;
     }
 
     public get IntelliSenseStatusChanged(): vscode.Event<IntelliSenseStatus> {
         ok(!this.disposed, "TestHook is disposed.");
+
         return this.intelliSenseStatusChangedEvent.event;
     }
 

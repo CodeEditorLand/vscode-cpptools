@@ -12,6 +12,7 @@ import { makeVscodeLocation } from '../utils';
 
 export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
     private client: DefaultClient;
+
     constructor(client: DefaultClient) {
         this.client = client;
     }
@@ -28,6 +29,7 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
         };
 
         let symbols: LocalizeSymbolInformation[];
+
         try {
             symbols = await this.client.languageClient.sendRequest(GetSymbolInfoRequest, params, token);
         } catch (e: any) {
@@ -37,6 +39,7 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
             throw e;
         }
         const resultSymbols: vscode.SymbolInformation[] = [];
+
         if (token.isCancellationRequested) {
             throw new vscode.CancellationError();
         }
@@ -44,7 +47,9 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
         // Convert to vscode.Command array
         symbols.forEach((symbol) => {
             let suffix: string = getLocalizedString(symbol.suffix);
+
             let name: string = symbol.name;
+
             if (suffix.length) {
                 if (symbol.scope === SymbolScope.Private) {
                     suffix = getLocalizedSymbolScope("private", suffix);
@@ -67,6 +72,7 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
             );
             resultSymbols.push(vscodeSymbol);
         });
+
         return resultSymbols;
     }
 }
