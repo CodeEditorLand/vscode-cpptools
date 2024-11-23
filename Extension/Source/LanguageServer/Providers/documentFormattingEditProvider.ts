@@ -2,133 +2,182 @@
  * Copyright (c) Microsoft Corporation. All Rights Reserved.
  * See 'LICENSE' in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as vscode from 'vscode';
-import { ResponseError } from 'vscode-languageclient';
-import { DefaultClient, FormatDocumentRequest, FormatParams, FormatResult } from '../client';
-import { getEditorConfigSettings } from '../editorConfig';
-import { RequestCancelled, ServerCancelled } from '../protocolFilter';
-import { CppSettings, OtherSettings } from '../settings';
-import { makeVscodeTextEdits } from '../utils';
+import * as vscode from "vscode";
+import { ResponseError } from "vscode-languageclient";
 
-export class DocumentFormattingEditProvider implements vscode.DocumentFormattingEditProvider {
-    private client: DefaultClient;
+import {
+	DefaultClient,
+	FormatDocumentRequest,
+	FormatParams,
+	FormatResult,
+} from "../client";
+import { getEditorConfigSettings } from "../editorConfig";
+import { RequestCancelled, ServerCancelled } from "../protocolFilter";
+import { CppSettings, OtherSettings } from "../settings";
+import { makeVscodeTextEdits } from "../utils";
 
-    constructor(client: DefaultClient) {
-        this.client = client;
-    }
+export class DocumentFormattingEditProvider
+	implements vscode.DocumentFormattingEditProvider
+{
+	private client: DefaultClient;
 
-    public async provideDocumentFormattingEdits(document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken): Promise<vscode.TextEdit[]> {
-        const settings: CppSettings = new CppSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+	constructor(client: DefaultClient) {
+		this.client = client;
+	}
 
-        if (settings.formattingEngine === "disabled") {
-            return [];
-        }
-        await this.client.ready;
+	public async provideDocumentFormattingEdits(
+		document: vscode.TextDocument,
+		options: vscode.FormattingOptions,
+		token: vscode.CancellationToken,
+	): Promise<vscode.TextEdit[]> {
+		const settings: CppSettings = new CppSettings(
+			vscode.workspace.getWorkspaceFolder(document.uri)?.uri,
+		);
 
-        const filePath: string = document.uri.fsPath;
+		if (settings.formattingEngine === "disabled") {
+			return [];
+		}
+		await this.client.ready;
 
-        if (options.onChanges) {
-            let insertSpacesSet: boolean = false;
+		const filePath: string = document.uri.fsPath;
 
-            let tabSizeSet: boolean = false;
-            // Even when preserveFocus is true, VS Code is making the document active (when we don't want that).
-            // The workaround is for the code invoking the formatting to call showTextDocument again afterwards on the previously active document.
-            const editor: vscode.TextEditor = await vscode.window.showTextDocument(document, { preserveFocus: options.preserveFocus as boolean });
+		if (options.onChanges) {
+			let insertSpacesSet: boolean = false;
 
-            if (editor.options.insertSpaces && typeof editor.options.insertSpaces === "boolean") {
-                options.insertSpaces = editor.options.insertSpaces;
-                insertSpacesSet = true;
-            }
-            if (editor.options.tabSize && typeof editor.options.tabSize === "number") {
-                options.tabSize = editor.options.tabSize;
-                tabSizeSet = true;
-            }
+			let tabSizeSet: boolean = false;
+			// Even when preserveFocus is true, VS Code is making the document active (when we don't want that).
+			// The workaround is for the code invoking the formatting to call showTextDocument again afterwards on the previously active document.
+			const editor: vscode.TextEditor =
+				await vscode.window.showTextDocument(document, {
+					preserveFocus: options.preserveFocus as boolean,
+				});
 
-            if (!insertSpacesSet || !tabSizeSet) {
-                const settings: OtherSettings = new OtherSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+			if (
+				editor.options.insertSpaces &&
+				typeof editor.options.insertSpaces === "boolean"
+			) {
+				options.insertSpaces = editor.options.insertSpaces;
+				insertSpacesSet = true;
+			}
+			if (
+				editor.options.tabSize &&
+				typeof editor.options.tabSize === "number"
+			) {
+				options.tabSize = editor.options.tabSize;
+				tabSizeSet = true;
+			}
 
-                if (!insertSpacesSet) {
-                    options.insertSpaces = settings.editorInsertSpaces ?? true;
-                }
-                if (!tabSizeSet) {
-                    options.tabSize = settings.editorTabSize ?? 4;
-                }
-            }
-        }
-        const useVcFormat: boolean = settings.useVcFormat(document);
+			if (!insertSpacesSet || !tabSizeSet) {
+				const settings: OtherSettings = new OtherSettings(
+					vscode.workspace.getWorkspaceFolder(document.uri)?.uri,
+				);
 
-        const configCallBack = async (editorConfigSettings: any | undefined) => {
-            const params: FormatParams = {
-                editorConfigSettings: { ...editorConfigSettings },
-                useVcFormat: useVcFormat,
-                uri: document.uri.toString(),
-                insertSpaces: options.insertSpaces,
-                tabSize: options.tabSize,
-                character: "",
-                range: {
-                    start: {
-                        character: 0,
-                        line: 0
-                    },
-                    end: {
-                        character: 0,
-                        line: 0
-                    }
-                },
-                onChanges: options.onChanges === true
-            };
+				if (!insertSpacesSet) {
+					options.insertSpaces = settings.editorInsertSpaces ?? true;
+				}
+				if (!tabSizeSet) {
+					options.tabSize = settings.editorTabSize ?? 4;
+				}
+			}
+		}
+		const useVcFormat: boolean = settings.useVcFormat(document);
 
-            let response: FormatResult;
+		const configCallBack = async (
+			editorConfigSettings: any | undefined,
+		) => {
+			const params: FormatParams = {
+				editorConfigSettings: { ...editorConfigSettings },
+				useVcFormat: useVcFormat,
+				uri: document.uri.toString(),
+				insertSpaces: options.insertSpaces,
+				tabSize: options.tabSize,
+				character: "",
+				range: {
+					start: {
+						character: 0,
+						line: 0,
+					},
+					end: {
+						character: 0,
+						line: 0,
+					},
+				},
+				onChanges: options.onChanges === true,
+			};
 
-            try {
-                response = await this.client.languageClient.sendRequest(FormatDocumentRequest, params, token);
-            } catch (e: any) {
-                if (e instanceof ResponseError && (e.code === RequestCancelled || e.code === ServerCancelled)) {
-                    throw new vscode.CancellationError();
-                }
-                throw e;
-            }
-            if (token.isCancellationRequested) {
-                throw new vscode.CancellationError();
-            }
-            const results: vscode.TextEdit[] = makeVscodeTextEdits(response.edits);
-            // Apply insert_final_newline from .editorconfig
-            if (document.lineCount > 0 && editorConfigSettings !== undefined && editorConfigSettings.insert_final_newline) {
-                // Check if there is already a newline at the end.  If so, formatting edits should not replace it.
-                const lastLine: vscode.TextLine = document.lineAt(document.lineCount - 1);
+			let response: FormatResult;
 
-                if (!lastLine.isEmptyOrWhitespace) {
-                    const endPosition: vscode.Position = lastLine.range.end;
-                    // Check if there is an existing edit that extends the end of the file.
-                    // It would be the last edit, but edit may not be sorted.  If multiple, we need the last one.
-                    let lastEdit: vscode.TextEdit | undefined;
-                    results.forEach(edit => {
-                        if (edit.range.end.isAfterOrEqual(endPosition) && (!lastEdit || edit.range.start.isAfterOrEqual(lastEdit.range.start)) && edit.newText !== "") {
-                            lastEdit = edit;
-                        }
-                    });
+			try {
+				response = await this.client.languageClient.sendRequest(
+					FormatDocumentRequest,
+					params,
+					token,
+				);
+			} catch (e: any) {
+				if (
+					e instanceof ResponseError &&
+					(e.code === RequestCancelled || e.code === ServerCancelled)
+				) {
+					throw new vscode.CancellationError();
+				}
+				throw e;
+			}
+			if (token.isCancellationRequested) {
+				throw new vscode.CancellationError();
+			}
+			const results: vscode.TextEdit[] = makeVscodeTextEdits(
+				response.edits,
+			);
+			// Apply insert_final_newline from .editorconfig
+			if (
+				document.lineCount > 0 &&
+				editorConfigSettings !== undefined &&
+				editorConfigSettings.insert_final_newline
+			) {
+				// Check if there is already a newline at the end.  If so, formatting edits should not replace it.
+				const lastLine: vscode.TextLine = document.lineAt(
+					document.lineCount - 1,
+				);
 
-                    if (lastEdit === undefined) {
-                        results.push({
-                            range: new vscode.Range(endPosition, endPosition),
-                            newText: "\n"
-                        });
-                    } else {
-                        if (!lastEdit.newText.endsWith("\n")) {
-                            lastEdit.newText += "\n";
-                        }
-                    }
-                }
-            }
-            return results;
-        };
+				if (!lastLine.isEmptyOrWhitespace) {
+					const endPosition: vscode.Position = lastLine.range.end;
+					// Check if there is an existing edit that extends the end of the file.
+					// It would be the last edit, but edit may not be sorted.  If multiple, we need the last one.
+					let lastEdit: vscode.TextEdit | undefined;
+					results.forEach((edit) => {
+						if (
+							edit.range.end.isAfterOrEqual(endPosition) &&
+							(!lastEdit ||
+								edit.range.start.isAfterOrEqual(
+									lastEdit.range.start,
+								)) &&
+							edit.newText !== ""
+						) {
+							lastEdit = edit;
+						}
+					});
 
-        if (!useVcFormat) {
-            return configCallBack(undefined);
-        } else {
-            const editorConfigSettings: any = getEditorConfigSettings(filePath);
+					if (lastEdit === undefined) {
+						results.push({
+							range: new vscode.Range(endPosition, endPosition),
+							newText: "\n",
+						});
+					} else {
+						if (!lastEdit.newText.endsWith("\n")) {
+							lastEdit.newText += "\n";
+						}
+					}
+				}
+			}
+			return results;
+		};
 
-            return configCallBack(editorConfigSettings);
-        }
-    }
+		if (!useVcFormat) {
+			return configCallBack(undefined);
+		} else {
+			const editorConfigSettings: any = getEditorConfigSettings(filePath);
+
+			return configCallBack(editorConfigSettings);
+		}
+	}
 }

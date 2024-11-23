@@ -2,83 +2,108 @@
  * Copyright (c) Microsoft Corporation. All Rights Reserved.
  * See 'LICENSE' in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as vscode from 'vscode';
-import { ResponseError } from 'vscode-languageclient';
-import { DefaultClient, FormatOnTypeRequest, FormatParams, FormatResult } from '../client';
-import { getEditorConfigSettings } from '../editorConfig';
-import { RequestCancelled, ServerCancelled } from '../protocolFilter';
-import { CppSettings } from '../settings';
-import { makeVscodeTextEdits } from '../utils';
+import * as vscode from "vscode";
+import { ResponseError } from "vscode-languageclient";
 
-export class OnTypeFormattingEditProvider implements vscode.OnTypeFormattingEditProvider {
-    private client: DefaultClient;
+import {
+	DefaultClient,
+	FormatOnTypeRequest,
+	FormatParams,
+	FormatResult,
+} from "../client";
+import { getEditorConfigSettings } from "../editorConfig";
+import { RequestCancelled, ServerCancelled } from "../protocolFilter";
+import { CppSettings } from "../settings";
+import { makeVscodeTextEdits } from "../utils";
 
-    constructor(client: DefaultClient) {
-        this.client = client;
-    }
+export class OnTypeFormattingEditProvider
+	implements vscode.OnTypeFormattingEditProvider
+{
+	private client: DefaultClient;
 
-    public async provideOnTypeFormattingEdits(document: vscode.TextDocument, position: vscode.Position, ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken): Promise<vscode.TextEdit[]> {
-        const settings: CppSettings = new CppSettings(vscode.workspace.getWorkspaceFolder(document.uri)?.uri);
+	constructor(client: DefaultClient) {
+		this.client = client;
+	}
 
-        if (settings.formattingEngine === "disabled") {
-            return [];
-        }
-        await this.client.ready;
+	public async provideOnTypeFormattingEdits(
+		document: vscode.TextDocument,
+		position: vscode.Position,
+		ch: string,
+		options: vscode.FormattingOptions,
+		token: vscode.CancellationToken,
+	): Promise<vscode.TextEdit[]> {
+		const settings: CppSettings = new CppSettings(
+			vscode.workspace.getWorkspaceFolder(document.uri)?.uri,
+		);
 
-        const filePath: string = document.uri.fsPath;
+		if (settings.formattingEngine === "disabled") {
+			return [];
+		}
+		await this.client.ready;
 
-        const useVcFormat: boolean = settings.useVcFormat(document);
+		const filePath: string = document.uri.fsPath;
 
-        const configCallBack = async (editorConfigSettings: any | undefined) => {
-            const params: FormatParams = {
-                editorConfigSettings: { ...editorConfigSettings },
-                useVcFormat: useVcFormat,
-                uri: document.uri.toString(),
-                insertSpaces: options.insertSpaces,
-                tabSize: options.tabSize,
-                character: ch,
-                range: {
-                    start: {
-                        character: position.character,
-                        line: position.line
-                    },
-                    end: {
-                        character: 0,
-                        line: 0
-                    }
-                },
-                onChanges: false
-            };
+		const useVcFormat: boolean = settings.useVcFormat(document);
 
-            let response: FormatResult;
+		const configCallBack = async (
+			editorConfigSettings: any | undefined,
+		) => {
+			const params: FormatParams = {
+				editorConfigSettings: { ...editorConfigSettings },
+				useVcFormat: useVcFormat,
+				uri: document.uri.toString(),
+				insertSpaces: options.insertSpaces,
+				tabSize: options.tabSize,
+				character: ch,
+				range: {
+					start: {
+						character: position.character,
+						line: position.line,
+					},
+					end: {
+						character: 0,
+						line: 0,
+					},
+				},
+				onChanges: false,
+			};
 
-            try {
-                response = await this.client.languageClient.sendRequest(FormatOnTypeRequest, params, token);
-            } catch (e: any) {
-                if (e instanceof ResponseError && (e.code === RequestCancelled || e.code === ServerCancelled)) {
-                    throw new vscode.CancellationError();
-                }
-                throw e;
-            }
-            if (token.isCancellationRequested) {
-                throw new vscode.CancellationError();
-            }
-            return makeVscodeTextEdits(response.edits);
-        };
+			let response: FormatResult;
 
-        if (!useVcFormat) {
-            // If not using vcFormat, only process on-type requests for ';'
-            if (ch !== ';') {
-                const result: vscode.TextEdit[] = [];
+			try {
+				response = await this.client.languageClient.sendRequest(
+					FormatOnTypeRequest,
+					params,
+					token,
+				);
+			} catch (e: any) {
+				if (
+					e instanceof ResponseError &&
+					(e.code === RequestCancelled || e.code === ServerCancelled)
+				) {
+					throw new vscode.CancellationError();
+				}
+				throw e;
+			}
+			if (token.isCancellationRequested) {
+				throw new vscode.CancellationError();
+			}
+			return makeVscodeTextEdits(response.edits);
+		};
 
-                return result;
-            } else {
-                return configCallBack(undefined);
-            }
-        } else {
-            const editorConfigSettings: any = getEditorConfigSettings(filePath);
+		if (!useVcFormat) {
+			// If not using vcFormat, only process on-type requests for ';'
+			if (ch !== ";") {
+				const result: vscode.TextEdit[] = [];
 
-            return configCallBack(editorConfigSettings);
-        }
-    }
+				return result;
+			} else {
+				return configCallBack(undefined);
+			}
+		} else {
+			const editorConfigSettings: any = getEditorConfigSettings(filePath);
+
+			return configCallBack(editorConfigSettings);
+		}
+	}
 }
