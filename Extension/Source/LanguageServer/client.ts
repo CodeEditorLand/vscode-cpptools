@@ -5,7 +5,6 @@
 "use strict";
 
 // End provider imports
-
 import { ok } from "assert";
 import * as fs from "fs";
 import * as os from "os";
