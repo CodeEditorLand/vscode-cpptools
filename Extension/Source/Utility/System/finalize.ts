@@ -17,6 +17,7 @@ export function ignore<T>(fn: () => T | undefined) {
 		return undefined;
 	}
 }
+
 const finalized = new WeakSet();
 
 export let ActiveFinalizers = Promise.resolve();

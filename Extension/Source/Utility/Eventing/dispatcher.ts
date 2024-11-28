@@ -228,6 +228,7 @@ function* getHandlers<TResult>(
 		yield [subscriber.handler, captures];
 	}
 }
+
 const boundSubscribers = new WeakMap<ArbitraryObject, (() => void)[]>();
 
 const autoUnsubscribe = new FinalizationRegistry((unsubscribe: () => void) => {
