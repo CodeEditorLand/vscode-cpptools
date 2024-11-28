@@ -16,6 +16,7 @@ import { Instance } from "../System/types";
 import { filepath } from "./filepath";
 
 let ripgrep: Instance<ProcessFunction> | undefined;
+
 export async function initRipGrep(filename: string) {
 	if (!ripgrep) {
 		const rg = await filepath.isExecutable(filename);

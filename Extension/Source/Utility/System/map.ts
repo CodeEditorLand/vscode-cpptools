@@ -7,6 +7,7 @@ import { is } from "./guards";
 import { AribtraryObject } from "./types";
 
 export type Returns<TValue> = (...args: any) => TValue;
+
 export type InitialValue<TValue> = TValue | Returns<TValue>;
 
 export function getOrAdd<TKey extends AribtraryObject, TValue>(
@@ -14,21 +15,25 @@ export function getOrAdd<TKey extends AribtraryObject, TValue>(
 	key: TKey,
 	defaultValue: InitialValue<TValue>,
 ): TValue;
+
 export function getOrAdd<TKey extends AribtraryObject, TValue>(
 	map: WeakMap<TKey, TValue>,
 	key: TKey,
 	defaultValue: InitialValue<Promise<TValue>>,
 ): Promise<TValue>;
+
 export function getOrAdd<TKey, TValue>(
 	map: Map<TKey, TValue>,
 	key: TKey,
 	defaultValue: InitialValue<Promise<TValue>>,
 ): Promise<TValue>;
+
 export function getOrAdd<TKey, TValue>(
 	map: Map<TKey, TValue>,
 	key: TKey,
 	defaultValue: InitialValue<TValue>,
 ): TValue;
+
 export function getOrAdd<TKey, TValue>(
 	map: Map<TKey, TValue> | WeakMap<any, TValue>,
 	key: TKey,

@@ -13,6 +13,7 @@ import { getCustomConfigProviders } from "./customProviders";
 import { TimeTelemetryCollector } from "./timeTelemetryCollector";
 
 const defaultClientKey: string = "@@default@@";
+
 export interface ClientKey {
 	name: string;
 	key: string;

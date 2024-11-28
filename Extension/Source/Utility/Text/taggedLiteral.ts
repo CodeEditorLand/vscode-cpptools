@@ -272,12 +272,14 @@ export function render(
 	customResolver?: (prefix: string, expression: string) => string,
 	ensureValuesAreValidJS?: boolean,
 ): string[];
+
 export function render(
 	templateString: string,
 	context: Record<string, any>,
 	customResolver?: (prefix: string, expression: string) => string,
 	ensureValuesAreValidJS?: boolean,
 ): string;
+
 export function render(
 	templateString: string | string[],
 	context: Record<string, any>,

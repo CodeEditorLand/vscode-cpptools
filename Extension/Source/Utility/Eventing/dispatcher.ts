@@ -343,6 +343,7 @@ export function subscribe(
 	subscriber: Record<string, Callback>,
 	options?: { bindAll?: boolean; eventSource?: ArbitraryObject },
 ): Unsubscribe;
+
 export function subscribe(
 	subscriber: string,
 	options?: {
@@ -352,10 +353,12 @@ export function subscribe(
 		once?: boolean;
 	},
 ): Promise<Unsubscribe>;
+
 export function subscribe<T extends Record<string, any>>(
 	subscriber: Promise<Subscription<T>>,
 	options?: { bindAll?: boolean; eventSource?: ArbitraryObject },
 ): Promise<Unsubscribe>;
+
 export function subscribe(
 	subscriber: Record<string, string>,
 	options?: {
@@ -364,10 +367,12 @@ export function subscribe(
 		eventSource?: ArbitraryObject;
 	},
 ): Promise<Unsubscribe>;
+
 export function subscribe<T extends Record<string, any>>(
 	subscriber: Subscription<T>,
 	options?: { bindAll?: boolean; eventSource?: ArbitraryObject },
 ): Unsubscribe;
+
 export function subscribe<T extends Record<string, any>>(
 	subscriber:
 		| Promise<Subscription<T>>
@@ -552,52 +557,62 @@ export async function emit<TResult>(
 	descriptors: Descriptors,
 	text: string,
 ): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 	descriptors: Descriptors,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 	descriptors: Descriptors,
 	text: string,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
-export async function emit<TResult>(
-	name: string,
-	descriptors: Descriptors,
-	source: ArbitraryObject,
-	text: string,
-): Promise<TResult | EventStatus>;
-export async function emit<TResult>(
-	name: string,
-	descriptors: Descriptors,
-	source: ArbitraryObject,
-	data: ArbitraryObject,
-): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 	descriptors: Descriptors,
 	source: ArbitraryObject,
 	text: string,
+): Promise<TResult | EventStatus>;
+
+export async function emit<TResult>(
+	name: string,
+	descriptors: Descriptors,
+	source: ArbitraryObject,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
+export async function emit<TResult>(
+	name: string,
+	descriptors: Descriptors,
+	source: ArbitraryObject,
+	text: string,
+	data: ArbitraryObject,
+): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 	text: string,
 ): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 	text: string,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 ): Promise<TResult | EventStatus>;
+
 export async function emit<TResult>(
 	name: string,
 	...variableArgs: any[]
@@ -639,52 +654,62 @@ export async function emitNow<TResult>(
 	descriptors: Descriptors,
 	text: string,
 ): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 	descriptors: Descriptors,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 	descriptors: Descriptors,
 	text: string,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
-export async function emitNow<TResult>(
-	name: string,
-	descriptors: Descriptors,
-	source: ArbitraryObject,
-	text: string,
-): Promise<TResult | EventStatus>;
-export async function emitNow<TResult>(
-	name: string,
-	descriptors: Descriptors,
-	source: ArbitraryObject,
-	data: ArbitraryObject,
-): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 	descriptors: Descriptors,
 	source: ArbitraryObject,
 	text: string,
+): Promise<TResult | EventStatus>;
+
+export async function emitNow<TResult>(
+	name: string,
+	descriptors: Descriptors,
+	source: ArbitraryObject,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
+export async function emitNow<TResult>(
+	name: string,
+	descriptors: Descriptors,
+	source: ArbitraryObject,
+	text: string,
+	data: ArbitraryObject,
+): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 	text: string,
 ): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 	text: string,
 	data: ArbitraryObject,
 ): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 ): Promise<TResult | EventStatus>;
+
 export async function emitNow<TResult>(
 	name: string,
 	...variableArgs: any[]
@@ -721,29 +746,34 @@ export function notify(
 	descriptors: Descriptors,
 	text: string,
 ): void;
+
 export function notify(
 	name: string,
 	descriptors: Descriptors,
 	data: ArbitraryObject,
 ): void;
+
 export function notify(
 	name: string,
 	descriptors: Descriptors,
 	text: string,
 	data: ArbitraryObject,
 ): void;
+
 export function notify(
 	name: string,
 	descriptors: Descriptors,
 	source: ArbitraryObject,
 	text: string,
 ): void;
+
 export function notify(
 	name: string,
 	descriptors: Descriptors,
 	source: ArbitraryObject,
 	data: ArbitraryObject,
 ): void;
+
 export function notify(
 	name: string,
 	descriptors: Descriptors,
@@ -751,10 +781,15 @@ export function notify(
 	text: string,
 	data: ArbitraryObject,
 ): void;
+
 export function notify(name: string, text: string): void;
+
 export function notify(name: string, text: string, data: ArbitraryObject): void;
+
 export function notify(name: string, data: ArbitraryObject): void;
+
 export function notify(name: string): void;
+
 export function notify(name: string, ...variableArgs: any[]): void {
 	// quickly check if there are any possible handlers for this event
 	if (isSubscribed(name)) {
@@ -785,29 +820,34 @@ export function notifyNow(
 	descriptors: Descriptors,
 	text: string,
 ): void;
+
 export function notifyNow(
 	name: string,
 	descriptors: Descriptors,
 	data: ArbitraryObject,
 ): void;
+
 export function notifyNow(
 	name: string,
 	descriptors: Descriptors,
 	text: string,
 	data: ArbitraryObject,
 ): void;
+
 export function notifyNow(
 	name: string,
 	descriptors: Descriptors,
 	source: ArbitraryObject,
 	text: string,
 ): void;
+
 export function notifyNow(
 	name: string,
 	descriptors: Descriptors,
 	source: ArbitraryObject,
 	data: ArbitraryObject,
 ): void;
+
 export function notifyNow(
 	name: string,
 	descriptors: Descriptors,
@@ -815,14 +855,19 @@ export function notifyNow(
 	text: string,
 	data: ArbitraryObject,
 ): void;
+
 export function notifyNow(name: string, text: string): void;
+
 export function notifyNow(name: string, data: ArbitraryObject): void;
+
 export function notifyNow(
 	name: string,
 	text: string,
 	data: ArbitraryObject,
 ): void;
+
 export function notifyNow(name: string): void;
+
 export function notifyNow(name: string, ...variableArgs: any[]): void {
 	// quickly check if there are any possible handlers for this event
 	if (isSubscribed(name)) {

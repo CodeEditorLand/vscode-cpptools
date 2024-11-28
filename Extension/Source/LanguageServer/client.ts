@@ -154,6 +154,7 @@ let initializedClientCount: number = 0;
 
 // Compiler paths that are known to be acceptable to execute.
 const trustedCompilerPaths: string[] = [];
+
 export function hasTrustedCompilerPaths(): boolean {
 	return trustedCompilerPaths.length !== 0;
 }
@@ -183,12 +184,16 @@ interface ConfigStateReceived {
 let workspaceHash: string = "";
 
 let workspaceDisposables: vscode.Disposable[] = [];
+
 export let workspaceReferences: refs.ReferencesManager;
+
 export const openFileVersions: Map<string, number> = new Map<string, number>();
+
 export const cachedEditorConfigLookups: Map<string, boolean> = new Map<
 	string,
 	boolean
 >();
+
 export let semanticTokensLegend: vscode.SemanticTokensLegend | undefined;
 
 export function disposeWorkspaceData(): void {
@@ -681,6 +686,7 @@ const GetDiagnosticsRequest: RequestType<void, GetDiagnosticsResult, void> =
 	new RequestType<void, GetDiagnosticsResult, void>(
 		"cpptools/getDiagnostics",
 	);
+
 export const GetDocumentSymbolRequest: RequestType<
 	GetDocumentSymbolRequestParams,
 	GetDocumentSymbolResult,
@@ -690,6 +696,7 @@ export const GetDocumentSymbolRequest: RequestType<
 	GetDocumentSymbolResult,
 	void
 >("cpptools/getDocumentSymbols");
+
 export const GetSymbolInfoRequest: RequestType<
 	WorkspaceSymbolParams,
 	LocalizeSymbolInformation[],
@@ -697,6 +704,7 @@ export const GetSymbolInfoRequest: RequestType<
 > = new RequestType<WorkspaceSymbolParams, LocalizeSymbolInformation[], void>(
 	"cpptools/getWorkspaceSymbols",
 );
+
 export const GetFoldingRangesRequest: RequestType<
 	GetFoldingRangesParams,
 	GetFoldingRangesResult,
@@ -704,6 +712,7 @@ export const GetFoldingRangesRequest: RequestType<
 > = new RequestType<GetFoldingRangesParams, GetFoldingRangesResult, void>(
 	"cpptools/getFoldingRanges",
 );
+
 export const FormatDocumentRequest: RequestType<
 	FormatParams,
 	FormatResult,
@@ -711,13 +720,16 @@ export const FormatDocumentRequest: RequestType<
 > = new RequestType<FormatParams, FormatResult, void>(
 	"cpptools/formatDocument",
 );
+
 export const FormatRangeRequest: RequestType<FormatParams, FormatResult, void> =
 	new RequestType<FormatParams, FormatResult, void>("cpptools/formatRange");
+
 export const FormatOnTypeRequest: RequestType<
 	FormatParams,
 	FormatResult,
 	void
 > = new RequestType<FormatParams, FormatResult, void>("cpptools/formatOnType");
+
 export const HoverRequest: RequestType<
 	TextDocumentPositionParams,
 	vscode.Hover,

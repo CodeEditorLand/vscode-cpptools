@@ -42,6 +42,7 @@ export type ArbitraryObject = Record<string, any>;
 export type EventStatus = "Cancelled" | undefined;
 
 export const Cancelled = "Cancelled";
+
 export const Continue = undefined;
 
 export type Filter = (

@@ -148,10 +148,12 @@ export const codeAnalysisFileToCodeActions: Map<
 	string,
 	CodeActionDiagnosticInfo[]
 > = new Map<string, CodeActionDiagnosticInfo[]>();
+
 export const codeAnalysisCodeToFixes: Map<string, CodeActionCodeInfo> = new Map<
 	string,
 	CodeActionCodeInfo
 >();
+
 export const codeAnalysisAllFixes: CodeActionAllInfo = {
 	version: 0,
 	fixAllCodeAction: {

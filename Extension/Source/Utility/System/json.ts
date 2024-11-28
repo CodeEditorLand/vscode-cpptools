@@ -15,10 +15,12 @@ export function stringify(
 	value: Promise<any>,
 	options?: { format?: boolean; types?: (new () => any)[] },
 ): Promise<string>;
+
 export function stringify(
 	value: any,
 	options?: { format?: boolean; types?: (new () => any)[] },
 ): string;
+
 export function stringify(
 	value: any,
 	options?: { format?: boolean; types?: (new () => any)[] },

@@ -56,7 +56,9 @@ nls.config({
 })();
 
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
+
 export const CppSourceStr: string = "C/C++";
+
 export const configPrefix: string = "C/C++: ";
 
 let prevMacCrashFile: string;
@@ -64,6 +66,7 @@ let prevMacCrashFile: string;
 let prevCppCrashFile: string;
 
 let prevCppCrashCallStackData: string = "";
+
 export let clients: ClientCollection;
 
 let activeDocument: vscode.TextDocument | undefined;
@@ -79,6 +82,7 @@ let languageConfigurations: vscode.Disposable[] = [];
 let intervalTimer: NodeJS.Timeout;
 
 let codeActionProvider: vscode.Disposable;
+
 export const intelliSenseDisabledError: string =
 	"Do not activate the extension when IntelliSense is disabled.";
 

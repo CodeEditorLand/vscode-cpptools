@@ -76,6 +76,7 @@ export class TargetLeafNode extends LabelLeafNode {
  * Should only be used in targetNodes.ts and sshTargetsProvider.ts
  */
 export let _activeTarget: string | undefined;
+
 export async function setActiveSshTarget(
 	name: string | undefined,
 ): Promise<void> {

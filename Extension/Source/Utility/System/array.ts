@@ -11,9 +11,11 @@ import { fail } from "assert";
 import { is } from "../System/guards";
 
 export function first<TElement>(iterable: undefined): undefined;
+
 export function first<TElement>(
 	iterable: Iterable<TElement> | undefined,
 ): TElement | undefined;
+
 export function first<TElement>(
 	iterable: Iterable<TElement> | undefined,
 	predicate: (element: TElement) => true | undefined,
@@ -22,6 +24,7 @@ export function first<TElement>(
 export function first<TElement>(
 	iterable: Promise<Iterable<TElement> | undefined>,
 ): Promise<TElement | undefined>;
+
 export function first<TElement>(
 	iterable: Promise<Iterable<TElement> | undefined>,
 	predicate: (element: TElement) => true | undefined,
@@ -53,10 +56,12 @@ export function firstOrFail<TElement>(
 	iterable: undefined,
 	message: string | Error,
 ): never;
+
 export function firstOrFail<TElement>(
 	iterable: Iterable<TElement>,
 	message: string | Error,
 ): TElement | never;
+
 export function firstOrFail<TElement>(
 	iterable: Iterable<TElement>,
 	predicate: (element: TElement) => true | undefined,
@@ -67,6 +72,7 @@ export function firstOrFail<TElement>(
 	iterable: Promise<Iterable<TElement>>,
 	message: string | Error,
 ): Promise<TElement> | never;
+
 export function firstOrFail<TElement>(
 	iterable: Promise<Iterable<TElement>>,
 	predicate: (element: TElement) => true | undefined,

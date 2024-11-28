@@ -14,6 +14,7 @@ import { clients } from "./extension";
 import { shouldChangeFromCToCpp } from "./utils";
 
 export const RequestCancelled: number = -32800;
+
 export const ServerCancelled: number = -32802;
 
 export function createProtocolFilter(): Middleware {

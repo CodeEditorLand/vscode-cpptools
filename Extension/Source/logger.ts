@@ -24,6 +24,7 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 // This is used for testing purposes
 let Subscriber: (message: string) => void;
+
 export function subscribeToAllLoggers(
 	subscriber: (message: string) => void,
 ): void {
@@ -94,10 +95,15 @@ export class Logger {
 }
 
 export let outputChannel: vscode.OutputChannel | undefined;
+
 export let diagnosticsChannel: vscode.OutputChannel | undefined;
+
 export let crashCallStacksChannel: vscode.OutputChannel | undefined;
+
 export let debugChannel: vscode.OutputChannel | undefined;
+
 export let warningChannel: vscode.OutputChannel | undefined;
+
 export let sshChannel: vscode.OutputChannel | undefined;
 
 export function getOutputChannel(): vscode.OutputChannel {

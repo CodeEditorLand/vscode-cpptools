@@ -28,6 +28,7 @@ nls.config({
 })();
 
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
+
 export const failedToParseJson: string = localize(
 	"failed.to.parse.json",
 	"Failed to parse json file, possibly due to comments or trailing commas.",
@@ -41,7 +42,9 @@ export type Mutable<T> = {
 };
 
 export let extensionPath: string;
+
 export let extensionContext: vscode.ExtensionContext | undefined;
+
 export function setExtensionContext(context: vscode.ExtensionContext): void {
 	extensionContext = context;
 	extensionPath = extensionContext.extensionPath;
@@ -52,6 +55,7 @@ export function setExtensionPath(path: string): void {
 }
 
 let cachedClangFormatPath: string | undefined;
+
 export function getCachedClangFormatPath(): string | undefined {
 	return cachedClangFormatPath;
 }
@@ -61,6 +65,7 @@ export function setCachedClangFormatPath(path: string): void {
 }
 
 let cachedClangTidyPath: string | undefined;
+
 export function getCachedClangTidyPath(): string | undefined {
 	return cachedClangTidyPath;
 }
@@ -76,6 +81,7 @@ export const packageJson: any =
 // Use getRawSetting to get subcategorized settings from package.json.
 // This prevents having to iterate every time we search.
 let flattenedPackageJson: Map<string, any>;
+
 export function getRawSetting(
 	key: string,
 	breakIfMissing: boolean = false,
@@ -174,6 +180,7 @@ export function getVcpkgPathDescriptorFile(): string {
 }
 
 let vcpkgRoot: string | undefined;
+
 export function getVcpkgRoot(): string {
 	if (!vcpkgRoot && vcpkgRoot !== "") {
 		vcpkgRoot = "";
@@ -295,6 +302,7 @@ export function isCppPropertiesJson(document: vscode.TextDocument): boolean {
 	);
 }
 let isWorkspaceCpp: boolean = false;
+
 export function setWorkspaceIsCpp(): void {
 	if (!isWorkspaceCpp) {
 		isWorkspaceCpp = true;
@@ -325,6 +333,7 @@ export function isCppOrRelated(document: vscode.TextDocument): boolean {
 }
 
 let isExtensionNotReadyPromptDisplayed: boolean = false;
+
 export const extensionNotReadyString: string = localize(
 	"extension.not.ready",
 	"The C/C++ extension is still installing. See the output window for more information.",

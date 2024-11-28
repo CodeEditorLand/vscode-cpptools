@@ -16,10 +16,13 @@ export type ConstructorReturn<T extends abstract new (...args: any) => any> =
 export type Primitive = string | number | boolean;
 
 export type Constructor = new (...args: any[]) => any;
+
 export type AribtraryObject = Record<string, any>;
+
 export type Initializer<T> = T | (() => Promise<T>) | (() => T) | (new () => T);
 
 export type Instance<T> = Awaited<T>;
+
 export interface AsyncConstructor<
 	TClass extends new (
 		...args: ConstructorParameters<TClass>
