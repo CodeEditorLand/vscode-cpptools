@@ -2,11 +2,11 @@
 
 MIEngine is one of the components used to enable the C/C++ debugging scenario with the Microsoft C/C++ extension with VS Code. This document is to help enable users who want to debug and contribute to MIEngine to fix issues or extend functionality. MIEngine is used to communicate with `gdb`/`lldb` using the MI protocol.
 
-**Repository:** https://github.com/Microsoft/MIEngine
+**Repository:** HTTPS://github.com/Microsoft/MIEngine
 
 ## To Build
 
-To build MIEngine, you will either need Visual Studio 2015+ installed or at the very least [MSBuild](https://github.com/Microsoft/msbuild) installed. The configuration you want to build is `Desktop.Debug`.
+To build MIEngine, you will either need Visual Studio 2015+ installed or at the very least [MSBuild](HTTPS://github.com/Microsoft/msbuild) installed. The configuration you want to build is `Desktop.Debug`.
 
 You can open the solution file **MIDebugEngine.sln** located under **src** and change the configuration and build. You will want to look in the **bin\Desktop.Debug** folder for the compiled bits. You will need to copy the following files to your **.vscode\extensions\ms-vscode.cpptools-\<version\>\debugadapters\bin** folder in your users/home folder:
 
@@ -57,8 +57,8 @@ This will cause the debugger to look like it has hung once you start debugging, 
 On Linux and macOS, we use `mono` as our framework. You can download Xamarin Studio v5.10.1.6 and remotely attach to your Mac or Linux box to debug there.
 
 ##### Install Prerequisites
-1. Install [GTK](http://www.mono-project.com/download/).
-2. Install [Xamarin Studio v5.10.1.6](http://download.xamarin.com/studio/Windows/XamarinStudio-5.10.1.6-0.msi).
+1. Install [GTK](HTTP://www.mono-project.com/download/).
+2. Install [Xamarin Studio v5.10.1.6](HTTP://download.xamarin.com/studio/Windows/XamarinStudio-5.10.1.6-0.msi).
 
 Remote attach functionality behind a flag.  You can run it like this:
 ```PowerShell
@@ -90,7 +90,7 @@ After you've done this once, you can hit the MonoDevelop "Play" button or <kbd>F
 #### With VS Code + Mono Debug
 
 ##### Install Prerequisites
-1. Install [VS Code](https://code.visualstudio.com/Download).
+1. Install [VS Code](HTTPS://code.visualstudio.com/Download).
 2. Install Mono Debug extension for VS Code.
 
 ##### Create an empty project (one-time setup)

@@ -20,4 +20,4 @@
 </li>
 </ol>
 <h2 data-loc-id="walkthrough.windows.other.compilers">Other compiler options</h2>
-<p data-loc-id="walkthrough.windows.text3">If you&#39;re targeting Linux from Windows, check out <a href="https://code.visualstudio.com/docs/cpp/config-wsl" data-loc-id="walkthrough.windows.link.title1">Using C++ and Windows Subsystem for Linux (WSL) in VS Code</a>. Or, you could <a href="https://code.visualstudio.com/docs/cpp/config-mingw" data-loc-id="walkthrough.windows.link.title2">install GCC on Windows with MinGW</a>.</p>
+<p data-loc-id="walkthrough.windows.text3">If you&#39;re targeting Linux from Windows, check out <a href="HTTPS://code.visualstudio.com/docs/cpp/config-wsl" data-loc-id="walkthrough.windows.link.title1">Using C++ and Windows Subsystem for Linux (WSL) in VS Code</a>. Or, you could <a href="HTTPS://code.visualstudio.com/docs/cpp/config-mingw" data-loc-id="walkthrough.windows.link.title2">install GCC on Windows with MinGW</a>.</p>

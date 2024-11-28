@@ -1,1 +1,1 @@
-The documentation for Natvis has moved to https://code.visualstudio.com/docs/cpp/natvis.
+The documentation for Natvis has moved to HTTPS://code.visualstudio.com/docs/cpp/natvis.

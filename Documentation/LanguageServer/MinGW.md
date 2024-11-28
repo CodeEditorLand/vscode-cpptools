@@ -1,2 +1,2 @@
 
-The documentation for Mingw-w64 has moved to https://code.visualstudio.com/docs/cpp/config-mingw.
+The documentation for Mingw-w64 has moved to HTTPS://code.visualstudio.com/docs/cpp/config-mingw.

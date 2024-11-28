@@ -34,12 +34,12 @@
 
 ### Required Tools 
 
-* [Node.js](https://nodejs.org/en/download/) v16.*
+* [Node.js](HTTPS://nodejs.org/en/download/) v16.*
 * Yarn - use `npm install -g yarn` to install
 
 ### Setting up the repository
 
-`git clone https://github.com/microsoft/vscode-cpptools.git`
+`git clone HTTPS://github.com/microsoft/vscode-cpptools.git`
 
 `yarn install`
 
