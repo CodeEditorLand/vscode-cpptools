@@ -47,6 +47,7 @@ export let extensionContext: vscode.ExtensionContext | undefined;
 
 export function setExtensionContext(context: vscode.ExtensionContext): void {
 	extensionContext = context;
+
 	extensionPath = extensionContext.extensionPath;
 }
 
@@ -98,12 +99,14 @@ export function getRawSetting(
 			}
 		}
 	}
+
 	const result = flattenedPackageJson.get(key);
 
 	if (result === undefined && breakIfMissing) {
 		// eslint-disable-next-line no-debugger
 		debugger; // The setting does not exist in package.json. Check the `key`.
 	}
+
 	return result;
 }
 
@@ -111,6 +114,7 @@ export async function getRawJson(path: string | undefined): Promise<any> {
 	if (!path) {
 		return {};
 	}
+
 	const fileExists: boolean = await checkFileExists(path);
 
 	if (!fileExists) {
@@ -126,6 +130,7 @@ export async function getRawJson(path: string | undefined): Promise<any> {
 	} catch (error) {
 		throw new Error(failedToParseJson);
 	}
+
 	return rawElement;
 }
 
@@ -154,6 +159,7 @@ export function getJsonPath(
 	if (!editor) {
 		return undefined;
 	}
+
 	const folder: vscode.WorkspaceFolder | undefined = workspaceFolder
 		? workspaceFolder
 		: vscode.workspace.getWorkspaceFolder(editor.document.uri);
@@ -161,6 +167,7 @@ export function getJsonPath(
 	if (!folder) {
 		return undefined;
 	}
+
 	return path.join(folder.uri.fsPath, ".vscode", jsonFilaName);
 }
 
@@ -171,6 +178,7 @@ export function getVcpkgPathDescriptorFile(): string {
 		if (!pathPrefix) {
 			throw new Error("Unable to read process.env.LOCALAPPDATA");
 		}
+
 		return path.join(pathPrefix, "vcpkg/vcpkg.path.txt");
 	} else {
 		const pathPrefix: string = os.homedir();
@@ -189,6 +197,7 @@ export function getVcpkgRoot(): string {
 			let vcpkgRootTemp: string = fs
 				.readFileSync(getVcpkgPathDescriptorFile())
 				.toString();
+
 			vcpkgRootTemp = vcpkgRootTemp.trim();
 
 			if (fs.existsSync(vcpkgRootTemp)) {
@@ -198,6 +207,7 @@ export function getVcpkgRoot(): string {
 			}
 		}
 	}
+
 	return vcpkgRoot;
 }
 
@@ -262,6 +272,7 @@ export function isCppOrCFile(uri: vscode.Uri | undefined): boolean {
 	if (!uri) {
 		return false;
 	}
+
 	return isCppFile(uri) || isCFile(uri);
 }
 
@@ -281,6 +292,7 @@ export function isEditorFileCpp(file: string): boolean {
 	if (!editor) {
 		return false;
 	}
+
 	return editor.document.languageId === "cpp";
 }
 
@@ -342,6 +354,7 @@ export const extensionNotReadyString: string = localize(
 export function displayExtensionNotReadyPrompt(): void {
 	if (!isExtensionNotReadyPromptDisplayed) {
 		isExtensionNotReadyPromptDisplayed = true;
+
 		showOutputChannel();
 
 		void getOutputChannelLogger()
@@ -401,27 +414,34 @@ export function setProgress(progress: number): void {
 		switch (progress) {
 			case 0:
 				progressName = "install started";
+
 				break;
 
 			case progressInstallSuccess:
 				progressName = "install succeeded";
+
 				break;
 
 			case progressExecutableStarted:
 				progressName = "executable started";
+
 				break;
 
 			case progressExecutableSuccess:
 				progressName = "executable succeeded";
+
 				break;
 
 			case progressParseRootSuccess:
 				progressName = "parse root succeeded";
+
 				break;
 		}
+
 		if (progressName) {
 			telemetryProperties.progress = progressName;
 		}
+
 		Telemetry.logDebuggerEvent("progress", telemetryProperties);
 	}
 }
@@ -440,11 +460,14 @@ export function setIntelliSenseProgress(progress: number): void {
 		switch (progress) {
 			case progressIntelliSenseNoSquiggles:
 				progressName = "IntelliSense no squiggles";
+
 				break;
 		}
+
 		if (progressName) {
 			telemetryProperties.progress = progressName;
 		}
+
 		Telemetry.logDebuggerEvent("progress", telemetryProperties);
 	}
 }
@@ -509,6 +532,7 @@ export function isValidMapping(
 			([key, val]) => isValidKey(key) && isValidValue(val),
 		);
 	}
+
 	return false;
 }
 
@@ -560,6 +584,7 @@ export function resolveVariables(
 	// TODO: https://github.com/microsoft/vscode-cpptools/issues/9414
 	if (!isString(input)) {
 		const inputAny: any = input;
+
 		input = inputAny.toString();
 
 		return input ?? "";
@@ -575,6 +600,7 @@ export function resolveVariables(
 
 	while (!cycleCache.has(ret)) {
 		cycleCache.add(ret);
+
 		ret = ret.replace(
 			regexp(),
 			(
@@ -589,6 +615,7 @@ export function resolveVariables(
 				if (!varType) {
 					varType = "env";
 				}
+
 				let newValue: string | undefined;
 
 				switch (varType) {
@@ -602,6 +629,7 @@ export function resolveVariables(
 							} else if (input === match && isArrayOfString(v)) {
 								if (arrayResults !== undefined) {
 									arrayResults.push(...v);
+
 									newValue = "";
 
 									break;
@@ -610,11 +638,14 @@ export function resolveVariables(
 								}
 							}
 						}
+
 						if (newValue === undefined) {
 							newValue = process.env[name];
 						}
+
 						break;
 					}
+
 					case "config": {
 						const config: vscode.WorkspaceConfiguration =
 							vscode.workspace.getConfiguration();
@@ -622,8 +653,10 @@ export function resolveVariables(
 						if (config) {
 							newValue = config.get<string>(name);
 						}
+
 						break;
 					}
+
 					case "workspaceFolder": {
 						// Only replace ${workspaceFolder:name} variables for now.
 						// We may consider doing replacement of ${workspaceFolder} here later, but we would have to update the language server and also
@@ -644,12 +677,15 @@ export function resolveVariables(
 								newValue = folder.uri.fsPath;
 							}
 						}
+
 						break;
 					}
+
 					default: {
 						assert.fail("unknown varType matched");
 					}
 				}
+
 				return newValue !== undefined ? newValue : match;
 			},
 		);
@@ -673,6 +709,7 @@ export function resolveVariablesArray(
 				additionalEnvironment,
 				variablesResolved,
 			);
+
 			result = result.concat(
 				variablesResolved.length === 0
 					? variableResolved
@@ -680,6 +717,7 @@ export function resolveVariablesArray(
 			);
 		});
 	}
+
 	return result;
 }
 
@@ -694,6 +732,7 @@ export function asFolder(uri: vscode.Uri): string {
 	if (!result.endsWith("/")) {
 		result += "/";
 	}
+
 	return result;
 }
 
@@ -725,6 +764,7 @@ export async function fsStat(
 		// File doesn't exist
 		return undefined;
 	}
+
 	return stats;
 }
 
@@ -746,6 +786,7 @@ export async function checkExecutableWithoutExtensionExists(
 	if (await checkFileExists(filePath)) {
 		return true;
 	}
+
 	if (os.platform() === "win32") {
 		if (filePath.length > 4) {
 			const possibleExtension: string = filePath
@@ -760,16 +801,20 @@ export async function checkExecutableWithoutExtensionExists(
 				return false;
 			}
 		}
+
 		if (await checkFileExists(filePath + ".exe")) {
 			return true;
 		}
+
 		if (await checkFileExists(filePath + ".cmd")) {
 			return true;
 		}
+
 		if (await checkFileExists(filePath + ".bat")) {
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -784,6 +829,7 @@ export function createDirIfNotExistsSync(filePath: string | undefined): void {
 	if (!filePath) {
 		return;
 	}
+
 	const dirPath: string = path.dirname(filePath);
 
 	if (!checkDirectoryExistsSync(dirPath)) {
@@ -805,6 +851,7 @@ export function checkExecutableWithoutExtensionExistsSync(
 	if (checkFileExistsSync(filePath)) {
 		return true;
 	}
+
 	if (os.platform() === "win32") {
 		if (filePath.length > 4) {
 			const possibleExtension: string = filePath
@@ -819,16 +866,20 @@ export function checkExecutableWithoutExtensionExistsSync(
 				return false;
 			}
 		}
+
 		if (checkFileExistsSync(filePath + ".exe")) {
 			return true;
 		}
+
 		if (checkFileExistsSync(filePath + ".cmd")) {
 			return true;
 		}
+
 		if (checkFileExistsSync(filePath + ".bat")) {
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -873,6 +924,7 @@ export function checkPathExistsSync(
 			}
 		}
 	}
+
 	return { pathExists, path };
 }
 
@@ -917,6 +969,7 @@ export function writeFileText(
 			if (!fs.existsSync(folderPath)) {
 				fs.mkdirSync(folderPath);
 			}
+
 			return folderPath;
 		});
 	}
@@ -980,6 +1033,7 @@ export function getReadmeMessage(): string {
 /** Used for diagnostics only */
 export function logToFile(message: string): void {
 	const logFolder: string = getExtensionFilePath("extension.log");
+
 	fs.writeFileSync(logFolder, `${message}${os.EOL}`, { flag: "a" });
 }
 
@@ -1004,16 +1058,19 @@ export function execChildProcess(
 
 					if (stderr && stderr.length > 0) {
 						message += stderr;
+
 						err = true;
 					}
 
 					if (error) {
 						message += error.message;
+
 						err = true;
 					}
 
 					if (err) {
 						channel.append(message);
+
 						channel.show();
 					}
 				}
@@ -1038,8 +1095,11 @@ export function execChildProcess(
 
 export interface ProcessReturnType {
 	succeeded: boolean;
+
 	exitCode?: number | NodeJS.Signals;
+
 	output: string;
+
 	outputError: string;
 }
 
@@ -1061,6 +1121,7 @@ export async function spawnChildProcess(
 			);
 		}
 	}
+
 	const programOutput: ProcessOutput = await spawnChildProcessImpl(
 		program,
 		args,
@@ -1098,6 +1159,7 @@ export async function spawnChildProcess(
 				"Process executed successfully.",
 			);
 		}
+
 		return {
 			succeeded: true,
 			exitCode,
@@ -1109,7 +1171,9 @@ export async function spawnChildProcess(
 
 interface ProcessOutput {
 	exitCode?: number | NodeJS.Signals;
+
 	stdout: string;
+
 	stderr: string;
 }
 
@@ -1148,6 +1212,7 @@ async function spawnChildProcessImpl(
 			getOutputChannelLogger().appendLine(
 				localize("killing.process", "Killing process {0}", program),
 			);
+
 			proc.kill();
 		});
 
@@ -1170,6 +1235,7 @@ async function spawnChildProcessImpl(
 			if (loggingLevel > 0) {
 				getOutputChannelLogger().append(str);
 			}
+
 			stdout += str;
 
 			if (continueOn) {
@@ -1184,19 +1250,24 @@ async function spawnChildProcessImpl(
 			}
 		});
 	}
+
 	if (proc.stderr) {
 		proc.stderr.on("data", (data) => (stderr += data.toString()));
 	}
+
 	proc.on("close", (code, signal) => {
 		clean();
+
 		result.resolve({
 			exitCode: code || signal || undefined,
 			stdout: stdout.trim(),
 			stderr: stderr.trim(),
 		});
 	});
+
 	proc.on("error", (error) => {
 		clean();
+
 		result.reject(error);
 	});
 
@@ -1213,6 +1284,7 @@ export function pathAccessible(
 	if (!filePath) {
 		return Promise.resolve(false);
 	}
+
 	return new Promise((resolve) =>
 		fs.access(filePath, permission, (err) => resolve(!err)),
 	);
@@ -1255,6 +1327,7 @@ export async function chmodAsync(
 			if (err) {
 				return reject(err);
 			}
+
 			return resolve();
 		});
 	});
@@ -1277,6 +1350,7 @@ export function removePotentialPII(str: string): string {
 			result += "? ";
 		}
 	}
+
 	return result;
 }
 
@@ -1305,6 +1379,7 @@ export async function unlinkAsync(fileName: string): Promise<void> {
 			if (err) {
 				return reject(err);
 			}
+
 			return resolve();
 		});
 	});
@@ -1319,6 +1394,7 @@ export async function renameAsync(
 			if (err) {
 				return reject(err);
 			}
+
 			return resolve();
 		});
 	});
@@ -1352,6 +1428,7 @@ export function createTempFileWithPostfix(
 			if (err) {
 				return reject(err);
 			}
+
 			return resolve({
 				name: path,
 				fd: fd,
@@ -1388,12 +1465,15 @@ function legacyExtractArgs(argsString: string): string[] {
 				if (currentArg !== "") {
 					result.push(currentArg);
 				}
+
 				return result;
 			}
+
 			currentArg += argsString[i];
 
 			continue;
 		}
+
 		if (c === '"') {
 			if (!isWithinSingleQuote) {
 				isWithinDoubleQuote = !isWithinDoubleQuote;
@@ -1409,16 +1489,21 @@ function legacyExtractArgs(argsString: string): string[] {
 			if (!isWithinDoubleQuote && !isWithinSingleQuote) {
 				if (currentArg !== "") {
 					result.push(currentArg);
+
 					currentArg = "";
 				}
+
 				continue;
 			}
 		}
+
 		currentArg += c;
 	}
+
 	if (currentArg !== "") {
 		result.push(currentArg);
 	}
+
 	return result;
 }
 
@@ -1444,6 +1529,7 @@ function extractArgs(argsString: string): string[] {
 			if (c === '"') {
 				if (!isInQuote) {
 					isInQuote = true;
+
 					wasInQuote = true;
 					++i;
 
@@ -1453,6 +1539,7 @@ function extractArgs(argsString: string): string[] {
 				if (++i === argsString.length) {
 					break;
 				}
+
 				c = argsString[i];
 
 				if (c !== '"') {
@@ -1460,6 +1547,7 @@ function extractArgs(argsString: string): string[] {
 				}
 				// Fall through. If c was a quote character, it will be added as a literal.
 			}
+
 			if (c === "\\") {
 				let backslashCount: number = 1;
 
@@ -1475,14 +1563,17 @@ function extractArgs(argsString: string): string[] {
 					}
 					++backslashCount;
 				}
+
 				const still_escaping: boolean = backslashCount % 2 !== 0;
 
 				if (!reachedEnd && c === '"') {
 					backslashCount = Math.floor(backslashCount / 2);
 				}
+
 				while (backslashCount--) {
 					currentArg += "\\";
 				}
+
 				if (reachedEnd) {
 					break;
 				}
@@ -1492,24 +1583,32 @@ function extractArgs(argsString: string): string[] {
 				}
 				// Otherwise, fall through to handle c as a literal.
 			}
+
 			if (c === " " || c === "\t" || c === "\r" || c === "\n") {
 				if (!isInQuote) {
 					if (currentArg !== "" || wasInQuote) {
 						wasInQuote = false;
+
 						result.push(currentArg);
+
 						currentArg = "";
 					}
+
 					i++;
 
 					continue;
 				}
 			}
+
 			currentArg += c;
+
 			i++;
 		}
+
 		if (currentArg !== "" || wasInQuote) {
 			result.push(currentArg);
 		}
+
 		return result;
 	} else {
 		try {
@@ -1522,6 +1621,7 @@ function extractArgs(argsString: string): string[] {
 			if (wordexpResult === undefined) {
 				return [];
 			}
+
 			const jsonText: string = wordexpResult.toString();
 
 			return jsonc.parse(jsonText, undefined, true) as any;
@@ -1547,9 +1647,13 @@ export function isCl(compilerPath: string): boolean {
 /** CompilerPathAndArgs retains original casing of text input for compiler path and args */
 export interface CompilerPathAndArgs {
 	compilerPath?: string | null;
+
 	compilerName: string;
+
 	compilerArgs?: string[];
+
 	compilerArgsFromCommandLineInPath: string[];
+
 	allCompilerArgs: string[];
 }
 
@@ -1594,6 +1698,7 @@ export function extractCompilerPathAndArgs(
 						if (tempCompilerPath && compilerPath.length > 0) {
 							compilerPath = tempCompilerPath[0];
 						}
+
 						compilerName = path.basename(compilerPath);
 					}
 				}
@@ -1631,6 +1736,7 @@ export function extractCompilerPathAndArgs(
 						}
 					}
 				}
+
 				if (potentialCompilerPath) {
 					if (
 						isCl(potentialCompilerPath) ||
@@ -1639,14 +1745,18 @@ export function extractCompilerPathAndArgs(
 						)
 					) {
 						compilerArgsFromCommandLineInPath = potentialArgs;
+
 						compilerPath = potentialCompilerPath;
+
 						compilerName = path.basename(compilerPath);
 					}
 				}
 			}
 		}
 	}
+
 	let allCompilerArgs: string[] = !compilerArgs ? [] : compilerArgs;
+
 	allCompilerArgs = allCompilerArgs.concat(compilerArgsFromCommandLineInPath);
 
 	return {
@@ -1671,24 +1781,32 @@ export function escapeForSquiggles(s: string): string {
 		if (s[i] === "\\") {
 			if (lastWasBackslash) {
 				newResults += "\\";
+
 				lastBackslashWasEscaped = !lastBackslashWasEscaped;
 			} else {
 				lastBackslashWasEscaped = false;
 			}
+
 			newResults += "\\";
+
 			lastWasBackslash = true;
 		} else {
 			if (lastWasBackslash && (lastBackslashWasEscaped || s[i] !== '"')) {
 				newResults += "\\";
 			}
+
 			lastWasBackslash = false;
+
 			lastBackslashWasEscaped = false;
+
 			newResults += s[i];
 		}
 	}
+
 	if (lastWasBackslash) {
 		newResults += "\\";
 	}
+
 	return newResults;
 }
 
@@ -1698,6 +1816,7 @@ export function getSenderType(sender?: any): string {
 	} else if (isUri(sender)) {
 		return "contextMenu";
 	}
+
 	return "commandPalette";
 }
 
@@ -1732,6 +1851,7 @@ function decodeUCS16(input: string): number[] {
 			output.push(value);
 		}
 	}
+
 	return output;
 }
 
@@ -1796,6 +1916,7 @@ export function isValidIdentifier(candidate: string): boolean {
 	if (!candidate) {
 		return false;
 	}
+
 	const decoded: number[] = decodeUCS16(candidate);
 
 	if (!decoded || !decoded.length) {
@@ -1805,7 +1926,9 @@ export function isValidIdentifier(candidate: string): boolean {
 	// Reject if first character is disallowed
 	for (
 		let i: number = 0;
+
 		i < disallowedFirstCharacterIdentifierUnicodeRanges.length;
+
 		i++
 	) {
 		const disallowedCharacters: number[] =
@@ -1824,7 +1947,9 @@ export function isValidIdentifier(candidate: string): boolean {
 
 		for (
 			let i: number = 0;
+
 			i < allowedIdentifierUnicodeRanges.length;
+
 			i++
 		) {
 			const allowedCharacters: number[] =
@@ -1839,10 +1964,12 @@ export function isValidIdentifier(candidate: string): boolean {
 				break;
 			}
 		}
+
 		if (!found) {
 			return false;
 		}
 	}
+
 	return true;
 }
 
@@ -1854,23 +1981,27 @@ export function getCacheStoragePath(): string {
 	switch (os.platform()) {
 		case "win32":
 			defaultCachePath = "Microsoft\\vscode-cpptools\\";
+
 			pathEnvironmentVariable = process.env.LOCALAPPDATA;
 
 			break;
 
 		case "darwin":
 			defaultCachePath = "Library/Caches/vscode-cpptools/";
+
 			pathEnvironmentVariable = os.homedir();
 
 			break;
 
 		default: // Linux
 			defaultCachePath = "vscode-cpptools/";
+
 			pathEnvironmentVariable = process.env.XDG_CACHE_HOME;
 
 			if (!pathEnvironmentVariable) {
 				pathEnvironmentVariable = path.join(os.homedir(), ".cache");
 			}
+
 			break;
 	}
 
@@ -1890,6 +2021,7 @@ function getUniqueWorkspaceNameHelper(
 	if (!workspaceFolder || workspaceFolder.index < 1) {
 		return workspaceFolderName; // No duplicate names to search for.
 	}
+
 	for (let i: number = 0; i < workspaceFolder.index; ++i) {
 		if (
 			vscode.workspace.workspaceFolders &&
@@ -1901,6 +2033,7 @@ function getUniqueWorkspaceNameHelper(
 				: workspaceFolderName + String(workspaceFolder.index);
 		}
 	}
+
 	return workspaceFolderName; // No duplicate names found.
 }
 
@@ -1957,12 +2090,15 @@ export function quoteArgument(argument: string): string {
 				} else {
 					quotedArgument += "\\".repeat(backslashCount);
 				}
+
 				quotedArgument += char;
+
 				backslashCount = 0;
 			}
 		}
 
 		quotedArgument += "\\".repeat(backslashCount * 2);
+
 		quotedArgument += '"';
 
 		return quotedArgument;
@@ -2031,6 +2167,7 @@ export function getCppToolsTargetPopulation(): TargetPopulation {
 	} else if (checkFileExistsSync(getExtensionFilePath("release.flag"))) {
 		return TargetPopulation.Public;
 	}
+
 	return TargetPopulation.Internal;
 }
 
@@ -2076,7 +2213,9 @@ export function replaceAll(
 
 export interface ISshHostInfo {
 	hostName: string;
+
 	user?: string;
+
 	port?: number | string;
 }
 
@@ -2097,10 +2236,15 @@ export function getFullHostAddress(host: ISshHostInfo): string {
 
 export interface ISshLocalForwardInfo {
 	bindAddress?: string;
+
 	port?: number | string;
+
 	host?: string;
+
 	hostPort?: number | string;
+
 	localSocket?: string;
+
 	remoteSocket?: string;
 }
 
@@ -2165,9 +2309,11 @@ export function getNumericLoggingLevel(
 	if (!loggingLevel) {
 		return 1;
 	}
+
 	if (isIntegral(loggingLevel)) {
 		return parseInt(loggingLevel, 10);
 	}
+
 	const lowerCaseLoggingLevel: string = loggingLevel.toLowerCase();
 
 	switch (lowerCaseLoggingLevel) {
@@ -2201,6 +2347,7 @@ export function mergeOverlappingRanges(ranges: Range[]): Range[] {
 		) {
 			return Range.create(range.end, range.start);
 		}
+
 		return range;
 	});
 
@@ -2234,13 +2381,17 @@ export function mergeOverlappingRanges(ranges: Range[]): Range[] {
 					nextRange.end.character,
 				),
 			};
+
 			nextIndex++;
 		}
 		// Overwrite the array in-place
 		mergedRanges[lastMergedIndex] = currentRange;
+
 		lastMergedIndex++;
+
 		currentIndex = nextIndex - 1; // Skip the merged ranges
 	}
+
 	mergedRanges.length = lastMergedIndex;
 
 	return mergedRanges;
@@ -2256,6 +2407,7 @@ export interface IShellQuotingOptions {
 		| string
 		| {
 				escapeChar: string;
+
 				charsToEscape: string;
 		  };
 
@@ -2272,6 +2424,7 @@ export interface IShellQuotingOptions {
 
 export interface IQuotedString {
 	value: string;
+
 	quoting: "escape" | "strong" | "weak";
 }
 
@@ -2325,6 +2478,7 @@ export function buildShellCommandLine(
 				return false;
 			}
 		}
+
 		let quote: string | undefined;
 
 		for (let i = 0; i < value.length; i++) {
@@ -2348,6 +2502,7 @@ export function buildShellCommandLine(
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -2377,6 +2532,7 @@ export function buildShellCommandLine(
 				for (const ch of shellQuoteOptions.escape.charsToEscape) {
 					buffer.push(`\\${ch}`);
 				}
+
 				const regexp: RegExp = new RegExp(
 					"[" + buffer.join(",") + "]",
 					"g",
@@ -2390,6 +2546,7 @@ export function buildShellCommandLine(
 				];
 			}
 		}
+
 		return [value, false];
 	}
 
@@ -2427,12 +2584,16 @@ export function buildShellCommandLine(
 
 	let quoted: boolean;
 	[value, quoted] = quoteIfNecessary(command);
+
 	result.push(value);
+
 	commandQuoted = quoted;
 
 	for (const arg of args) {
 		[value, quoted] = quoteIfNecessary(arg);
+
 		result.push(value);
+
 		argQuoted = argQuoted || quoted;
 	}
 
@@ -2444,6 +2605,7 @@ export function buildShellCommandLine(
 		if (commandQuoted && argQuoted) {
 			commandLine = '"' + commandLine + '"';
 		}
+
 		commandLine = `cmd /c ${commandLine}`;
 	}
 
@@ -2461,6 +2623,7 @@ export function findExePathInArgs(args: CommandString[]): string | undefined {
 		if (previousArg === "-o") {
 			return argValue;
 		}
+
 		if (isWindows && argValue.includes(".exe")) {
 			if (argValue.startsWith("/Fe")) {
 				return argValue.substring(3);

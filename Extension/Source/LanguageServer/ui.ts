@@ -60,44 +60,57 @@ export class LanguageStatusUI {
 
 	// IntelliSense language status
 	private intelliSenseStatusItem: vscode.LanguageStatusItem;
+
 	private readonly updatingIntelliSenseText: string = localize(
 		"updating.intellisense.text",
 		"IntelliSense: Updating",
 	);
+
 	private readonly idleIntelliSenseText: string = localize(
 		"idle.intellisense.text",
 		"IntelliSense: Ready",
 	);
 	// Tag parse language status
 	private tagParseStatusItem: vscode.LanguageStatusItem;
+
 	private isParsingWorkspace: boolean = false;
+
 	private isParsingWorkspacePaused: boolean = false;
+
 	private isParsingFiles: boolean = false;
+
 	private readonly dataBaseIcon: string = "$(database)";
+
 	private readonly workspaceParsingInitializing: string = localize(
 		"initializing.tagparser.text",
 		"Initializing Workspace",
 	);
+
 	private readonly workspaceParsingIndexing: string = localize(
 		"indexing.tagparser.text",
 		"Indexing Workspace",
 	);
+
 	private readonly workspaceParsingRunningText: string = localize(
 		"running.tagparser.text",
 		"Parsing Workspace",
 	);
+
 	private readonly workspaceParsingPausedText: string = localize(
 		"paused.tagparser.text",
 		"Parsing Workspace: Paused",
 	);
+
 	private readonly workspaceParsingDoneText: string = localize(
 		"complete.tagparser.text",
 		"Parsing Complete",
 	);
+
 	private readonly workspaceRescanText: string = localize(
 		"rescan.tagparse.text",
 		"Rescan Workspace",
 	);
+
 	private readonly parsingFilesTooltip: string = localize(
 		"c.cpp.parsing.open.files.tooltip",
 		"Parsing Open Files",
@@ -105,19 +118,27 @@ export class LanguageStatusUI {
 
 	// Code analysis language status
 	private codeAnalysisStatusItem: vscode.LanguageStatusItem;
+
 	private isRunningCodeAnalysis: boolean = false;
+
 	private isCodeAnalysisPaused: boolean = false;
+
 	private codeAnalysisProcessed: number = 0;
+
 	private codeAnalysisTotal: number = 0;
+
 	private codeAnalysProgress: string = "";
+
 	private readonly codeAnalysisRunningText: string = localize(
 		"running.analysis.text",
 		"Code Analysis: Running",
 	);
+
 	private readonly codeAnalysisPausedText: string = localize(
 		"paused.analysis.text",
 		"Code Analysis: Paused",
 	);
+
 	private readonly codeAnalysisModePrefix: string = localize(
 		"mode.analysis.prefix",
 		"Code Analysis Mode: ",
@@ -125,6 +146,7 @@ export class LanguageStatusUI {
 
 	// References status bar
 	private referencesStatusBarItem: vscode.StatusBarItem;
+
 	private readonly referencesPreviewTooltip: string = ` (${localize("click.to.preview", "click to preview results")})`;
 
 	// Configuration status bar
@@ -132,8 +154,11 @@ export class LanguageStatusUI {
 
 	// Configure IntelliSense status bar
 	private configureIntelliSenseStatusBarItem: vscode.StatusBarItem;
+
 	private showConfigureIntelliSenseButton: boolean = false;
+
 	private configureIntelliSenseTimeout?: NodeJS.Timeout;
+
 	private readonly configureIntelliSenseText: string = localize(
 		"c.cpp.configureIntelliSenseStatus.text",
 		"Configure IntelliSense",
@@ -141,22 +166,27 @@ export class LanguageStatusUI {
 
 	constructor() {
 		this.intelliSenseStatusItem = this.createIntelliSenseStatusItem();
+
 		this.tagParseStatusItem = this.createTagParseStatusItem();
 
 		// The tag parser is always busy when initializing.
 		// The detail text says "Initializing..." until the tag parser is ready.
 		this.tagParseStatusItem.busy = true;
+
 		this.codeAnalysisStatusItem = this.createCodeAnalysisStatusItem();
 
 		this.referencesStatusBarItem = this.createReferencesStatusBarItem();
+
 		this.ShowReferencesIcon = false;
 
 		this.configurationStatusBarItem =
 			this.createConfigurationStatusBarItem();
+
 		this.ShowConfiguration = true;
 
 		this.configureIntelliSenseStatusBarItem =
 			this.createConfigureIntelliSenseStatusBarItem();
+
 		void this.ShowConfigureIntelliSenseButton(false, this.currentClient);
 	}
 
@@ -167,10 +197,12 @@ export class LanguageStatusUI {
 				`cpptools.status.${LanguageStatusPriority.High}.intellisense`,
 				util.documentSelector,
 			);
+
 		item.name = localize(
 			"cpptools.status.intellisense",
 			"C/C++ IntelliSense Status",
 		);
+
 		item.text = this.idleIntelliSenseText;
 
 		return item;
@@ -181,11 +213,14 @@ export class LanguageStatusUI {
 
 		if (val) {
 			this.intelliSenseStatusItem.text = "$(flame)";
+
 			this.intelliSenseStatusItem.detail = this.updatingIntelliSenseText;
 		} else {
 			this.intelliSenseStatusItem.text = this.idleIntelliSenseText;
+
 			this.intelliSenseStatusItem.detail = "";
 		}
+
 		this.intelliSenseStatusItem.command = {
 			command: "C_Cpp.RestartIntelliSenseForFile",
 			title: localize("rescan.intellisense.text", "Rescan"),
@@ -205,12 +240,16 @@ export class LanguageStatusUI {
 				`cpptools.status.${LanguageStatusPriority.Mid}.tagparser`,
 				util.documentSelector,
 			);
+
 		item.name = localize(
 			"cpptools.status.tagparser",
 			"C/C++ Tag Parser Status",
 		);
+
 		item.detail = localize("cpptools.detail.tagparser", "Initializing...");
+
 		item.text = this.dataBaseIcon;
+
 		item.command = {
 			command: "C_Cpp.RescanWorkspace",
 			title: this.workspaceRescanText,
@@ -228,9 +267,11 @@ export class LanguageStatusUI {
 			// Create a new command object to force update on tooltip
 			const updatedCommand: vscode.Command =
 				this.tagParseStatusItem.command;
+
 			updatedCommand.tooltip =
 				(this.isParsingFiles ? `${this.parsingFilesTooltip} | ` : "") +
 				label;
+
 			this.tagParseStatusItem.command = updatedCommand;
 		}
 	}
@@ -238,6 +279,7 @@ export class LanguageStatusUI {
 	private setIsInitializingWorkspace(val: boolean): void {
 		if (val) {
 			this.tagParseStatusItem.text = this.dataBaseIcon;
+
 			this.tagParseStatusItem.detail = this.workspaceParsingInitializing;
 		}
 	}
@@ -245,7 +287,9 @@ export class LanguageStatusUI {
 	private setIsIndexingWorkspace(val: boolean): void {
 		if (val) {
 			this.tagParseStatusItem.text = this.dataBaseIcon;
+
 			this.tagParseStatusItem.detail = this.workspaceParsingIndexing;
+
 			this.tagParseStatusItem.busy = true;
 		}
 	}
@@ -257,11 +301,13 @@ export class LanguageStatusUI {
 			// Unpause before handling the no longer parsing state.
 			this.isParsingWorkspacePaused = false;
 		}
+
 		this.setTagParseStatus();
 	}
 
 	private setIsParsingFiles(val: boolean): void {
 		this.isParsingFiles = val;
+
 		this.setTagParseStatus();
 	}
 
@@ -277,6 +323,7 @@ export class LanguageStatusUI {
 		if (!this.isParsingWorkspace && !this.isParsingFiles) {
 			return "";
 		}
+
 		if (this.isParsingWorkspacePaused) {
 			const displayTwoStatus: boolean =
 				this.isParsingFiles && this.isParsingWorkspace;
@@ -301,6 +348,7 @@ export class LanguageStatusUI {
 
 		if (this.isParsingWorkspace || this.isParsingFiles) {
 			this.tagParseStatusItem.text = this.dataBaseIcon;
+
 			this.tagParseStatusItem.detail = this.getTagParsingDetail();
 
 			if (this.isParsingWorkspace) {
@@ -334,7 +382,9 @@ export class LanguageStatusUI {
 		} else {
 			// Parsing completed.
 			this.tagParseStatusItem.text = this.workspaceParsingDoneText;
+
 			this.tagParseStatusItem.detail = "";
+
 			this.tagParseStatusItem.command = {
 				command: "C_Cpp.RescanWorkspace",
 				title: this.workspaceRescanText,
@@ -351,12 +401,15 @@ export class LanguageStatusUI {
 				`cpptools.status.${LanguageStatusPriority.Low}.codeanalysis`,
 				util.documentSelector,
 			);
+
 		item.name = localize(
 			"cpptools.status.codeanalysis",
 			"C/C++ Code Analysis Status",
 		);
+
 		item.text =
 			this.codeAnalysisModePrefix + this.codeAnalysisCurrentMode();
+
 		item.command = {
 			command: "C_Cpp.ShowIdleCodeAnalysisCommands",
 			title: localize("c.cpp.codeanalysis.statusbar.runNow", "Run Now"),
@@ -365,13 +418,16 @@ export class LanguageStatusUI {
 
 		return item;
 	}
+
 	private setIsCodeAnalysisPaused(val: boolean): void {
 		if (!this.isRunningCodeAnalysis) {
 			return;
 		}
 
 		this.isCodeAnalysisPaused = val;
+
 		this.codeAnalysisStatusItem.busy = !val;
+
 		this.codeAnalysisStatusItem.text = val
 			? this.codeAnalysisPausedText
 			: this.codeAnalysisRunningText;
@@ -396,10 +452,14 @@ export class LanguageStatusUI {
 	private setIsRunningCodeAnalysis(val: boolean): void {
 		if (this.isRunningCodeAnalysis && !val) {
 			this.codeAnalysisTotal = 0;
+
 			this.codeAnalysisProcessed = 0;
+
 			this.isCodeAnalysisPaused = false;
 		}
+
 		this.isRunningCodeAnalysis = val;
+
 		this.codeAnalysisStatusItem.busy = val;
 
 		const activeText: string = this.isCodeAnalysisPaused
@@ -408,7 +468,9 @@ export class LanguageStatusUI {
 
 		const idleText: string =
 			this.codeAnalysisModePrefix + this.codeAnalysisCurrentMode();
+
 		this.codeAnalysisStatusItem.text = val ? activeText : idleText;
+
 		this.codeAnalysisStatusItem.command = val
 			? {
 					command: "C_Cpp.ShowActiveCodeAnalysisCommands",
@@ -448,6 +510,7 @@ export class LanguageStatusUI {
 			this.codeAnalysisStatusItem.command.tooltip =
 				this.codeAnalysProgress;
 		}
+
 		this.setIsRunningCodeAnalysis(true);
 	}
 
@@ -455,11 +518,13 @@ export class LanguageStatusUI {
 		if (!this.isRunningCodeAnalysis) {
 			return; // Occurs when a multi-root workspace is activated.
 		}
+
 		this.codeAnalysisProcessed = processed;
 
 		if (this.codeAnalysisProcessed > this.codeAnalysisTotal) {
 			this.codeAnalysisTotal = this.codeAnalysisProcessed + 1;
 		}
+
 		this.updateCodeAnalysisTooltip();
 	}
 
@@ -467,18 +532,22 @@ export class LanguageStatusUI {
 		if (!this.isRunningCodeAnalysis) {
 			return; // Occurs when a multi-root workspace is activated.
 		}
+
 		this.codeAnalysisTotal = total;
+
 		this.updateCodeAnalysisTooltip();
 	}
 
 	public async showActiveCodeAnalysisCommands(): Promise<number> {
 		const options: vscode.QuickPickOptions = {};
+
 		options.placeHolder = localize(
 			"select.code.analysis.command",
 			"Select a code analysis command...",
 		);
 
 		const items: IndexableQuickPickItem[] = [];
+
 		items.push({
 			label: localize("cancel.analysis", "Cancel"),
 			description: "",
@@ -498,6 +567,7 @@ export class LanguageStatusUI {
 				index: 1,
 			});
 		}
+
 		items.push({
 			label: localize("another.analysis", "Start Another..."),
 			description: "",
@@ -512,9 +582,11 @@ export class LanguageStatusUI {
 
 	public async showIdleCodeAnalysisCommands(): Promise<number> {
 		const options: vscode.QuickPickOptions = {};
+
 		options.placeHolder = localize("select.command", "Select a command...");
 
 		const items: IndexableQuickPickItem[] = [];
+
 		items.push({
 			label: localize(
 				"active.analysis",
@@ -523,11 +595,13 @@ export class LanguageStatusUI {
 			description: "",
 			index: 0,
 		});
+
 		items.push({
 			label: localize("all.analysis", "Run Code Analysis on All Files"),
 			description: "",
 			index: 1,
 		});
+
 		items.push({
 			label: localize("open.analysis", "Run Code Analysis on Open Files"),
 			description: "",
@@ -548,11 +622,14 @@ export class LanguageStatusUI {
 			vscode.StatusBarAlignment.Right,
 			901,
 		);
+
 		item.name = localize(
 			"c.cpp.references.statusbar",
 			"C/C++ References Status",
 		);
+
 		item.tooltip = "";
+
 		item.command = {
 			command: "C_Cpp.ShowReferencesProgress",
 			title: item.name,
@@ -579,14 +656,17 @@ export class LanguageStatusUI {
 	private set ReferencesCommand(val: ReferencesCommandMode) {
 		if (val === ReferencesCommandMode.None) {
 			this.referencesStatusBarItem.text = "";
+
 			this.ShowReferencesIcon = false;
 		} else {
 			this.referencesStatusBarItem.text = "$(search)";
+
 			this.referencesStatusBarItem.tooltip =
 				referencesCommandModeToString(val) +
 				(val !== ReferencesCommandMode.Find
 					? ""
 					: this.referencesPreviewTooltip);
+
 			this.ShowReferencesIcon = true;
 		}
 	}
@@ -612,8 +692,11 @@ export class LanguageStatusUI {
 			vscode.StatusBarAlignment.Right,
 			0,
 		);
+
 		item.name = configTooltip;
+
 		item.tooltip = configTooltip;
+
 		item.command = {
 			command: "C_Cpp.ConfigurationSelect",
 			title: configTooltip,
@@ -648,12 +731,17 @@ export class LanguageStatusUI {
 			vscode.StatusBarAlignment.Right,
 			0,
 		);
+
 		item.name = cppConfigureIntelliSenseText;
+
 		item.tooltip = cppConfigureIntelliSenseText;
+
 		item.text = `$(warning) ${this.configureIntelliSenseText}`;
+
 		item.backgroundColor = new vscode.ThemeColor(
 			"statusBarItem.warningBackground",
 		);
+
 		item.command = {
 			command: "C_Cpp.SelectIntelliSenseConfiguration",
 			title: cppConfigureIntelliSenseText,
@@ -672,8 +760,10 @@ export class LanguageStatusUI {
 		if (client !== this.currentClient) {
 			return;
 		}
+
 		if (configurationType !== undefined && sender !== undefined) {
 			const showButton: string = show ? "true" : "false";
+
 			telemetry.logLanguageServerEvent(
 				"showConfigureIntelliSenseButton",
 				{ configurationType, sender, showButton },
@@ -685,9 +775,11 @@ export class LanguageStatusUI {
 		if (client !== undefined) {
 			client.setShowConfigureIntelliSenseButton(show);
 		}
+
 		if (show) {
 			const activeEditor: vscode.TextEditor | undefined =
 				vscode.window.activeTextEditor;
+
 			telemetry.logLanguageServerEvent("configureIntelliSenseStatusBar");
 
 			if (activeEditor && util.isCppOrRelated(activeEditor.document)) {
@@ -705,7 +797,9 @@ export class LanguageStatusUI {
 
 			if (this.configureIntelliSenseTimeout) {
 				clearTimeout(this.configureIntelliSenseTimeout);
+
 				this.configureIntelliSenseStatusBarItem.text = `$(warning) ${this.configureIntelliSenseText}`;
+
 				this.configureIntelliSenseTimeout = undefined;
 			}
 		}
@@ -732,6 +826,7 @@ export class LanguageStatusUI {
 					"jsonc",
 				);
 			}
+
 			const isCppOrRelated: boolean =
 				isCppPropertiesJson ||
 				util.isCppOrRelated(activeEditor.document);
@@ -772,6 +867,7 @@ export class LanguageStatusUI {
 		configurationNames: string[],
 	): Promise<number> {
 		const options: vscode.QuickPickOptions = {};
+
 		options.placeHolder = localize(
 			"select.a.configuration",
 			"Select a Configuration...",
@@ -786,6 +882,7 @@ export class LanguageStatusUI {
 				index: i,
 			});
 		}
+
 		items.push({
 			label: localize(
 				"edit.configuration.ui",
@@ -794,6 +891,7 @@ export class LanguageStatusUI {
 			description: "",
 			index: configurationNames.length,
 		});
+
 		items.push({
 			label: localize(
 				"edit.configuration.json",
@@ -813,6 +911,7 @@ export class LanguageStatusUI {
 		currentProvider?: string,
 	): Promise<string | undefined> {
 		const options: vscode.QuickPickOptions = {};
+
 		options.placeHolder = localize(
 			"select.configuration.provider",
 			"Select a Configuration Provider...",
@@ -822,6 +921,7 @@ export class LanguageStatusUI {
 			getCustomConfigProviders();
 
 		const items: KeyedQuickPickItem[] = [];
+
 		providers.forEach((provider) => {
 			let label: string = provider.name;
 
@@ -830,12 +930,14 @@ export class LanguageStatusUI {
 			) {
 				label += ` (${localize("active", "active")})`;
 			}
+
 			items.push({
 				label: label,
 				description: "",
 				key: provider.extensionId,
 			});
 		});
+
 		items.push({
 			label: `(${localize("none", "none")})`,
 			description: localize(
@@ -855,12 +957,14 @@ export class LanguageStatusUI {
 		workspaceNames: { name: string; key: string }[],
 	): Promise<string> {
 		const options: vscode.QuickPickOptions = {};
+
 		options.placeHolder = localize(
 			"select.workspace",
 			"Select a workspace folder...",
 		);
 
 		const items: KeyedQuickPickItem[] = [];
+
 		workspaceNames.forEach((name) =>
 			items.push({ label: name.name, description: "", key: name.key }),
 		);
@@ -875,42 +979,56 @@ export class LanguageStatusUI {
 		client.InitializingWorkspaceChanged((value) => {
 			this.setIsInitializingWorkspace(value);
 		});
+
 		client.IndexingWorkspaceChanged((value) => {
 			this.setIsIndexingWorkspace(value);
 		});
+
 		client.ParsingWorkspaceChanged((value) => {
 			this.setIsParsingWorkspace(value);
 		});
+
 		client.ParsingWorkspacePausedChanged((value) => {
 			this.setIsParsingWorkspacePaused(value);
 		});
+
 		client.ParsingFilesChanged((value) => {
 			this.setIsParsingFiles(value);
 		});
+
 		client.IntelliSenseParsingChanged((value) => {
 			this.setIsUpdatingIntelliSense(value);
 		});
+
 		client.RunningCodeAnalysisChanged((value) => {
 			this.setIsRunningCodeAnalysis(value);
 		});
+
 		client.CodeAnalysisPausedChanged((value) => {
 			this.setIsCodeAnalysisPaused(value);
 		});
+
 		client.CodeAnalysisProcessedChanged((value) => {
 			this.setCodeAnalysisProcessed(value);
 		});
+
 		client.CodeAnalysisTotalChanged((value) => {
 			this.setCodeAnalysisTotal(value);
 		});
+
 		client.ReferencesCommandModeChanged((value) => {
 			this.ReferencesCommand = value;
 		});
+
 		client.TagParserStatusChanged((value) => {
 			this.TagParseStatus = value;
 		});
+
 		client.ActiveConfigChanged((value) => {
 			this.ActiveConfig = value;
+
 			this.currentClient = client;
+
 			void this.ShowConfigureIntelliSenseButton(
 				client.getShowConfigureIntelliSenseButton(),
 				client,
@@ -920,10 +1038,15 @@ export class LanguageStatusUI {
 
 	public dispose(): void {
 		this.intelliSenseStatusItem.dispose();
+
 		this.tagParseStatusItem.dispose();
+
 		this.codeAnalysisStatusItem.dispose();
+
 		this.referencesStatusBarItem.dispose();
+
 		this.configurationStatusBarItem.dispose();
+
 		this.configureIntelliSenseStatusBarItem.dispose();
 	}
 }
@@ -932,5 +1055,6 @@ export function getUI(): LanguageStatusUI {
 	if (!ui) {
 		ui = new LanguageStatusUI();
 	}
+
 	return ui;
 }

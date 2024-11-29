@@ -38,6 +38,7 @@ export class DocumentRangeFormattingEditProvider
 		if (settings.formattingEngine === "disabled") {
 			return [];
 		}
+
 		await this.client.ready;
 
 		const filePath: string = document.uri.fsPath;
@@ -82,11 +83,14 @@ export class DocumentRangeFormattingEditProvider
 				) {
 					throw new vscode.CancellationError();
 				}
+
 				throw e;
 			}
+
 			if (token.isCancellationRequested) {
 				throw new vscode.CancellationError();
 			}
+
 			return makeVscodeTextEdits(response.edits);
 		};
 

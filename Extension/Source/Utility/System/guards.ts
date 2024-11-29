@@ -19,6 +19,7 @@ export class is {
 			case "string":
 				return true;
 		}
+
 		return false;
 	}
 
@@ -84,12 +85,15 @@ export class is {
 	static emitter(instance: any): instance is Emitter {
 		return typeof instance?.isKnownEvent === "function";
 	}
+
 	static cancelled(instance: any): instance is "Cancelled" {
 		return instance === "Cancelled";
 	}
+
 	static continue(instance: any): instance is undefined {
 		return instance === undefined;
 	}
+
 	static error(instance: any): instance is Error {
 		return instance instanceof Error;
 	}

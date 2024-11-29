@@ -32,9 +32,12 @@ async function isWritable(file: string): Promise<boolean> {
 
 	if (cachedWritable === undefined) {
 		const writable: boolean = await pathAccessible(file, constants.W_OK);
+
 		filesWritable.set(file, writable);
+
 		cachedWritable = writable;
 	}
+
 	return cachedWritable;
 }
 
@@ -68,6 +71,7 @@ export class TargetLeafNode extends LabelLeafNode {
 		} else {
 			item.contextValue = "CppSshTargetsView.targetLeafCanSetActive";
 		}
+
 		return item;
 	}
 }
@@ -81,6 +85,7 @@ export async function setActiveSshTarget(
 	name: string | undefined,
 ): Promise<void> {
 	_activeTarget = name;
+
 	await extensionContext?.workspaceState.update(
 		workspaceState_activeSshTarget,
 		name,

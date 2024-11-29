@@ -28,8 +28,11 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export class CppTools implements CppToolsTestApi {
 	private version: Version;
+
 	private providers: CustomConfigurationProvider1[] = [];
+
 	private failedRegistrations: CustomConfigurationProvider[] = [];
+
 	private timers = new Map<string, NodeJS.Timeout>();
 
 	constructor(version: Version) {
@@ -37,9 +40,12 @@ export class CppTools implements CppToolsTestApi {
 			console.warn(
 				`version ${version} is not supported by this version of cpptools`,
 			);
+
 			console.warn(`  using ${Version.latest} instead`);
+
 			version = Version.latest;
 		}
+
 		this.version = version;
 	}
 
@@ -52,6 +58,7 @@ export class CppTools implements CppToolsTestApi {
 					`registered provider ${provider.extensionId} did not call 'notifyReady' within ${timeout} seconds`,
 				);
 			}, timeout * 1000);
+
 			this.timers.set(provider.extensionId, timer);
 		}
 	}
@@ -66,6 +73,7 @@ export class CppTools implements CppToolsTestApi {
 
 			if (timer) {
 				this.timers.delete(provider.extensionId);
+
 				clearTimeout(timer);
 			}
 		}
@@ -97,13 +105,16 @@ export class CppTools implements CppToolsTestApi {
 						),
 					);
 				}
+
 				this.providers.push(added);
+
 				LanguageServer.getClients().forEach(
 					(client) =>
 						void client.onRegisterCustomConfigurationProvider(
 							added,
 						),
 				);
+
 				this.addNotifyReadyTimer(added);
 			}
 		} else {
@@ -120,9 +131,12 @@ export class CppTools implements CppToolsTestApi {
 
 		if (p) {
 			this.removeNotifyReadyTimer(p);
+
 			p.isReady = true;
+
 			LanguageServer.getClients().forEach((client) => {
 				void client.updateCustomBrowseConfiguration(p);
+
 				void client.updateCustomConfigurations(p);
 			});
 		} else if (this.failedRegistrations.find((p) => p === provider)) {
@@ -151,6 +165,7 @@ export class CppTools implements CppToolsTestApi {
 					"didChangeCustomConfiguration was invoked before notifyReady",
 				);
 			}
+
 			LanguageServer.getClients().forEach(
 				(client) => void client.updateCustomConfigurations(p),
 			);
@@ -192,8 +207,10 @@ export class CppTools implements CppToolsTestApi {
 	public dispose(): void {
 		this.providers.forEach((provider) => {
 			getCustomConfigProviders().remove(provider);
+
 			provider.dispose();
 		});
+
 		this.providers = [];
 	}
 

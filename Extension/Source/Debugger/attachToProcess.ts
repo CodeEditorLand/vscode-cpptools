@@ -137,6 +137,7 @@ export class RemoteAttachPicker {
 					),
 				);
 			}
+
 			processes = await this.getRemoteProcessesExtendedRemote(
 				miDebuggerPath,
 				miDebuggerServerAddress,
@@ -193,7 +194,9 @@ export class RemoteAttachPicker {
 
 		if (settings.useBacktickCommandSubstitution) {
 			parameterBegin = `\``;
+
 			parameterEnd = `\``;
+
 			escapedQuote = `\"`;
 		}
 
@@ -201,6 +204,7 @@ export class RemoteAttachPicker {
 		// Having double quotes for the outerQuote will have $(uname) replaced before it is sent to the remote machine.
 		if (os.platform() !== "win32") {
 			innerQuote = `"`;
+
 			outerQuote = `'`;
 		}
 		// Also use a full path on Linux, so that we can use transports that need a full path such as 'machinectl' to connect to nspawn containers.
@@ -264,11 +268,14 @@ export class RemoteAttachPicker {
 							if (b.name === undefined) {
 								return 0;
 							}
+
 							return 1;
 						}
+
 						if (b.name === undefined) {
 							return -1;
 						}
+
 						const aLower: string = a.name.toLowerCase();
 
 						const bLower: string = b.name.toLowerCase();
@@ -276,6 +283,7 @@ export class RemoteAttachPicker {
 						if (aLower === bLower) {
 							return 0;
 						}
+
 						return aLower < bLower ? -1 : 1;
 					})
 					.map((p) => p.toAttachItem());
@@ -298,9 +306,11 @@ export class RemoteAttachPicker {
 		// The device may not be responsive for a while during the restart after image deploy. Retry 5 times.
 		for (
 			let i: number = 0;
+
 			i < 5 &&
 			!processListOutput.succeeded &&
 			processListOutput.outputError.length === 0;
+
 			i++
 		) {
 			processListOutput = await util.spawnChildProcess(
@@ -342,6 +352,7 @@ export class RemoteAttachPicker {
 				),
 			);
 		}
+
 		return processes;
 	}
 
@@ -380,6 +391,7 @@ export class RemoteAttachPicker {
 					const id: string = matches[1];
 
 					const userCommand: string = matches[2];
+
 					processes.push({ label: userCommand, id, description: id });
 				}
 			}
@@ -395,6 +407,7 @@ export class RemoteAttachPicker {
 			if (argsString) {
 				argsString += " ";
 			}
+
 			argsString += `"${arg}"`;
 		}
 

@@ -40,6 +40,7 @@ export function first<TElement>(
 	if (iterable === undefined) {
 		return undefined;
 	}
+
 	if (is.promise(iterable)) {
 		return iterable.then((i) => first(i, predicate));
 	}
@@ -49,6 +50,7 @@ export function first<TElement>(
 			return each;
 		}
 	}
+
 	return undefined;
 }
 
@@ -94,13 +96,17 @@ export function firstOrFail<TElement>(
 
 	if (message === undefined) {
 		message = predicateOrMessage as string | Error;
+
 		predicateOrMessage = (e) => e as any;
+
 		result = first(iterable as Iterable<TElement>, predicateOrMessage);
 	} else {
 		result = first(iterable as any, predicateOrMessage as any);
 	}
+
 	if (is.promise(result)) {
 		return result.then((r) => (r !== undefined ? r : fail(message)));
 	}
+
 	return result !== undefined ? (result as TElement) : fail(message);
 }

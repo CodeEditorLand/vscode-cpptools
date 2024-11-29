@@ -45,6 +45,7 @@ export class RenameProvider implements vscode.RenameProvider {
 		_token: vscode.CancellationToken,
 	): Promise<vscode.WorkspaceEdit | undefined> {
 		await this.client.ready;
+
 		workspaceReferences.cancelCurrentReferenceRequest(
 			CancellationSender.NewRequest,
 		);
@@ -103,11 +104,14 @@ export class RenameProvider implements vscode.RenameProvider {
 			) {
 				throw new vscode.CancellationError();
 			}
+
 			throw e;
 		} finally {
 			// Reset anything that can be cleared before processing the result.
 			workspaceReferences.resetProgressBar();
+
 			workspaceReferences.resetReferences();
+
 			requestCanceledListener.dispose();
 		}
 
@@ -138,6 +142,7 @@ export class RenameProvider implements vscode.RenameProvider {
 					label: getReferenceTagString(reference.type, false, true),
 					iconPath: getReferenceItemIconPath(reference.type, false),
 				};
+
 				workspaceEditResult.replace(uri, range, newName, metadata);
 			}
 		}

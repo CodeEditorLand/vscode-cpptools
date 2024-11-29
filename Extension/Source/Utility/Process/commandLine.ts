@@ -27,6 +27,7 @@ function windows(argsString: string): string[] {
 		if (c === '"') {
 			if (!isInQuote) {
 				isInQuote = true;
+
 				wasInQuote = true;
 				++i;
 
@@ -36,6 +37,7 @@ function windows(argsString: string): string[] {
 			if (++i === argsString.length) {
 				break;
 			}
+
 			c = argsString[i];
 
 			if (c !== '"') {
@@ -43,6 +45,7 @@ function windows(argsString: string): string[] {
 			}
 			// Fall through. If c was a quote character, it will be added as a literal.
 		}
+
 		if (c === "\\") {
 			let backslashCount: number = 1;
 
@@ -58,14 +61,17 @@ function windows(argsString: string): string[] {
 				}
 				++backslashCount;
 			}
+
 			const still_escaping: boolean = backslashCount % 2 !== 0;
 
 			if (!reachedEnd && c === '"') {
 				backslashCount = Math.floor(backslashCount / 2);
 			}
+
 			while (backslashCount--) {
 				currentArg += "\\";
 			}
+
 			if (reachedEnd) {
 				break;
 			}
@@ -75,24 +81,32 @@ function windows(argsString: string): string[] {
 			}
 			// Otherwise, fall through to handle c as a literal.
 		}
+
 		if (c === " " || c === "\t" || c === "\r" || c === "\n") {
 			if (!isInQuote) {
 				if (currentArg !== "" || wasInQuote) {
 					wasInQuote = false;
+
 					result.push(currentArg);
+
 					currentArg = "";
 				}
+
 				i++;
 
 				continue;
 			}
 		}
+
 		currentArg += c;
+
 		i++;
 	}
+
 	if (currentArg !== "" || wasInQuote) {
 		result.push(currentArg);
 	}
+
 	return result;
 }
 
@@ -124,17 +138,20 @@ function posix(argsString: string): string[] {
 
 						continue;
 					}
+
 					arg += `\\${next}`;
 					++i;
 
 					continue;
 				}
+
 				break;
 
 			case "'":
 				if (!doubleQuote) {
 					singleQuote = !singleQuote;
 				}
+
 				arg += "'";
 
 				continue;
@@ -143,6 +160,7 @@ function posix(argsString: string): string[] {
 				if (!singleQuote) {
 					doubleQuote = !doubleQuote;
 				}
+
 				arg += '"';
 
 				continue;
@@ -151,18 +169,21 @@ function posix(argsString: string): string[] {
 				if (!singleQuote && !doubleQuote) {
 					++paren;
 				}
+
 				break;
 
 			case ")":
 				if (!singleQuote && !doubleQuote) {
 					--paren;
 				}
+
 				break;
 
 			case "}":
 				if (!singleQuote && !doubleQuote && !brace) {
 					throw new Error(`Unsupported character: ${char}`);
 				}
+
 				brace--;
 
 				break;
@@ -177,6 +198,7 @@ function posix(argsString: string): string[] {
 				if (!singleQuote && !doubleQuote) {
 					throw new Error(`Unsupported character: ${char}`);
 				}
+
 				break;
 
 			case "$":
@@ -184,27 +206,35 @@ function posix(argsString: string): string[] {
 					if (next === "(") {
 						if (argsString[i + 2] === "(") {
 							paren += 2;
+
 							i += 2;
+
 							arg += "$((";
 
 							continue;
 						}
+
 						throw new Error(`Nested Commands not supported`);
 					}
+
 					if (next === "{") {
 						arg += "${";
+
 						brace++;
+
 						i++;
 
 						continue;
 					}
 				}
+
 				break;
 
 			case "`":
 				if (!singleQuote) {
 					throw new Error(`Nested Commands not supported`);
 				}
+
 				break;
 
 			case " ":
@@ -212,14 +242,19 @@ function posix(argsString: string): string[] {
 				if (doubleQuote || singleQuote || paren || brace) {
 					break;
 				}
+
 				if (arg.length > 0) {
 					args.push(arg);
+
 					arg = "";
 				}
+
 				continue;
 		}
+
 		arg += char;
 	}
+
 	if (arg.length > 0) {
 		args.push(arg);
 	}
@@ -228,18 +263,22 @@ function posix(argsString: string): string[] {
 		if (s.startsWith(`'`) && s.endsWith(`'`)) {
 			return `"${s}"`;
 		}
+
 		if (s.startsWith("$[") && s.endsWith("]")) {
 			return `${s}`;
 		}
+
 		return `'${s}'`;
 	});
 
 	if (paren !== 0) {
 		throw new Error(`Unbalanced parenthesis`);
 	}
+
 	if (singleQuote || doubleQuote) {
 		throw new Error(`Unbalanced quotes`);
 	}
+
 	if (brace) {
 		throw new Error(`Unbalanced braces`);
 	}
@@ -249,6 +288,7 @@ function posix(argsString: string): string[] {
 	if (r.error || r.status !== 0) {
 		throw new Error("Failed to parse command line");
 	}
+
 	const txt = r.stdout.toString();
 
 	const result = txt.split("\n");

@@ -68,21 +68,29 @@ export enum DebugType {
 
 export interface CppDebugConfiguration extends vscode.DebugConfiguration {
 	detail?: string;
+
 	taskStatus?: TaskStatus;
+
 	isDefault?: boolean; // The debug configuration is considered as default, if the prelaunch task is set as default.
 	configSource?: ConfigSource;
+
 	debuggerEvent?: DebuggerEvent;
+
 	debugType?: DebugType;
+
 	existing?: boolean;
 }
 
 export interface IConfigurationSnippet {
 	label: string;
+
 	description: string;
+
 	bodyText: string;
 
 	// Internal
 	isInitialConfiguration?: boolean;
+
 	debuggerType: DebuggerType;
 }
 
@@ -168,16 +176,21 @@ function createPipeTransportString(
 
 export interface IConfiguration {
 	GetLaunchConfiguration(): IConfigurationSnippet;
+
 	GetAttachConfiguration(): IConfigurationSnippet;
 }
 
 abstract class Configuration implements IConfiguration {
 	public executable: string;
+
 	public pipeProgram: string;
+
 	public MIMode: string;
+
 	public additionalProperties: string;
 
 	public miDebugger = "cppdbg";
+
 	public windowsDebugger = "cppvsdbg";
 
 	constructor(
@@ -187,12 +200,16 @@ abstract class Configuration implements IConfiguration {
 		additionalProperties: string = "",
 	) {
 		this.MIMode = MIMode;
+
 		this.executable = executable;
+
 		this.pipeProgram = pipeProgram;
+
 		this.additionalProperties = additionalProperties;
 	}
 
 	abstract GetLaunchConfiguration(): IConfigurationSnippet;
+
 	abstract GetAttachConfiguration(): IConfigurationSnippet;
 }
 

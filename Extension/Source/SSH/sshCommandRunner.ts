@@ -50,6 +50,7 @@ export class CanceledError extends Error {
 
 export interface ICommandResult {
 	stdout: string;
+
 	stderr: string;
 }
 
@@ -99,9 +100,13 @@ export async function showInputBox(
 ): Promise<string | undefined> {
 	return new Promise((resolve, reject) => {
 		const quickPick: vscode.InputBox = vscode.window.createInputBox();
+
 		quickPick.title = msg;
+
 		quickPick.prompt = prompt;
+
 		quickPick.password = true;
+
 		quickPick.ignoreFocusOut = true;
 
 		let isAccepted: boolean = false;
@@ -110,7 +115,9 @@ export async function showInputBox(
 			isAccepted = true;
 
 			const passphrase: string = quickPick.value;
+
 			quickPick.dispose();
+
 			resolve(passphrase);
 		});
 
@@ -125,6 +132,7 @@ export async function showInputBox(
 		if (cancelToken) {
 			cancelToken.onCancellationRequested(() => {
 				reject(new CanceledError());
+
 				quickPick.dispose();
 			});
 		}
@@ -133,6 +141,7 @@ export async function showInputBox(
 
 class ConfirmationItem implements vscode.QuickPickItem, vscode.MessageItem {
 	title: string;
+
 	isCloseAffordance: boolean = true;
 
 	constructor(
@@ -184,12 +193,16 @@ async function showConfirmationPicker(
 	return new Promise((resolve, reject) => {
 		const quickPick: vscode.QuickPick<ConfirmationItem> =
 			vscode.window.createQuickPick<ConfirmationItem>();
+
 		quickPick.canSelectMany = false;
+
 		quickPick.items = [
 			new ConfirmationItem(localize("continue", "Continue"), "yes"),
 			new ConfirmationItem(localize("cancel", "Cancel"), "no"),
 		];
+
 		quickPick.title = title;
+
 		quickPick.placeholder = placeholder;
 
 		let isAccepted: boolean = false;
@@ -198,7 +211,9 @@ async function showConfirmationPicker(
 			isAccepted = true;
 
 			const value: string = quickPick.selectedItems[0].value;
+
 			quickPick.dispose();
+
 			resolve(value);
 		});
 
@@ -213,6 +228,7 @@ async function showConfirmationPicker(
 		if (cancelToken) {
 			cancelToken.onCancellationRequested(() => {
 				quickPick.hide();
+
 				reject(new CanceledError());
 			});
 		}
@@ -221,12 +237,19 @@ async function showConfirmationPicker(
 
 export interface ITerminalCommandWithLoginArgs {
 	systemInteractor: ISystemInteractor;
+
 	command: string;
+
 	nickname: string;
+
 	marker?: string;
+
 	usedInteractors?: Set<string>;
+
 	interactor?: IInteractor;
+
 	cwd?: string;
+
 	token?: vscode.CancellationToken;
 
 	continueOn?: string;
@@ -247,6 +270,7 @@ export async function runSshTerminalCommandWithLogin(
 
 	if (!showLoginTerminal) {
 		autoFilledPasswordForUsers.clear();
+
 		interactors.push(
 			new MitmInteractor(),
 			new FingerprintInteractor(host.hostName, showHostKeyConfirmation),
@@ -282,16 +306,27 @@ export async function runSshTerminalCommandWithLogin(
 
 export interface ITerminalCommandArgs {
 	systemInteractor: ISystemInteractor;
+
 	command: string;
+
 	interactors?: IInteractor[];
+
 	nickname: string;
+
 	usedInteractors?: Set<string>;
+
 	sendText?: string;
+
 	cwd?: vscode.Uri;
+
 	terminalIsWindows?: boolean;
+
 	token?: vscode.CancellationToken;
+
 	marker?: string;
+
 	revealTerminal?: vscode.Event<void>;
+
 	showLoginTerminal?: boolean; // If true, respect the showLoginTerminal setting
 }
 
@@ -333,16 +368,19 @@ export function runInteractiveSshTerminalCommand(
 	const clean = () => {
 		if (terminalListener) {
 			terminalListener.dispose();
+
 			terminalListener = undefined;
 		}
 
 		if (terminal) {
 			terminal.dispose();
+
 			terminal = undefined;
 		}
 
 		if (windowListener) {
 			windowListener.dispose();
+
 			windowListener = undefined;
 		}
 
@@ -361,6 +399,7 @@ export function runInteractiveSshTerminalCommand(
 		if (!noClean) {
 			clean();
 		}
+
 		getSshChannel().appendLine(
 			cancel
 				? localize(
@@ -384,8 +423,10 @@ export function runInteractiveSshTerminalCommand(
 				);
 
 				getSshChannel().appendLine(warningMessage);
+
 				void vscode.window.showWarningMessage(warningMessage);
 			}
+
 			return result.reject(new CanceledError());
 		}
 
@@ -393,6 +434,7 @@ export function runInteractiveSshTerminalCommand(
 		const actualOutput: string | undefined = cancel
 			? ""
 			: lastNonemptyLine(stdout);
+
 		result.resolve({
 			succeeded: !exitCode,
 			exitCode,
@@ -412,7 +454,9 @@ export function runInteractiveSshTerminalCommand(
 		);
 
 		getSshChannel().appendLine(errorMessage);
+
 		void vscode.window.showErrorMessage(errorMessage);
+
 		result.reject(error);
 	};
 
@@ -426,6 +470,7 @@ export function runInteractiveSshTerminalCommand(
 
 			if (pauseIdx >= 0) {
 				data = data.substring(0, pauseIdx + pauseMarker.length);
+
 				nextPauseState = true;
 			}
 
@@ -435,6 +480,7 @@ export function runInteractiveSshTerminalCommand(
 
 			if (resumeIdx >= 0) {
 				data = data.substring(resumeIdx);
+
 				nextPauseState = false;
 			}
 		}
@@ -492,6 +538,7 @@ export function runInteractiveSshTerminalCommand(
 						if (args.usedInteractors) {
 							args.usedInteractors.add(interactor.id);
 						}
+
 						continueWithoutExiting = true;
 
 						done(false, true);
@@ -566,6 +613,7 @@ export function runInteractiveSshTerminalCommand(
 		};
 
 		let terminalDataHandlingQueue: Promise<void> = Promise.resolve();
+
 		terminalListener = systemInteractor.onDidWriteTerminalData(
 			async (e) => {
 				if (e.terminal !== terminal) {
@@ -577,6 +625,7 @@ export function runInteractiveSshTerminalCommand(
 				);
 			},
 		);
+
 		terminal = systemInteractor.createTerminal(options);
 
 		if (args.revealTerminal) {
@@ -652,6 +701,7 @@ function logReceivedData(data: string, nickname: string): void {
 		// From the sleep command that must periodically echo ' '
 		return;
 	}
+
 	const markedLines: string = logData
 		.split(/\n/)
 		.map((line) => `${nickname}> ${line}`)
@@ -678,6 +728,7 @@ function lastNonemptyLine(str: string): string | undefined {
 
 				continue;
 			}
+
 			if (strippedLine) {
 				return strippedLine;
 			}

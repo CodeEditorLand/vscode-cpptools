@@ -15,15 +15,18 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export interface Environment {
 	name: string;
+
 	value: string;
 }
 
 export class ParsedEnvironmentFile {
 	public Env: Environment[];
+
 	public Warning?: string;
 
 	private constructor(env: Environment[], warning?: string) {
 		this.Env = env;
+
 		this.Warning = warning;
 	}
 
@@ -100,6 +103,7 @@ export class ParsedEnvironmentFile {
 				"envFile",
 				envFile,
 			);
+
 			parseErrors.forEach(function (value, idx, array): void {
 				warning +=
 					'"' + value + '"' + (idx !== array.length - 1 ? ", " : ".");

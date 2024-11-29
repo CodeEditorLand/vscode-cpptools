@@ -10,40 +10,50 @@ export class AsyncMap<TKey, TValue> {
 		TKey,
 		TValue | Promise<TValue | undefined> | undefined
 	>();
+
 	clear(): void {
 		return this.map.clear();
 	}
+
 	delete(key: TKey): boolean {
 		return this.map.delete(key);
 	}
+
 	get(key: TKey): TValue | Promise<TValue | undefined> | undefined {
 		return this.map.get(key);
 	}
+
 	has(key: TKey): boolean {
 		return this.map.has(key);
 	}
+
 	get size(): number {
 		return this.map.size;
 	}
+
 	async *entries(): AsyncIterable<[TKey, TValue]> {
 		// eslint-disable-next-line prefer-const
 		for (let [key, value] of this.map.entries()) {
 			if (is.promise(value)) {
 				value = await value;
 			}
+
 			if (!is.nullish(value)) {
 				yield [key, value];
 			}
 		}
 	}
+
 	keys(): Iterator<TKey> {
 		return this.map.keys();
 	}
+
 	async *values(): AsyncIterable<TValue> {
 		for (let value of this.map.values()) {
 			if (is.promise(value)) {
 				value = await value;
 			}
+
 			if (!is.nullish(value)) {
 				yield value;
 			}
@@ -86,12 +96,15 @@ export class AsyncMap<TKey, TValue> {
 					if (is.nullish(v)) {
 						this.map.delete(key);
 					}
+
 					return v;
 				});
 			}
 		}
+
 		return result;
 	}
+
 	set(key: TKey, value: Promise<TValue> | TValue): this {
 		this.map.set(key, value);
 

@@ -8,15 +8,21 @@ import { ManualPromise } from "../../Utility/Async/manualPromise";
 
 interface FileData {
 	version: number;
+
 	promise: ManualPromise<vscode.SemanticTokens>;
+
 	tokenBuilder: vscode.SemanticTokensBuilder;
 }
 
 export interface SemanticToken {
 	line: number;
+
 	character: number;
+
 	length: number;
+
 	type: number;
+
 	modifiers?: number;
 }
 
@@ -24,8 +30,10 @@ export class SemanticTokensProvider
 	implements vscode.DocumentSemanticTokensProvider
 {
 	public onDidChangeSemanticTokensEvent = new vscode.EventEmitter<void>();
+
 	public onDidChangeSemanticTokens?: vscode.Event<void> =
 		this.onDidChangeSemanticTokensEvent.event;
+
 	private allFileData: Map<string, FileData> = new Map<string, FileData>();
 
 	public async provideDocumentSemanticTokens(
@@ -51,23 +59,27 @@ export class SemanticTokensProvider
 				fileData.promise.reject(new vscode.CancellationError());
 			}
 		}
+
 		fileData = {
 			version: document.version,
 			promise: new ManualPromise<vscode.SemanticTokens>(),
 			tokenBuilder: new vscode.SemanticTokensBuilder(),
 		};
+
 		this.allFileData.set(uriString, fileData);
 
 		// Capture a local variable instead of referring to the member variable directly,
 		// to avoid race conditions where the member variable is changed before the
 		// cancallation token is triggered.
 		const currentPromise = fileData.promise;
+
 		token.onCancellationRequested(() => {
 			const fileData: FileData | undefined =
 				this.allFileData.get(uriString);
 
 			if (fileData && currentPromise === fileData.promise) {
 				this.allFileData.delete(uriString);
+
 				currentPromise.reject(new vscode.CancellationError());
 			}
 		});
@@ -94,6 +106,7 @@ export class SemanticTokensProvider
 				new vscode.SemanticTokensBuilder();
 
 			const tokens: vscode.SemanticTokens = builder.build();
+
 			this.allFileData.get(uriString)?.promise.resolve(tokens);
 
 			return;
@@ -111,20 +124,27 @@ export class SemanticTokensProvider
 					promise: new ManualPromise<vscode.SemanticTokens>(),
 					tokenBuilder: new vscode.SemanticTokensBuilder(),
 				};
+
 				newPromiseCreated = true;
+
 				this.allFileData.set(uriString, fileData);
 			} else {
 				if (!fileData.promise.isPending) {
 					fileData.promise.reject(new vscode.CancellationError());
+
 					fileData.promise =
 						new ManualPromise<vscode.SemanticTokens>();
+
 					newPromiseCreated = true;
 				}
+
 				if (fileData.version !== editor.document.version) {
 					fileData.version = editor.document.version;
+
 					fileData.tokenBuilder = new vscode.SemanticTokensBuilder();
 				}
 			}
+
 			return [fileData, newPromiseCreated];
 		})();
 
@@ -155,9 +175,11 @@ export class SemanticTokensProvider
 		if (!fileData) {
 			return;
 		}
+
 		if (fileData.promise.isPending) {
 			fileData.promise.reject(new vscode.CancellationError());
 		}
+
 		this.allFileData.delete(uriString);
 	}
 }

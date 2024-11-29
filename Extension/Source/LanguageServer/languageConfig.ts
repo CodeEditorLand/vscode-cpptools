@@ -28,6 +28,7 @@ interface Rules {
 	begin: vscode.OnEnterRule[];
 
 	continue: vscode.OnEnterRule[];
+
 	end: vscode.OnEnterRule[];
 }
 
@@ -44,6 +45,7 @@ function escape(chars: string): string {
 			result += char;
 		}
 	}
+
 	return result;
 }
 
@@ -54,6 +56,7 @@ function getMLBeginPattern(insert: string): string | undefined {
 		const match: string = escape(insert.substring(2)); // trim the leading '/*' and escape any troublesome characters.
 		return `^\\s*\\/\\*${match}(?!\\/)([^\\*]|\\*(?!\\/))*$`;
 	}
+
 	return undefined;
 }
 
@@ -65,6 +68,7 @@ function getMLPreviousLinePattern(insert: string): string | undefined {
 	if (insert.startsWith("/*")) {
 		return `(?=^(\\s*(\\/\\*\\*|\\*)).*)(?=(?!(\\s*\\*\\/)))`;
 	}
+
 	return undefined;
 }
 
@@ -81,6 +85,7 @@ function getMLContinuePattern(insert: string): string | undefined {
 		}
 		// else: if the continuation is just whitespace, vscode already does indentation preservation.
 	}
+
 	return undefined;
 }
 
@@ -91,6 +96,7 @@ function getMLEmptyEndPattern(insert: string): string | undefined {
 		if (insert.endsWith("*")) {
 			insert = insert.substring(0, insert.length - 1);
 		}
+
 		const match: string = escape(insert.trimRight());
 
 		return `^(\\t|[ ])*${match}\\*\\/\\s*$`;
@@ -131,6 +137,7 @@ function getSLEndPattern(insert: string): string {
 	if (match !== trimmed) {
 		match = `(${match}|${trimmed})`;
 	}
+
 	return `^\\s*${match}$`;
 }
 
@@ -150,6 +157,7 @@ function getMLSplitRule(
 			},
 		};
 	}
+
 	return undefined;
 }
 
@@ -168,6 +176,7 @@ function getMLFirstLineRule(
 			},
 		};
 	}
+
 	return undefined;
 }
 
@@ -195,6 +204,7 @@ function getMLContinuationRule(
 			};
 		}
 	}
+
 	return undefined;
 }
 
@@ -213,6 +223,7 @@ function getMLEndRule(comment: CommentPattern): vscode.OnEnterRule | undefined {
 			},
 		};
 	}
+
 	return undefined;
 }
 
@@ -235,6 +246,7 @@ function getMLEmptyEndRule(
 			},
 		};
 	}
+
 	return undefined;
 }
 
@@ -306,6 +318,7 @@ export function getLanguageConfigFromPatterns(
 	if (!patterns) {
 		patterns = ["/**"];
 	}
+
 	patterns.forEach((pattern) => {
 		const c: CommentPattern = isString(pattern)
 			? {
@@ -320,17 +333,21 @@ export function getLanguageConfigFromPatterns(
 			if (r.begin && r.begin.length > 0) {
 				beginRules = beginRules.concat(r.begin);
 			}
+
 			beginPatterns.push(c.begin);
 		} else {
 			duplicates = true;
 		}
+
 		if (continuePatterns.indexOf(c.continue) < 0) {
 			if (r.continue && r.continue.length > 0) {
 				continueRules = continueRules.concat(r.continue);
 			}
+
 			if (r.end && r.end.length > 0) {
 				endRules = endRules.concat(r.end);
 			}
+
 			continuePatterns.push(c.continue);
 		}
 	});
@@ -343,6 +360,7 @@ export function getLanguageConfigFromPatterns(
 			),
 		);
 	}
+
 	return {
 		onEnterRules: beginRules
 			.concat(continueRules)
@@ -367,29 +385,34 @@ function constructCommentRules(
 		if (!mlBegin1) {
 			throw new Error("Failure in constructCommentRules() - mlBegin1");
 		}
+
 		const mlBegin2: vscode.OnEnterRule | undefined =
 			getMLFirstLineRule(comment);
 
 		if (!mlBegin2) {
 			throw new Error("Failure in constructCommentRules() - mlBegin2");
 		}
+
 		const mlContinue: vscode.OnEnterRule | undefined =
 			getMLContinuationRule(comment);
 
 		if (!mlContinue) {
 			throw new Error("Failure in constructCommentRules() - mlContinue");
 		}
+
 		const mlEnd1: vscode.OnEnterRule | undefined =
 			getMLEmptyEndRule(comment);
 
 		if (!mlEnd1) {
 			throw new Error("Failure in constructCommentRules() - mlEnd1");
 		}
+
 		const mlEnd2: vscode.OnEnterRule | undefined = getMLEndRule(comment);
 
 		if (!mlEnd2) {
 			throw new Error("Failure in constructCommentRules() = mlEnd2");
 		}
+
 		return {
 			begin: [mlBegin1, mlBegin2],
 			continue: [mlContinue],
@@ -419,6 +442,7 @@ function constructCommentRules(
 			};
 		}
 	}
+
 	return {
 		begin: [],
 		continue: [],

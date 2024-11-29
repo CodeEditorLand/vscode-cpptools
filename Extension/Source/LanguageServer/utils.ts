@@ -74,6 +74,7 @@ export function shouldChangeFromCToCpp(document: vscode.TextDocument): boolean {
 		}
 		// We could potentially add a new setting to enable switching to cpp even when files.associations isn't changed.
 	}
+
 	return false;
 }
 
@@ -150,13 +151,16 @@ export async function withCancellation<T>(
 		const disposable = token.onCancellationRequested(() =>
 			reject(new vscode.CancellationError()),
 		);
+
 		promise.then(
 			(value) => {
 				disposable.dispose();
+
 				resolve(value);
 			},
 			(reason) => {
 				disposable.dispose();
+
 				reject(reason);
 			},
 		);

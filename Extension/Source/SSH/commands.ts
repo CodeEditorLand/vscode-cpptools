@@ -37,13 +37,16 @@ export async function scp(
 	if (recursive) {
 		args.push("-r");
 	}
+
 	if (jumpHosts && jumpHosts.length > 0) {
 		args.push("-J", jumpHosts.map(getFullHostAddress).join(","));
 	}
+
 	if (host.port) {
 		// upper case P
 		args.push("-P", `${host.port}`);
 	}
+
 	args.push(
 		files.map((uri) => `"${uri.fsPath}"`).join(" "),
 		`${getFullHostAddressNoPort(host)}:${targetDir}`,
@@ -78,16 +81,19 @@ export async function rsync(
 	if (recursive) {
 		args.push("-r");
 	}
+
 	if (jumpHosts && jumpHosts.length > 0) {
 		args.push(
 			"-e",
 			`ssh -J ${jumpHosts.map(getFullHostAddress).join(",")}`,
 		);
 	}
+
 	if (host.port) {
 		// upper case P
 		args.push(`--port=${host.port}`);
 	}
+
 	args.push(
 		files.map((uri) => `"${uri.fsPath}"`).join(" "),
 		`${getFullHostAddressNoPort(host)}:${targetDir}`,
@@ -115,13 +121,16 @@ export function ssh(
 	if (jumpHosts && jumpHosts.length > 0) {
 		args.push("-J", jumpHosts.map(getFullHostAddress).join(","));
 	}
+
 	if (host.port) {
 		// lower case p
 		args.push("-p", `${host.port}`);
 	}
+
 	if (localForwards) {
 		localForwards.forEach((info) => args.push(...localForwardToArgs(info)));
 	}
+
 	args.push(getFullHostAddressNoPort(host), `"${command}"`);
 
 	return runSshTerminalCommandWithLogin(host, {
@@ -149,6 +158,7 @@ function localForwardToArgs(localForward: ISshLocalForwardInfo): string[] {
 			),
 		);
 	}
+
 	if (!localForward.localSocket && !localForward.port) {
 		throw Error(
 			localize(
@@ -157,6 +167,7 @@ function localForwardToArgs(localForward: ISshLocalForwardInfo): string[] {
 			),
 		);
 	}
+
 	if (
 		localForward.remoteSocket &&
 		(localForward.host || localForward.hostPort)
@@ -168,6 +179,7 @@ function localForwardToArgs(localForward: ISshLocalForwardInfo): string[] {
 			),
 		);
 	}
+
 	if (
 		!localForward.remoteSocket &&
 		(!localForward.host || !localForward.hostPort)
@@ -185,15 +197,19 @@ function localForwardToArgs(localForward: ISshLocalForwardInfo): string[] {
 	if (localForward.localSocket) {
 		arg += `${localForward.localSocket}:`;
 	}
+
 	if (localForward.bindAddress) {
 		arg += `${localForward.bindAddress}:`;
 	}
+
 	if (localForward.port) {
 		arg += `${localForward.port}:`;
 	}
+
 	if (localForward.remoteSocket) {
 		arg += `${localForward.remoteSocket}`;
 	}
+
 	if (localForward.host && localForward.hostPort) {
 		arg += `${localForward.host}:${localForward.hostPort}`;
 	}

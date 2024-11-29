@@ -65,95 +65,183 @@ export interface Associations {
 // Settings that can be undefined have default values assigned in the native code or are meant to return undefined.
 export interface WorkspaceFolderSettingsParams {
 	uri: string | undefined;
+
 	intelliSenseEngine: string;
+
 	autocomplete: string;
+
 	autocompleteAddParentheses: boolean;
+
 	errorSquiggles: string;
+
 	exclusionPolicy: string;
+
 	preferredPathSeparator: string;
+
 	intelliSenseCachePath: string;
+
 	intelliSenseCacheSize: number;
+
 	intelliSenseMemoryLimit: number;
+
 	dimInactiveRegions: boolean;
+
 	suggestSnippets: boolean;
+
 	legacyCompilerArgsBehavior: boolean;
 
 	defaultSystemIncludePath: string[] | undefined;
+
 	cppFilesExclude: Excludes;
+
 	clangFormatPath: string;
+
 	clangFormatStyle: string | undefined;
+
 	clangFormatFallbackStyle: string | undefined;
+
 	clangFormatSortIncludes: boolean | null;
+
 	codeAnalysisRunAutomatically: boolean;
+
 	codeAnalysisExclude: Excludes;
+
 	clangTidyEnabled: boolean;
+
 	clangTidyPath: string;
+
 	clangTidyConfig: string | undefined;
+
 	clangTidyFallbackConfig: string | undefined;
+
 	clangTidyHeaderFilter: string | null;
+
 	clangTidyArgs: string[];
+
 	clangTidyUseBuildPath: boolean;
+
 	clangTidyChecksEnabled: string[] | undefined;
+
 	clangTidyChecksDisabled: string[] | undefined;
+
 	hover: string;
+
 	markdownInComments: string;
+
 	vcFormatIndentBraces: boolean;
+
 	vcFormatIndentMultiLineRelativeTo: string;
+
 	vcFormatIndentWithinParentheses: string;
+
 	vcFormatIndentPreserveWithinParentheses: boolean;
+
 	vcFormatIndentCaseLabels: boolean;
+
 	vcFormatIndentCaseContents: boolean;
+
 	vcFormatIndentCaseContentsWhenBlock: boolean;
+
 	vcFormatIndentLambdaBracesWhenParameter: boolean;
+
 	vcFormatIndentGotoLabels: string;
+
 	vcFormatIndentPreprocessor: string;
+
 	vcFormatIndentAccesSpecifiers: boolean;
+
 	vcFormatIndentNamespaceContents: boolean;
+
 	vcFormatIndentPreserveComments: boolean;
+
 	vcFormatNewLineScopeBracesOnSeparateLines: boolean;
+
 	vcFormatNewLineBeforeOpenBraceNamespace: string;
+
 	vcFormatNewLineBeforeOpenBraceType: string;
+
 	vcFormatNewLineBeforeOpenBraceFunction: string;
+
 	vcFormatNewLineBeforeOpenBraceBlock: string;
+
 	vcFormatNewLineBeforeOpenBraceLambda: string;
+
 	vcFormatNewLineBeforeCatch: boolean;
+
 	vcFormatNewLineBeforeElse: boolean;
+
 	vcFormatNewLineBeforeWhileInDoWhile: boolean;
+
 	vcFormatNewLineCloseBraceSameLineEmptyType: boolean;
+
 	vcFormatNewLineCloseBraceSameLineEmptyFunction: boolean;
+
 	vcFormatSpaceWithinParameterListParentheses: boolean;
+
 	vcFormatSpaceBetweenEmptyParameterListParentheses: boolean;
+
 	vcFormatSpaceAfterKeywordsInControlFlowStatements: boolean;
+
 	vcFormatSpaceWithinControlFlowStatementParentheses: boolean;
+
 	vcFormatSpaceBeforeLambdaOpenParenthesis: boolean;
+
 	vcFormatSpaceWithinCastParentheses: boolean;
+
 	vcFormatSpaceAfterCastCloseParenthesis: boolean;
+
 	vcFormatSpaceWithinExpressionParentheses: boolean;
+
 	vcFormatSpaceBeforeBlockOpenBrace: boolean;
+
 	vcFormatSpaceBetweenEmptyBraces: boolean;
+
 	vcFormatSpaceBeforeInitializerListOpenBrace: boolean;
+
 	vcFormatSpaceWithinInitializerListBraces: boolean;
+
 	vcFormatSpacePreserveInInitializerList: boolean;
+
 	vcFormatSpaceBeforeOpenSquareBracket: boolean;
+
 	vcFormatSpaceWithinSquareBrackets: boolean;
+
 	vcFormatSpaceBeforeEmptySquareBrackets: boolean;
+
 	vcFormatSpaceBetweenEmptySquareBrackets: boolean;
+
 	vcFormatSpaceGroupSquareBrackets: boolean;
+
 	vcFormatSpaceWithinLambdaBrackets: boolean;
+
 	vcFormatSpaceBetweenEmptyLambdaBrackets: boolean;
+
 	vcFormatSpaceBeforeComma: boolean;
+
 	vcFormatSpaceAfterComma: boolean;
+
 	vcFormatSpaceRemoveAroundMemberOperators: boolean;
+
 	vcFormatSpaceBeforeInheritanceColon: boolean;
+
 	vcFormatSpaceBeforeConstructorColon: boolean;
+
 	vcFormatSpaceRemoveBeforeSemicolon: boolean;
+
 	vcFormatSpaceInsertAfterSemicolon: boolean;
+
 	vcFormatSpaceRemoveAroundUnaryOperator: boolean;
+
 	vcFormatSpaceBeforeFunctionOpenParenthesis: string;
+
 	vcFormatSpaceAroundBinaryOperator: string;
+
 	vcFormatSpaceAroundAssignmentOperator: string;
+
 	vcFormatSpacePointerReferenceAlignment: string;
+
 	vcFormatSpaceAroundTernaryOperator: string;
+
 	vcFormatWrapPreserveBlocks: string;
 
 	doxygenGenerateOnType: boolean;
@@ -161,38 +249,67 @@ export interface WorkspaceFolderSettingsParams {
 	doxygenGeneratedStyle: string;
 
 	doxygenSectionTags: string[];
+
 	filesExclude: Excludes;
+
 	filesAutoSaveAfterDelay: boolean;
+
 	filesEncoding: string;
+
 	searchExclude: Excludes;
+
 	editorAutoClosingBrackets: string;
+
 	editorInlayHintsEnabled: boolean;
+
 	editorParameterHintsEnabled: boolean;
+
 	refactoringIncludeHeader: string;
 }
 
 export interface SettingsParams {
 	filesAssociations: Associations;
+
 	workspaceFallbackEncoding: string;
+
 	maxConcurrentThreads: number | null;
+
 	maxCachedProcesses: number | null;
+
 	maxMemory: number | null;
+
 	maxSymbolSearchResults: number;
+
 	loggingLevel: string;
+
 	workspaceParsingPriority: string;
+
 	workspaceSymbols: string;
+
 	simplifyStructuredComments: boolean;
+
 	intelliSenseUpdateDelay: number;
+
 	experimentalFeatures: boolean;
+
 	enhancedColorization: boolean;
+
 	intellisenseMaxCachedProcesses: number | null;
+
 	intellisenseMaxMemory: number | null;
+
 	referencesMaxConcurrentThreads: number | null;
+
 	referencesMaxCachedProcesses: number | null;
+
 	referencesMaxMemory: number | null;
+
 	codeAnalysisMaxConcurrentThreads: number | null;
+
 	codeAnalysisMaxMemory: number | null;
+
 	codeAnalysisUpdateDelay: number;
+
 	workspaceFolderSettings: WorkspaceFolderSettingsParams[];
 }
 
@@ -236,10 +353,12 @@ class Settings {
 	public getArrayOfStringsWithUndefinedDefault(
 		section: string,
 	): string[] | undefined;
+
 	public getArrayOfStringsWithUndefinedDefault(
 		section: string,
 		allowNull: boolean,
 	): string[] | undefined | null;
+
 	public getArrayOfStringsWithUndefinedDefault(
 		section: string,
 		allowNull: boolean = false,
@@ -266,6 +385,7 @@ class Settings {
 		) {
 			return info.globalValue;
 		}
+
 		return undefined;
 	}
 
@@ -283,6 +403,7 @@ class Settings {
 		if (isString(info.globalValue)) {
 			return info.globalValue;
 		}
+
 		return undefined;
 	}
 }
@@ -349,6 +470,7 @@ export class CppSettings extends Settings {
 			if (cachedClangPath !== undefined) {
 				return cachedClangPath;
 			}
+
 			const clangName: string = isFormat
 				? this.clangFormatName
 				: this.clangTidyName;
@@ -364,6 +486,7 @@ export class CppSettings extends Settings {
 			if (whichPath === null) {
 				return undefined;
 			}
+
 			path = whichPath;
 
 			setCachedClangPath(path);
@@ -382,6 +505,7 @@ export class CppSettings extends Settings {
 					const output: string = execSync(
 						quote([bundledPath, "--version"]),
 					).toString();
+
 					bundledVersion = output.match(/(\d+\.\d+\.\d+)/)?.[1] ?? "";
 
 					if (!semver.valid(bundledVersion)) {
@@ -413,62 +537,80 @@ export class CppSettings extends Settings {
 				}
 			}
 		}
+
 		return path;
 	}
 
 	public get maxConcurrentThreads(): number | null {
 		return this.getAsNumber("maxConcurrentThreads", true);
 	}
+
 	public get maxMemory(): number | null {
 		return this.getAsNumber("maxMemory", true);
 	}
+
 	public get maxSymbolSearchResults(): number {
 		return this.getAsNumber("maxSymbolSearchResults");
 	}
+
 	public get maxCachedProcesses(): number | null {
 		return this.getAsNumber("maxCachedProcesses", true);
 	}
+
 	public get intelliSenseMaxCachedProcesses(): number | null {
 		return this.getAsNumber("intelliSense.maxCachedProcesses", true);
 	}
+
 	public get intelliSenseMaxMemory(): number | null {
 		return this.getAsNumber("intelliSense.maxMemory", true);
 	}
+
 	public get referencesMaxConcurrentThreads(): number | null {
 		return this.getAsNumber("references.maxConcurrentThreads", true);
 	}
+
 	public get referencesMaxCachedProcesses(): number | null {
 		return this.getAsNumber("references.maxCachedProcesses", true);
 	}
+
 	public get referencesMaxMemory(): number | null {
 		return this.getAsNumber("references.maxMemory", true);
 	}
+
 	public get codeAnalysisMaxConcurrentThreads(): number | null {
 		return this.getAsNumber("codeAnalysis.maxConcurrentThreads", true);
 	}
+
 	public get codeAnalysisMaxMemory(): number | null {
 		return this.getAsNumber("codeAnalysis.maxMemory", true);
 	}
+
 	public get codeAnalysisUpdateDelay(): number {
 		return this.getAsNumber("codeAnalysis.updateDelay");
 	}
+
 	public get codeAnalysisExclude(): Excludes {
 		return this.getAsExcludes("codeAnalysis.exclude");
 	}
+
 	public get codeAnalysisRunAutomatically(): boolean {
 		return this.getAsBoolean("codeAnalysis.runAutomatically");
 	}
+
 	public get codeAnalysisRunOnBuild(): boolean | undefined {
 		return false;
 	} // return this.getAsBoolean("codeAnalysis.runOnBuild");
+
 	public get clangTidyEnabled(): boolean {
 		return this.getAsBoolean("codeAnalysis.clangTidy.enabled");
 	}
+
 	public get clangTidyConfig(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("codeAnalysis.clangTidy.config"),
 		);
 	}
+
 	public get clangTidyFallbackConfig(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined(
@@ -476,147 +618,185 @@ export class CppSettings extends Settings {
 			),
 		);
 	}
+
 	public get clangTidyHeaderFilter(): string | null {
 		return this.getAsString("codeAnalysis.clangTidy.headerFilter", true);
 	}
+
 	public get clangTidyArgs(): string[] | undefined {
 		return this.getAsArrayOfStringsOrUndefined(
 			"codeAnalysis.clangTidy.args",
 		);
 	}
+
 	public get clangTidyUseBuildPath(): boolean {
 		return this.getAsBoolean("codeAnalysis.clangTidy.useBuildPath");
 	}
+
 	public get clangTidyChecksEnabled(): string[] | undefined {
 		return this.getAsArrayOfStringsOrUndefined(
 			"codeAnalysis.clangTidy.checks.enabled",
 			true,
 		);
 	}
+
 	public get clangTidyChecksDisabled(): string[] | undefined {
 		return this.getAsArrayOfStringsOrUndefined(
 			"codeAnalysis.clangTidy.checks.disabled",
 			true,
 		);
 	}
+
 	public get clangTidyCodeActionShowDisable(): boolean {
 		return this.getAsBoolean(
 			"codeAnalysis.clangTidy.codeAction.showDisable",
 		);
 	}
+
 	public get clangTidyCodeActionShowClear(): string {
 		return this.getAsString("codeAnalysis.clangTidy.codeAction.showClear");
 	}
+
 	public get clangTidyCodeActionShowDocumentation(): boolean {
 		return this.getAsBoolean(
 			"codeAnalysis.clangTidy.codeAction.showDocumentation",
 		);
 	}
+
 	public get clangTidyCodeActionFormatFixes(): boolean {
 		return this.getAsBoolean(
 			"codeAnalysis.clangTidy.codeAction.formatFixes",
 		);
 	}
+
 	public addClangTidyChecksDisabled(value: string): void {
 		const checks: string[] | undefined = this.clangTidyChecksDisabled;
 
 		if (checks === undefined) {
 			return;
 		}
+
 		checks.push(value);
+
 		void super.Section.update(
 			"codeAnalysis.clangTidy.checks.disabled",
 			checks,
 			vscode.ConfigurationTarget.WorkspaceFolder,
 		);
 	}
+
 	public get clangFormatStyle(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsString("clang_format_style"),
 		);
 	}
+
 	public get clangFormatFallbackStyle(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsString("clang_format_fallbackStyle"),
 		);
 	}
+
 	public get clangFormatSortIncludes(): boolean | null {
 		return this.getAsBoolean("clang_format_sortIncludes", true);
 	}
+
 	public get experimentalFeatures(): boolean {
 		return (
 			this.getAsString("experimentalFeatures").toLowerCase() === "enabled"
 		);
 	}
+
 	public get suggestSnippets(): boolean {
 		return this.getAsBoolean("suggestSnippets");
 	}
+
 	public get intelliSenseEngine(): string {
 		return this.getAsString("intelliSenseEngine");
 	}
+
 	public get intelliSenseCachePath(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("intelliSenseCachePath"),
 		);
 	}
+
 	public get intelliSenseCacheSize(): number {
 		return this.getAsNumber("intelliSenseCacheSize");
 	}
+
 	public get intelliSenseMemoryLimit(): number {
 		return this.getAsNumber("intelliSenseMemoryLimit");
 	}
+
 	public get intelliSenseUpdateDelay(): number {
 		return this.getAsNumber("intelliSenseUpdateDelay");
 	}
+
 	public get errorSquiggles(): string {
 		return this.getAsString("errorSquiggles");
 	}
+
 	public get inactiveRegionOpacity(): number {
 		return this.getAsNumber("inactiveRegionOpacity");
 	}
+
 	public get inactiveRegionForegroundColor(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("inactiveRegionForegroundColor"),
 		);
 	}
+
 	public get inactiveRegionBackgroundColor(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("inactiveRegionBackgroundColor"),
 		);
 	}
+
 	public get autocomplete(): string {
 		return this.getAsString("autocomplete");
 	}
+
 	public get autocompleteAddParentheses(): boolean {
 		return this.getAsBoolean("autocompleteAddParentheses");
 	}
+
 	public get loggingLevel(): string {
 		return this.getAsString("loggingLevel");
 	}
+
 	public get autoAddFileAssociations(): boolean {
 		return this.getAsBoolean("autoAddFileAssociations");
 	}
+
 	public get workspaceParsingPriority(): string {
 		return this.getAsString("workspaceParsingPriority");
 	}
+
 	public get workspaceSymbols(): string {
 		return this.getAsString("workspaceSymbols");
 	}
+
 	public get exclusionPolicy(): string {
 		return this.getAsString("exclusionPolicy");
 	}
+
 	public get refactoringIncludeHeader(): string {
 		return this.getAsString("refactoring.includeHeader");
 	}
+
 	public get simplifyStructuredComments(): boolean {
 		return this.getAsBoolean("simplifyStructuredComments");
 	}
+
 	public get doxygenGeneratedCommentStyle(): string {
 		return this.getAsString("doxygen.generatedStyle");
 	}
+
 	public get doxygenGenerateOnType(): boolean {
 		return this.getAsBoolean("doxygen.generateOnType");
 	}
+
 	public get commentContinuationPatterns(): (string | CommentPattern)[] {
 		const value: any = super.Section.get<any>(
 			"commentContinuationPatterns",
@@ -625,6 +805,7 @@ export class CppSettings extends Settings {
 		if (this.isArrayOfCommentContinuationPatterns(value)) {
 			return value;
 		}
+
 		const setting = getRawSetting(
 			"C_Cpp.commentContinuationPatterns",
 			true,
@@ -632,66 +813,82 @@ export class CppSettings extends Settings {
 
 		return setting.default;
 	}
+
 	public get isConfigurationWarningsEnabled(): boolean {
 		return (
 			this.getAsString("configurationWarnings").toLowerCase() ===
 			"enabled"
 		);
 	}
+
 	public get preferredPathSeparator(): string {
 		return this.getAsString("preferredPathSeparator");
 	}
+
 	public get updateChannel(): string {
 		return this.getAsString("updateChannel");
 	}
+
 	public get vcpkgEnabled(): boolean {
 		return this.getAsBoolean("vcpkg.enabled");
 	}
+
 	public get addNodeAddonIncludePaths(): boolean {
 		return this.getAsBoolean("addNodeAddonIncludePaths");
 	}
+
 	public get renameRequiresIdentifier(): boolean {
 		return this.getAsBoolean("renameRequiresIdentifier");
 	}
+
 	public get filesExclude(): Excludes {
 		return this.getAsExcludes("files.exclude");
 	}
+
 	public get defaultIncludePath(): string[] | undefined {
 		return this.getArrayOfStringsWithUndefinedDefault(
 			"default.includePath",
 		);
 	}
+
 	public get defaultDefines(): string[] | undefined {
 		return this.getArrayOfStringsWithUndefinedDefault("default.defines");
 	}
+
 	public get defaultDotconfig(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("default.dotConfig"),
 		);
 	}
+
 	public get defaultMacFrameworkPath(): string[] | undefined {
 		return this.getArrayOfStringsWithUndefinedDefault(
 			"default.macFrameworkPath",
 		);
 	}
+
 	public get defaultWindowsSdkVersion(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("default.windowsSdkVersion"),
 		);
 	}
+
 	public get defaultCompileCommands(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("default.compileCommands"),
 		);
 	}
+
 	public get defaultForcedInclude(): string[] | undefined {
 		return this.getArrayOfStringsWithUndefinedDefault(
 			"default.forcedInclude",
 		);
 	}
+
 	public get defaultIntelliSenseMode(): string | undefined {
 		return this.getAsStringOrUndefined("default.intelliSenseMode");
 	}
+
 	public get defaultCompilerPath(): string | null {
 		return this.getAsString("default.compilerPath", true);
 	}
@@ -714,6 +911,7 @@ export class CppSettings extends Settings {
 		} else if (compilerPathInfo.workspaceValue !== undefined) {
 			target = vscode.ConfigurationTarget.Workspace;
 		}
+
 		void this.Section.update(defaultCompilerPathStr, value, target);
 
 		if (this.resource !== undefined && !hasTrustedCompilerPaths()) {
@@ -723,6 +921,7 @@ export class CppSettings extends Settings {
 				value,
 				vscode.ConfigurationTarget.Global,
 			);
+
 			clients.forEach((client) => {
 				if (client instanceof DefaultClient) {
 					client.setShowConfigureIntelliSenseButton(false);
@@ -730,48 +929,59 @@ export class CppSettings extends Settings {
 			});
 		}
 	}
+
 	public get defaultCompilerArgs(): string[] | undefined {
 		return this.getArrayOfStringsWithUndefinedDefault(
 			"default.compilerArgs",
 		);
 	}
+
 	public get defaultCStandard(): string | undefined {
 		return this.getAsStringOrUndefined("default.cStandard");
 	}
+
 	public get defaultCppStandard(): string | undefined {
 		return this.getAsStringOrUndefined("default.cppStandard");
 	}
+
 	public get defaultConfigurationProvider(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("default.configurationProvider"),
 		);
 	}
+
 	public get defaultMergeConfigurations(): boolean | undefined {
 		return this.getAsBooleanOrUndefined("default.mergeConfigurations");
 	}
+
 	public get defaultBrowsePath(): string[] | undefined {
 		return this.getArrayOfStringsWithUndefinedDefault(
 			"default.browse.path",
 		);
 	}
+
 	public get defaultDatabaseFilename(): string | undefined {
 		return changeBlankStringToUndefined(
 			this.getAsStringOrUndefined("default.browse.databaseFilename"),
 		);
 	}
+
 	public get defaultLimitSymbolsToIncludedHeaders(): boolean {
 		return this.getAsBoolean(
 			"default.browse.limitSymbolsToIncludedHeaders",
 		);
 	}
+
 	public get defaultSystemIncludePath(): string[] | undefined {
 		return this.getArrayOfStringsWithUndefinedDefault(
 			"default.systemIncludePath",
 		);
 	}
+
 	public get defaultEnableConfigurationSquiggles(): boolean {
 		return this.getAsBoolean("default.enableConfigurationSquiggles");
 	}
+
 	public get defaultCustomConfigurationVariables(): Associations | undefined {
 		return (
 			this.getAsAssociations(
@@ -780,12 +990,15 @@ export class CppSettings extends Settings {
 			) ?? undefined
 		);
 	}
+
 	public get useBacktickCommandSubstitution(): boolean {
 		return this.getAsBoolean("debugger.useBacktickCommandSubstitution");
 	}
+
 	public get codeFolding(): boolean {
 		return this.getAsString("codeFolding").toLowerCase() === "enabled";
 	}
+
 	public get isCaseSensitiveFileSupportEnabled(): boolean {
 		return (
 			!isWindows ||
@@ -793,43 +1006,55 @@ export class CppSettings extends Settings {
 				"enabled"
 		);
 	}
+
 	public get doxygenSectionTags(): string[] {
 		return this.getAsArrayOfStrings("doxygen.sectionTags");
 	}
+
 	public get hover(): string {
 		return this.getAsString("hover");
 	}
+
 	public get markdownInComments(): string {
 		return this.getAsString("markdownInComments");
 	}
+
 	public get legacyCompilerArgsBehavior(): boolean {
 		return this.getAsBoolean("legacyCompilerArgsBehavior");
 	}
+
 	public get inlayHintsAutoDeclarationTypes(): boolean {
 		return this.getAsBoolean("inlayHints.autoDeclarationTypes.enabled");
 	}
+
 	public get inlayHintsAutoDeclarationTypesShowOnLeft(): boolean {
 		return this.getAsBoolean("inlayHints.autoDeclarationTypes.showOnLeft");
 	}
+
 	public get inlayHintsParameterNames(): boolean {
 		return this.getAsBoolean("inlayHints.parameterNames.enabled");
 	}
+
 	public get inlayHintsParameterNamesSuppressName(): boolean {
 		return this.getAsBoolean(
 			"inlayHints.parameterNames.suppressWhenArgumentContainsName",
 		);
 	}
+
 	public get inlayHintsParameterNamesHideLeadingUnderscores(): boolean {
 		return this.getAsBoolean(
 			"inlayHints.parameterNames.hideLeadingUnderscores",
 		);
 	}
+
 	public get inlayHintsReferenceOperator(): boolean {
 		return this.getAsBoolean("inlayHints.referenceOperator.enabled");
 	}
+
 	public get inlayHintsReferenceOperatorShowSpace(): boolean {
 		return this.getAsBoolean("inlayHints.referenceOperator.showSpace");
 	}
+
 	public get isEnhancedColorizationEnabled(): boolean {
 		return (
 			this.getAsString("enhancedColorization").toLowerCase() ===
@@ -840,197 +1065,257 @@ export class CppSettings extends Settings {
 				.get<any>("colorTheme") !== "Default High Contrast"
 		);
 	}
+
 	public get formattingEngine(): string {
 		return this.getAsString("formatting");
 	}
+
 	public get vcFormatIndentBraces(): boolean {
 		return this.getAsBoolean("vcFormat.indent.braces");
 	}
+
 	public get vcFormatIndentMultiLineRelativeTo(): string {
 		return this.getAsString("vcFormat.indent.multiLineRelativeTo");
 	}
+
 	public get vcFormatIndentWithinParentheses(): string {
 		return this.getAsString("vcFormat.indent.withinParentheses");
 	}
+
 	public get vcFormatIndentPreserveWithinParentheses(): boolean {
 		return this.getAsBoolean("vcFormat.indent.preserveWithinParentheses");
 	}
+
 	public get vcFormatIndentCaseLabels(): boolean {
 		return this.getAsBoolean("vcFormat.indent.caseLabels");
 	}
+
 	public get vcFormatIndentCaseContents(): boolean {
 		return this.getAsBoolean("vcFormat.indent.caseContents");
 	}
+
 	public get vcFormatIndentCaseContentsWhenBlock(): boolean {
 		return this.getAsBoolean("vcFormat.indent.caseContentsWhenBlock");
 	}
+
 	public get vcFormatIndentLambdaBracesWhenParameter(): boolean {
 		return this.getAsBoolean("vcFormat.indent.lambdaBracesWhenParameter");
 	}
+
 	public get vcFormatIndentGotoLabels(): string {
 		return this.getAsString("vcFormat.indent.gotoLabels");
 	}
+
 	public get vcFormatIndentPreprocessor(): string {
 		return this.getAsString("vcFormat.indent.preprocessor");
 	}
+
 	public get vcFormatIndentAccessSpecifiers(): boolean {
 		return this.getAsBoolean("vcFormat.indent.accessSpecifiers");
 	}
+
 	public get vcFormatIndentNamespaceContents(): boolean {
 		return this.getAsBoolean("vcFormat.indent.namespaceContents");
 	}
+
 	public get vcFormatIndentPreserveComments(): boolean {
 		return this.getAsBoolean("vcFormat.indent.preserveComments");
 	}
+
 	public get vcFormatNewlineBeforeOpenBraceNamespace(): string {
 		return this.getAsString("vcFormat.newLine.beforeOpenBrace.namespace");
 	}
+
 	public get vcFormatNewlineBeforeOpenBraceType(): string {
 		return this.getAsString("vcFormat.newLine.beforeOpenBrace.type");
 	}
+
 	public get vcFormatNewlineBeforeOpenBraceFunction(): string {
 		return this.getAsString("vcFormat.newLine.beforeOpenBrace.function");
 	}
+
 	public get vcFormatNewlineBeforeOpenBraceBlock(): string {
 		return this.getAsString("vcFormat.newLine.beforeOpenBrace.block");
 	}
+
 	public get vcFormatNewlineBeforeOpenBraceLambda(): string {
 		return this.getAsString("vcFormat.newLine.beforeOpenBrace.lambda");
 	}
+
 	public get vcFormatNewlineScopeBracesOnSeparateLines(): boolean {
 		return this.getAsBoolean("vcFormat.newLine.scopeBracesOnSeparateLines");
 	}
+
 	public get vcFormatNewlineCloseBraceSameLineEmptyType(): boolean {
 		return this.getAsBoolean(
 			"vcFormat.newLine.closeBraceSameLine.emptyType",
 		);
 	}
+
 	public get vcFormatNewlineCloseBraceSameLineEmptyFunction(): boolean {
 		return this.getAsBoolean(
 			"vcFormat.newLine.closeBraceSameLine.emptyFunction",
 		);
 	}
+
 	public get vcFormatNewlineBeforeCatch(): boolean {
 		return this.getAsBoolean("vcFormat.newLine.beforeCatch");
 	}
+
 	public get vcFormatNewlineBeforeElse(): boolean {
 		return this.getAsBoolean("vcFormat.newLine.beforeElse");
 	}
+
 	public get vcFormatNewlineBeforeWhileInDoWhile(): boolean {
 		return this.getAsBoolean("vcFormat.newLine.beforeWhileInDoWhile");
 	}
+
 	public get vcFormatSpaceBeforeFunctionOpenParenthesis(): string {
 		return this.getAsString("vcFormat.space.beforeFunctionOpenParenthesis");
 	}
+
 	public get vcFormatSpaceWithinParameterListParentheses(): boolean {
 		return this.getAsBoolean(
 			"vcFormat.space.withinParameterListParentheses",
 		);
 	}
+
 	public get vcFormatSpaceBetweenEmptyParameterListParentheses(): boolean {
 		return this.getAsBoolean(
 			"vcFormat.space.betweenEmptyParameterListParentheses",
 		);
 	}
+
 	public get vcFormatSpaceAfterKeywordsInControlFlowStatements(): boolean {
 		return this.getAsBoolean(
 			"vcFormat.space.afterKeywordsInControlFlowStatements",
 		);
 	}
+
 	public get vcFormatSpaceWithinControlFlowStatementParentheses(): boolean {
 		return this.getAsBoolean(
 			"vcFormat.space.withinControlFlowStatementParentheses",
 		);
 	}
+
 	public get vcFormatSpaceBeforeLambdaOpenParenthesis(): boolean {
 		return this.getAsBoolean("vcFormat.space.beforeLambdaOpenParenthesis");
 	}
+
 	public get vcFormatSpaceWithinCastParentheses(): boolean {
 		return this.getAsBoolean("vcFormat.space.withinCastParentheses");
 	}
+
 	public get vcFormatSpaceAfterCastCloseParenthesis(): boolean {
 		return this.getAsBoolean("vcFormat.space.afterCastCloseParenthesis");
 	}
+
 	public get vcFormatSpaceWithinExpressionParentheses(): boolean {
 		return this.getAsBoolean("vcFormat.space.withinExpressionParentheses");
 	}
+
 	public get vcFormatSpaceBeforeBlockOpenBrace(): boolean {
 		return this.getAsBoolean("vcFormat.space.beforeBlockOpenBrace");
 	}
+
 	public get vcFormatSpaceBetweenEmptyBraces(): boolean {
 		return this.getAsBoolean("vcFormat.space.betweenEmptyBraces");
 	}
+
 	public get vcFormatSpaceBeforeInitializerListOpenBrace(): boolean {
 		return this.getAsBoolean(
 			"vcFormat.space.beforeInitializerListOpenBrace",
 		);
 	}
+
 	public get vcFormatSpaceWithinInitializerListBraces(): boolean {
 		return this.getAsBoolean("vcFormat.space.withinInitializerListBraces");
 	}
+
 	public get vcFormatSpacePreserveInInitializerList(): boolean {
 		return this.getAsBoolean("vcFormat.space.preserveInInitializerList");
 	}
+
 	public get vcFormatSpaceBeforeOpenSquareBracket(): boolean {
 		return this.getAsBoolean("vcFormat.space.beforeOpenSquareBracket");
 	}
+
 	public get vcFormatSpaceWithinSquareBrackets(): boolean {
 		return this.getAsBoolean("vcFormat.space.withinSquareBrackets");
 	}
+
 	public get vcFormatSpaceBeforeEmptySquareBrackets(): boolean {
 		return this.getAsBoolean("vcFormat.space.beforeEmptySquareBrackets");
 	}
+
 	public get vcFormatSpaceBetweenEmptySquareBrackets(): boolean {
 		return this.getAsBoolean("vcFormat.space.betweenEmptySquareBrackets");
 	}
+
 	public get vcFormatSpaceGroupSquareBrackets(): boolean {
 		return this.getAsBoolean("vcFormat.space.groupSquareBrackets");
 	}
+
 	public get vcFormatSpaceWithinLambdaBrackets(): boolean {
 		return this.getAsBoolean("vcFormat.space.withinLambdaBrackets");
 	}
+
 	public get vcFormatSpaceBetweenEmptyLambdaBrackets(): boolean {
 		return this.getAsBoolean("vcFormat.space.betweenEmptyLambdaBrackets");
 	}
+
 	public get vcFormatSpaceBeforeComma(): boolean {
 		return this.getAsBoolean("vcFormat.space.beforeComma");
 	}
+
 	public get vcFormatSpaceAfterComma(): boolean {
 		return this.getAsBoolean("vcFormat.space.afterComma");
 	}
+
 	public get vcFormatSpaceRemoveAroundMemberOperators(): boolean {
 		return this.getAsBoolean("vcFormat.space.removeAroundMemberOperators");
 	}
+
 	public get vcFormatSpaceBeforeInheritanceColon(): boolean {
 		return this.getAsBoolean("vcFormat.space.beforeInheritanceColon");
 	}
+
 	public get vcFormatSpaceBeforeConstructorColon(): boolean {
 		return this.getAsBoolean("vcFormat.space.beforeConstructorColon");
 	}
+
 	public get vcFormatSpaceRemoveBeforeSemicolon(): boolean {
 		return this.getAsBoolean("vcFormat.space.removeBeforeSemicolon");
 	}
+
 	public get vcFormatSpaceInsertAfterSemicolon(): boolean {
 		return this.getAsBoolean("vcFormat.space.insertAfterSemicolon");
 	}
+
 	public get vcFormatSpaceRemoveAroundUnaryOperator(): boolean {
 		return this.getAsBoolean("vcFormat.space.removeAroundUnaryOperator");
 	}
+
 	public get vcFormatSpaceAroundBinaryOperator(): string {
 		return this.getAsString("vcFormat.space.aroundBinaryOperator");
 	}
+
 	public get vcFormatSpaceAroundAssignmentOperator(): string {
 		return this.getAsString("vcFormat.space.aroundAssignmentOperator");
 	}
+
 	public get vcFormatSpacePointerReferenceAlignment(): string {
 		return this.getAsString("vcFormat.space.pointerReferenceAlignment");
 	}
+
 	public get vcFormatSpaceAroundTernaryOperator(): string {
 		return this.getAsString("vcFormat.space.aroundTernaryOperator");
 	}
+
 	public get vcFormatWrapPreserveBlocks(): string {
 		return this.getAsString("vcFormat.wrap.preserveBlocks");
 	}
+
 	public get dimInactiveRegions(): boolean {
 		return (
 			this.getAsBoolean("dimInactiveRegions") &&
@@ -1040,6 +1325,7 @@ export class CppSettings extends Settings {
 				.get<any>("colorTheme") !== "Default High Contrast"
 		);
 	}
+
 	public get sshTargetsView(): string {
 		return this.getAsString("sshTargetsView");
 	}
@@ -1096,10 +1382,12 @@ export class CppSettings extends Settings {
 
 	// Returns the value of a setting as a boolean with proper type validation.
 	private getAsBoolean(settingName: string): boolean;
+
 	private getAsBoolean(
 		settingName: string,
 		allowNull: boolean,
 	): boolean | null;
+
 	private getAsBoolean(
 		settingName: string,
 		allowNull: boolean = false,
@@ -1121,12 +1409,15 @@ export class CppSettings extends Settings {
 		if (isBoolean(value)) {
 			return value;
 		}
+
 		return setting.default;
 	}
 
 	// Returns the value of a setting as a string with proper type validation and checks for valid enum values.
 	private getAsString(settingName: string): string;
+
 	private getAsString(settingName: string, allowNull: boolean): string | null;
+
 	private getAsString(
 		settingName: string,
 		allowNull: boolean = false,
@@ -1154,18 +1445,22 @@ export class CppSettings extends Settings {
 			) {
 				return value;
 			}
+
 			if (this.isValidEnum(setting.enum, value)) {
 				return value;
 			}
 		} else if (isString(value)) {
 			return value;
 		}
+
 		return setting.default as string;
 	}
 
 	// Returns the value of a setting as a number with proper type validation and checks if value falls within the specified range.
 	private getAsNumber(settingName: string): number;
+
 	private getAsNumber(settingName: string, allowNull: boolean): number | null;
+
 	private getAsNumber(
 		settingName: string,
 		allowNull: boolean = false,
@@ -1188,11 +1483,14 @@ export class CppSettings extends Settings {
 			if (setting.minimum !== undefined && value < setting.minimum) {
 				return setting.minimum;
 			}
+
 			if (setting.maximum !== undefined && value > setting.maximum) {
 				return setting.maximum;
 			}
+
 			return value;
 		}
+
 		return setting.default as number;
 	}
 
@@ -1218,8 +1516,10 @@ export class CppSettings extends Settings {
 					return setting.default;
 				}
 			}
+
 			return value;
 		}
+
 		return setting.default as string[];
 	}
 
@@ -1246,16 +1546,20 @@ export class CppSettings extends Settings {
 					return setting.default;
 				}
 			}
+
 			return value;
 		}
+
 		return setting.default as string[];
 	}
 
 	private getAsExcludes(settingName: string): Excludes;
+
 	private getAsExcludes(
 		settingName: string,
 		allowNull: boolean,
 	): Excludes | null;
+
 	private getAsExcludes(
 		settingName: string,
 		allowNull: boolean = false,
@@ -1284,6 +1588,7 @@ export class CppSettings extends Settings {
 		if (allowNull && value === null) {
 			return null;
 		}
+
 		if (
 			isValidMapping(
 				value,
@@ -1293,14 +1598,17 @@ export class CppSettings extends Settings {
 		) {
 			return value as Excludes;
 		}
+
 		return setting.default as Excludes;
 	}
 
 	private getAsAssociations(settingName: string): Associations;
+
 	private getAsAssociations(
 		settingName: string,
 		allowNull: boolean,
 	): Associations | null;
+
 	private getAsAssociations(
 		settingName: string,
 		allowNull: boolean = false,
@@ -1324,9 +1632,11 @@ export class CppSettings extends Settings {
 		if (allowNull && value === null) {
 			return null;
 		}
+
 		if (isValidMapping(value, isString, isString)) {
 			return value as Associations;
 		}
+
 		return setting.default as Associations;
 	}
 
@@ -1341,6 +1651,7 @@ export class CppSettings extends Settings {
 				(x) => x.toLowerCase() === value.toLowerCase(),
 			);
 		}
+
 		return false;
 	}
 
@@ -1359,6 +1670,7 @@ export class CppSettings extends Settings {
 
 	public toggleSetting(name: string, value1: string, value2: string): void {
 		const value: string = this.getAsString(name);
+
 		void super.Section.update(
 			name,
 			value?.toLowerCase() === value1.toLowerCase() ? value2 : value1,
@@ -1693,6 +2005,7 @@ export class CppSettings extends Settings {
 
 				continue;
 			}
+
 			trailingBlankLines = 0;
 			// Keep track of whether we left off in a wildcard section, so we don't output a redundant one.
 			let text: string = textLine.text.trim();
@@ -1702,6 +2015,7 @@ export class CppSettings extends Settings {
 
 				continue;
 			}
+
 			for (const setting of settingMap) {
 				if (text.startsWith(setting[0])) {
 					// The next character must be white space or '=', otherwise it's a partial match.
@@ -1712,6 +2026,7 @@ export class CppSettings extends Settings {
 							continue;
 						}
 					}
+
 					edits.replace(
 						document.uri,
 						textLine.range,
@@ -1721,6 +2036,7 @@ export class CppSettings extends Settings {
 					// scan ahead to update any other sections it may need to be updated in.
 					for (let j: number = i + 1; j < document.lineCount; ++j) {
 						textLine = document.lineAt(j);
+
 						text = textLine.text.trim();
 
 						if (text.startsWith(setting[0])) {
@@ -1732,6 +2048,7 @@ export class CppSettings extends Settings {
 									continue;
 								}
 							}
+
 							edits.replace(
 								document.uri,
 								textLine.range,
@@ -1739,15 +2056,18 @@ export class CppSettings extends Settings {
 							);
 						}
 					}
+
 					settingMap.delete(setting[0]);
 
 					break;
 				}
 			}
+
 			if (settingMap.size === 0) {
 				break;
 			}
 		}
+
 		if (settingMap.size > 0) {
 			let remainingSettingsText: string = "";
 
@@ -1756,17 +2076,22 @@ export class CppSettings extends Settings {
 					remainingSettingsText += "\n";
 				}
 			}
+
 			if (!isInWildcardSection) {
 				remainingSettingsText += "[*]\n";
 			}
+
 			for (const setting of settingMap) {
 				remainingSettingsText += setting[0] + "=" + setting[1] + "\n";
 			}
+
 			const lastPosition: vscode.Position = document.lineAt(
 				document.lineCount - 1,
 			).range.end;
+
 			edits.insert(document.uri, lastPosition, remainingSettingsText);
 		}
+
 		void vscode.workspace
 			.applyEdit(edits)
 			.then(() => vscode.window.showTextDocument(document));
@@ -1783,6 +2108,7 @@ export class CppSettings extends Settings {
 			);
 
 			const edits: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+
 			edits.createFile(uri, { ignoreIfExists: true, overwrite: false });
 
 			try {
@@ -1795,6 +2121,7 @@ export class CppSettings extends Settings {
 		} else {
 			document = await vscode.workspace.openTextDocument();
 		}
+
 		this.populateEditorConfig(document);
 	}
 
@@ -1805,10 +2132,12 @@ export class CppSettings extends Settings {
 		if (this.formattingEngine !== "default") {
 			return this.formattingEngine.toLowerCase() === "vcformat";
 		}
+
 		if (this.clangFormatStyle && this.clangFormatStyle !== "file") {
 			// If a clang-format style other than file is specified, don't try to switch to vcFormat.
 			return false;
 		}
+
 		const cachedValue: boolean | undefined = cachedEditorConfigLookups.get(
 			document.uri.fsPath,
 		);
@@ -1816,6 +2145,7 @@ export class CppSettings extends Settings {
 		if (cachedValue !== undefined) {
 			return cachedValue;
 		}
+
 		let foundEditorConfigWithVcFormatSettings: boolean = false;
 
 		const findConfigFile: (parentPath: string) => boolean = (
@@ -1863,12 +2193,15 @@ export class CppSettings extends Settings {
 										"Code formatting is using settings from .editorconfig instead of .clang-format. For more information, see the documentation for the 'default' value of the 'C_Cpp.formatting' setting.",
 									),
 								);
+
 								didEditorConfigNotice.Value = true;
 							}
+
 							return true;
 						}
 					}
 				}
+
 				switch (typeof editorConfigSettings.root) {
 					case "boolean":
 						return editorConfigSettings.root;
@@ -1882,6 +2215,7 @@ export class CppSettings extends Settings {
 						return false;
 				}
 			}
+
 			const clangFormatPath1: string = path.join(
 				parentPath,
 				".clang-format",
@@ -1890,6 +2224,7 @@ export class CppSettings extends Settings {
 			if (fs.existsSync(clangFormatPath1)) {
 				return true;
 			}
+
 			const clangFormatPath2: string = path.join(
 				parentPath,
 				"_clang-format",
@@ -1915,8 +2250,10 @@ export class CppSettings extends Settings {
 
 				return foundEditorConfigWithVcFormatSettings;
 			}
+
 			parentPath = path.dirname(parentPath);
 		} while (parentPath !== currentParentPath);
+
 		cachedEditorConfigLookups.set(document.uri.fsPath, false);
 
 		return false;
@@ -1930,6 +2267,7 @@ export class OtherSettings {
 		if (!resource) {
 			resource = undefined;
 		}
+
 		this.resource = resource;
 	}
 
@@ -1960,6 +2298,7 @@ export class OtherSettings {
 		if (isString(value)) {
 			return value;
 		}
+
 		const setting = section.inspect<any>(settingName);
 
 		if (
@@ -1974,6 +2313,7 @@ export class OtherSettings {
 
 			return defaultValue;
 		}
+
 		return setting.defaultValue;
 	}
 
@@ -1993,6 +2333,7 @@ export class OtherSettings {
 		if (isBoolean(value)) {
 			return value;
 		}
+
 		const setting = section.inspect<any>(settingName);
 
 		if (
@@ -2007,6 +2348,7 @@ export class OtherSettings {
 
 			return defaultValue;
 		}
+
 		return setting.defaultValue;
 	}
 
@@ -2029,11 +2371,14 @@ export class OtherSettings {
 			if (minimum !== undefined && value < minimum) {
 				return minimum;
 			}
+
 			if (maximum !== undefined && value > maximum) {
 				return maximum;
 			}
+
 			return value;
 		}
+
 		const setting = section.inspect<any>(settingName);
 
 		if (
@@ -2048,6 +2393,7 @@ export class OtherSettings {
 
 			return defaultValue;
 		}
+
 		return setting.defaultValue;
 	}
 
@@ -2067,6 +2413,7 @@ export class OtherSettings {
 		if (isValidMapping(value, isString, isString)) {
 			return value as Associations;
 		}
+
 		const setting = section.inspect<any>(settingName);
 
 		if (
@@ -2079,6 +2426,7 @@ export class OtherSettings {
 				"no default value",
 			);
 		}
+
 		return setting?.defaultValue ?? defaultValue;
 	}
 
@@ -2104,6 +2452,7 @@ export class OtherSettings {
 		) {
 			return value as Excludes;
 		}
+
 		const setting = section.inspect<any>(settingName);
 
 		if (
@@ -2116,6 +2465,7 @@ export class OtherSettings {
 				"no default value",
 			);
 		}
+
 		return setting?.defaultValue ?? defaultValue;
 	}
 
@@ -2123,9 +2473,11 @@ export class OtherSettings {
 	public get editorTabSize(): number {
 		return this.getAsNumber("editor", "tabSize", this.resource, 4, 1);
 	}
+
 	public get editorInsertSpaces(): boolean {
 		return this.getAsBoolean("editor", "insertSpaces", this.resource, true);
 	}
+
 	public get editorAutoClosingBrackets(): string {
 		return this.getAsString(
 			"editor",
@@ -2134,6 +2486,7 @@ export class OtherSettings {
 			"languageDefined",
 		);
 	}
+
 	public get filesEncoding(): string {
 		return this.getAsString(
 			"files",
@@ -2142,9 +2495,11 @@ export class OtherSettings {
 			"utf8",
 		);
 	}
+
 	public get filesAssociations(): Associations {
 		return this.getAsAssociations("files", "associations", {});
 	}
+
 	public set filesAssociations(value: any) {
 		void vscode.workspace
 			.getConfiguration("files")
@@ -2154,6 +2509,7 @@ export class OtherSettings {
 				vscode.ConfigurationTarget.Workspace,
 			);
 	}
+
 	private readonly defaultFilesExcludes = {
 		"**/.git": true,
 		"**/.svn": true,
@@ -2162,6 +2518,7 @@ export class OtherSettings {
 		"**/.DS_Store": true,
 		"**/Thumbs.db": true,
 	};
+
 	public get filesExclude(): Excludes {
 		return this.getAsExcludes(
 			"files",
@@ -2170,12 +2527,14 @@ export class OtherSettings {
 			this.resource,
 		);
 	}
+
 	public get filesAutoSaveAfterDelay(): boolean {
 		return (
 			this.getAsString("files", "autoSave", this.resource, "off") ===
 			"afterDelay"
 		);
 	}
+
 	public get editorInlayHintsEnabled(): boolean {
 		return (
 			this.getAsString(
@@ -2186,6 +2545,7 @@ export class OtherSettings {
 			) !== "off"
 		);
 	}
+
 	public get editorParameterHintsEnabled(): boolean {
 		return this.getAsBoolean(
 			"editor.parameterHints",
@@ -2194,11 +2554,13 @@ export class OtherSettings {
 			true,
 		);
 	}
+
 	private readonly defaultSearchExcludes = {
 		"**/node_modules": true,
 		"**/bower_components": true,
 		"**/*.code-search": true,
 	};
+
 	public get searchExclude(): Excludes {
 		return this.getAsExcludes(
 			"search",
@@ -2207,6 +2569,7 @@ export class OtherSettings {
 			this.resource,
 		);
 	}
+
 	public get workbenchSettingsEditor(): string {
 		return this.getAsString(
 			"workbench.settings",

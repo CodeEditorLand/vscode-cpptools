@@ -51,11 +51,16 @@ export function finalize(...items: any[]): void {
 
 					const fin = result.catch(returns.undefined).then(() => {
 						ignore(() => item.end?.());
+
 						ignore(() => item.stop?.());
+
 						ignore(() => item.close?.());
+
 						ignore(() => item.destroy?.());
+
 						ignore(() => item.dispose?.());
 					});
+
 					ActiveFinalizers = Promise.all([
 						fin,
 						ActiveFinalizers,
@@ -72,9 +77,13 @@ export function finalize(...items: any[]): void {
 		// progressively call the various methods that might be available
 		// to tear down and release resources that might be held by the item.
 		ignore(() => item.end?.());
+
 		ignore(() => item.stop?.());
+
 		ignore(() => item.close?.());
+
 		ignore(() => item.destroy?.());
+
 		ignore(() => item.dispose?.());
 
 		// cleaning up listeners isn't as time critical, and it's possible there are some

@@ -23,6 +23,7 @@ export function createProtocolFilter(): Middleware {
 			if (!util.isCpp(document)) {
 				return;
 			}
+
 			util.setWorkspaceIsCpp();
 
 			const client: Client = clients.getClientFor(document.uri);
@@ -43,7 +44,9 @@ export function createProtocolFilter(): Middleware {
 
 						const mappingString: string =
 							baseFileName + "@" + document.fileName;
+
 						client.addFileAssociations(mappingString, "cpp");
+
 						client.sendDidChangeSettings();
 						// This will cause the file to be closed and reopened.
 						void vscode.languages.setTextDocumentLanguage(
@@ -55,7 +58,9 @@ export function createProtocolFilter(): Middleware {
 					}
 					// client.takeOwnership() will call client.TrackedDocuments.add() again, but that's ok. It's a Set.
 					client.onDidOpenTextDocument(document);
+
 					client.takeOwnership(document);
+
 					void sendMessage(document);
 				}
 			}
@@ -66,6 +71,7 @@ export function createProtocolFilter(): Middleware {
 			if (me.TrackedDocuments.has(event.document.uri.toString())) {
 				return sendMessage(event);
 			}
+
 			return [];
 		},
 		didClose: async (document, sendMessage) => {
@@ -75,7 +81,9 @@ export function createProtocolFilter(): Middleware {
 
 			if (me.TrackedDocuments.has(uriString)) {
 				me.onDidCloseTextDocument(document);
+
 				me.TrackedDocuments.delete(uriString);
+
 				void sendMessage(document);
 			}
 		},

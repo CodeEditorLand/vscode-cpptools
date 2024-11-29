@@ -16,10 +16,12 @@ import { ReferencesTreeDataProvider } from "./referencesTreeDataProvider";
 
 export class FindAllRefsView {
 	private referencesModel?: ReferencesModel;
+
 	private referenceViewProvider: ReferencesTreeDataProvider;
 
 	constructor() {
 		this.referenceViewProvider = new ReferencesTreeDataProvider();
+
 		vscode.window.createTreeView("CppReferencesView", {
 			treeDataProvider: this.referenceViewProvider,
 			showCollapseAll: true,
@@ -30,11 +32,13 @@ export class FindAllRefsView {
 		if (!showView) {
 			this.clearData();
 		}
+
 		let hasResults: boolean = false;
 
 		if (this.referencesModel) {
 			hasResults = this.referencesModel.hasResults();
 		}
+
 		void vscode.commands.executeCommand(
 			"setContext",
 			"cpptools.hasReferencesResults",
@@ -51,17 +55,20 @@ export class FindAllRefsView {
 				this.referenceViewProvider.refresh();
 			},
 		);
+
 		this.referenceViewProvider.setModel(this.referencesModel);
 	}
 
 	clearData(): void {
 		this.referencesModel = undefined;
+
 		this.referenceViewProvider.clear();
 	}
 
 	setGroupBy(groupByFile: boolean): void {
 		if (this.referencesModel) {
 			this.referencesModel.groupByFile = groupByFile;
+
 			this.referenceViewProvider.refresh();
 		}
 	}
@@ -78,6 +85,7 @@ export class FindAllRefsView {
 		if (!this.referencesModel) {
 			throw new Error("Missing ReferencesModel in getResultsAsText()");
 		}
+
 		for (const ref of this.referencesModel.getAllReferenceNodes()) {
 			let line: string = "";
 
@@ -90,6 +98,7 @@ export class FindAllRefsView {
 					) +
 					"] ";
 			}
+
 			line += ref.filename;
 
 			if (
@@ -104,6 +113,7 @@ export class FindAllRefsView {
 					" " +
 					ref.referenceText;
 			}
+
 			if (
 				includeConfirmedReferences &&
 				ref.referenceType === ReferenceType.Confirmed
@@ -127,6 +137,7 @@ export class FindAllRefsView {
 				) +
 				"] " +
 				fileRef.filename;
+
 			fileRefs.push(line);
 		}
 

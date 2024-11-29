@@ -7,22 +7,29 @@
 
 export class requests {
 	static readonly select = "select";
+
 	static readonly get = "get";
 }
 
 // [noun]-[verb]
 export class events {
 	static readonly writing = "writing";
+
 	static readonly reading = "reading";
 }
 
 // output channel notifications
 export class channels {
 	static readonly debug = "debug";
+
 	static readonly verbose = "verbose";
+
 	static readonly info = "info";
+
 	static readonly warning = "warning";
+
 	static readonly error = "error";
+
 	static readonly internal = "internal";
 }
 
@@ -31,10 +38,15 @@ export class channels {
 // [pastTenseVerb]-[noun]
 export class notifications {
 	static readonly ready = "ready";
+
 	static readonly exited = "exited";
+
 	static readonly started = "started";
+
 	static readonly stopped = "stopped";
+
 	static readonly connected = "connected";
+
 	static readonly disconnected = "disconnected";
 
 	static readonly read = "read"; // past-tense, so it's not confused with the reading verb

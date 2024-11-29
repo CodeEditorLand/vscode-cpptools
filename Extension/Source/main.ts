@@ -51,7 +51,9 @@ export async function activate(
 	context: vscode.ExtensionContext,
 ): Promise<CppToolsApi & CppToolsExtension> {
 	util.setExtensionContext(context);
+
 	Telemetry.activate();
+
 	util.setProgress(0);
 
 	// Register a protocol handler to serve localized versions of the schema for c_cpp_properties.json
@@ -78,6 +80,7 @@ export async function activate(
 			if (!fileExists) {
 				localizedFilePath = util.getExtensionFilePath(fileName);
 			}
+
 			return util.readFileText(localizedFilePath);
 		}
 	}
@@ -92,6 +95,7 @@ export async function activate(
 
 	const info: PlatformInformation =
 		await PlatformInformation.GetPlatformInformation();
+
 	sendTelemetry(info);
 
 	// Always attempt to make the binaries executable, not just when installedVersion changes.
@@ -100,7 +104,9 @@ export async function activate(
 
 	// Notify users if debugging may not be supported on their OS.
 	util.checkDistro(info);
+
 	await checkVsixCompatibility();
+
 	LanguageServer.UpdateInsidersAccess();
 
 	const ignoreRecommendations: boolean | undefined = vscode.workspace
@@ -139,6 +145,7 @@ export async function activate(
 
 	if (isOldMacOs) {
 		languageServiceDisabled = true;
+
 		void vscode.window.showErrorMessage(
 			localize(
 				"macos.version.deprecated",
@@ -151,8 +158,10 @@ export async function activate(
 		if (settings.intelliSenseEngine === "disabled") {
 			languageServiceDisabled = true;
 		}
+
 		let currentIntelliSenseEngineValue: string | undefined =
 			settings.intelliSenseEngine;
+
 		disposables.push(
 			vscode.workspace.onDidChangeConfiguration(() => {
 				const settings: CppSettings = new CppSettings(
@@ -171,12 +180,14 @@ export async function activate(
 						// If switching from disabled to enabled, we can continue activation.
 						currentIntelliSenseEngineValue =
 							settings.intelliSenseEngine;
+
 						languageServiceDisabled = false;
 
 						return LanguageServer.activate();
 					} else {
 						// We can't deactivate or change engines on the fly, so prompt for window reload.
 						reloadMessageShown = true;
+
 						void util.promptForReloadWindowDueToSettingsChange();
 					}
 				}
@@ -190,6 +201,7 @@ export async function activate(
 	) {
 		for (
 			let i: number = 0;
+
 			i < vscode.workspace.workspaceFolders.length;
 			++i
 		) {
@@ -201,7 +213,9 @@ export async function activate(
 			if (await util.checkFileExists(config)) {
 				const doc: vscode.TextDocument =
 					await vscode.workspace.openTextDocument(config);
+
 				void vscode.languages.setTextDocumentLanguage(doc, "jsonc");
+
 				util.setWorkspaceIsCpp();
 			}
 		}
@@ -250,13 +264,17 @@ export async function activate(
 
 export async function deactivate(): Promise<void> {
 	DebuggerExtension.dispose();
+
 	void Telemetry.deactivate().catch(returns.undefined);
+
 	disposables.forEach((d) => d.dispose());
 
 	if (languageServiceDisabled) {
 		return;
 	}
+
 	await LanguageServer.deactivate();
+
 	disposeOutputChannels();
 }
 
@@ -272,6 +290,7 @@ async function makeBinariesExecutable(): Promise<void> {
 			"./LLVM/bin/clang-tidy",
 			"./debugAdapters/bin/OpenDebugAD7",
 		];
+
 		commonBinaries.forEach((binary) =>
 			promises.push(
 				util.allowExecution(util.getExtensionFilePath(binary)),
@@ -282,6 +301,7 @@ async function makeBinariesExecutable(): Promise<void> {
 			const macBinaries: string[] = [
 				"./debugAdapters/lldb-mi/bin/lldb-mi",
 			];
+
 			macBinaries.forEach((binary) =>
 				promises.push(
 					util.allowExecution(util.getExtensionFilePath(binary)),
@@ -295,6 +315,7 @@ async function makeBinariesExecutable(): Promise<void> {
 					"./debugAdapters/lldb/bin/lldb-argdumper",
 					"./debugAdapters/lldb/bin/lldb-launcher",
 				];
+
 				oldMacBinaries.forEach((binary) =>
 					promises.push(
 						util.allowExecution(util.getExtensionFilePath(binary)),
@@ -307,6 +328,7 @@ async function makeBinariesExecutable(): Promise<void> {
 			);
 		}
 	}
+
 	await Promise.all(promises);
 }
 
@@ -315,9 +337,12 @@ function sendTelemetry(info: PlatformInformation): void {
 
 	if (info.distribution) {
 		telemetryProperties["linuxDistroName"] = info.distribution.name;
+
 		telemetryProperties["linuxDistroVersion"] = info.distribution.version;
 	}
+
 	telemetryProperties["osArchitecture"] = os.arch();
+
 	telemetryProperties["infoArchitecture"] = info.architecture;
 
 	const targetPopulation: TargetPopulation =
@@ -342,7 +367,9 @@ function sendTelemetry(info: PlatformInformation): void {
 		default:
 			break;
 	}
+
 	Telemetry.logDebuggerEvent("acquisition", telemetryProperties);
+
 	logMachineIdMappings().catch(logAndReturn.undefined);
 }
 
@@ -411,6 +438,7 @@ async function checkVsixCompatibility(): Promise<void> {
 					isPlatformMatching =
 						platformInfo.platform === "win32" &&
 						platformInfo.architecture === "arm64";
+
 					isPlatformCompatible = isPlatformMatching;
 
 					break;
@@ -420,6 +448,7 @@ async function checkVsixCompatibility(): Promise<void> {
 						platformInfo.platform === "linux" &&
 						platformInfo.architecture === "x64" &&
 						platformInfo.distribution?.name !== "alpine";
+
 					isPlatformCompatible = isPlatformMatching;
 
 					break;
@@ -429,6 +458,7 @@ async function checkVsixCompatibility(): Promise<void> {
 						platformInfo.platform === "linux" &&
 						platformInfo.architecture === "arm64" &&
 						platformInfo.distribution?.name !== "alpine";
+
 					isPlatformCompatible = isPlatformMatching;
 
 					break;
@@ -452,6 +482,7 @@ async function checkVsixCompatibility(): Promise<void> {
 						platformInfo.platform === "linux" &&
 						platformInfo.architecture === "x64" &&
 						platformInfo.distribution?.name === "alpine";
+
 					isPlatformCompatible = isPlatformMatching;
 
 					break;
@@ -461,6 +492,7 @@ async function checkVsixCompatibility(): Promise<void> {
 						platformInfo.platform === "linux" &&
 						platformInfo.architecture === "arm64" &&
 						platformInfo.distribution?.name === "alpine";
+
 					isPlatformCompatible = isPlatformMatching;
 
 					break;
@@ -469,6 +501,7 @@ async function checkVsixCompatibility(): Promise<void> {
 					isPlatformMatching =
 						platformInfo.platform === "darwin" &&
 						platformInfo.architecture === "x64";
+
 					isPlatformCompatible = isPlatformMatching;
 
 					break;
@@ -490,6 +523,7 @@ async function checkVsixCompatibility(): Promise<void> {
 
 					break;
 			}
+
 			const moreInfoButton: string = localize(
 				"more.info.button",
 				"More Info",
@@ -511,6 +545,7 @@ async function checkVsixCompatibility(): Promise<void> {
 			} else if (!isPlatformMatching) {
 				if (!ignoreMismatchedCompatibleVsix.Value) {
 					resetIgnoreMismatchedCompatibleVsix = false;
+
 					promise = vscode.window.showWarningMessage(
 						localize(
 							"vsix.platform.mismatching",
@@ -541,6 +576,7 @@ async function checkVsixCompatibility(): Promise<void> {
 			console.log("Unable to find TargetPlatform in .vsixmanifest");
 		}
 	}
+
 	if (resetIgnoreMismatchedCompatibleVsix) {
 		ignoreMismatchedCompatibleVsix.Value = false;
 	}

@@ -57,6 +57,7 @@ export class PlatformInformation {
 		switch (platform) {
 			case "win32":
 				version = PlatformInformation.GetWindowsVersion();
+
 				void SessionState.windowsVersion.set(
 					version as SupportedWindowsVersions,
 				);
@@ -139,6 +140,7 @@ export class PlatformInformation {
 
 		if (errorMessage) {
 			logger.getOutputChannel().appendLine(errorMessage);
+
 			logger.showOutputChannel();
 		}
 
@@ -158,6 +160,7 @@ export class PlatformInformation {
 				return "11";
 			}
 		}
+
 		return "";
 	}
 }

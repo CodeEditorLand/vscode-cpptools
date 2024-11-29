@@ -49,6 +49,7 @@ async function readDirectory(
 	if (!folder) {
 		// create a promise and insert it into the cache, so if something else comes looking before we do any async, they can await that
 		promise = new ManualPromise<FolderWithChildren | undefined>();
+
 		cache.set(fullPath, promise);
 
 		const stats = await stat(fullPath).catch(returns.undefined);
@@ -87,6 +88,7 @@ async function readDirectory(
 			// if we didn't already have a promise, create one now.
 			// this can happen when the parent has scanned and added in the child but nobody has asked for the children yet.
 			promise = new ManualPromise<FolderWithChildren | undefined>();
+
 			cache.set(fullPath, promise);
 		}
 
@@ -114,9 +116,11 @@ async function readDirectory(
 				if (entry.isFile) {
 					if (isWindows) {
 						entry.extension = extname(name.toLowerCase());
+
 						entry.isExecutable = executableExtensions.has(
 							entry.extension,
 						);
+
 						entry.basename = basename(name, entry.extension);
 					} else {
 						entry.basename = basename(name);
@@ -135,6 +139,7 @@ async function readDirectory(
 								constants.S_IXGRP |
 								constants.S_IXOTH)
 						);
+
 						entry.extension = extname(name);
 					}
 				}
@@ -146,12 +151,14 @@ async function readDirectory(
 				cache.set(entry.fullPath, entry);
 			},
 		);
+
 		cache.set(fullPath, folder as FolderWithChildren);
 
 		if (!promise!.isResolved) {
 			promise!.resolve(folder as FolderWithChildren);
 		}
 	}
+
 	return folder.children;
 }
 
@@ -178,8 +185,10 @@ export async function scanFolder(
 			if (!filePredicate || (await filePredicate(entry))) {
 				files.add(entry.fullPath);
 			}
+
 			return;
 		}
+
 		if (
 			scanDepth &&
 			entry.isFolder &&
@@ -209,9 +218,11 @@ export class Finder implements AsyncIterable<string> {
 		"system32",
 	]);
 	#files = accumulator<string>().autoComplete(false);
+
 	files = this.#files.reiterable();
 
 	private match: (file: File) => Promise<boolean> | boolean;
+
 	private promises = new Array<Promise<void>>();
 
 	constructor(executableName: string);
@@ -258,10 +269,13 @@ export class Finder implements AsyncIterable<string> {
 	 *
 	 */
 	scan(...location: (Promise<string> | string)[]): Finder;
+
 	scan(depth: number, ...location: (Promise<string> | string)[]): Finder;
+
 	scan(...location: (Promise<string> | string | number)[]): Finder {
 		const depth =
 			typeof location[0] === "number" ? (location.shift() as number) : 0;
+
 		this.promises.push(
 			...location.map((each) =>
 				scanFolder(
@@ -290,6 +304,7 @@ export class Finder implements AsyncIterable<string> {
 			for await (const file of this) {
 				result.add(file);
 			}
+
 			return result;
 		});
 	}

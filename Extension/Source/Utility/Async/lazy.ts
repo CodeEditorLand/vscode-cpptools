@@ -26,6 +26,7 @@ class Lazy<T> extends Promise<T> {
 				: this.initializer,
 		)).then(onfulfilled, onrejected);
 	}
+
 	override catch(onrejected?: (reason: any) => never): Promise<T> {
 		return (this.#promise ??= Promise.resolve(
 			typeof this.initializer === "function"

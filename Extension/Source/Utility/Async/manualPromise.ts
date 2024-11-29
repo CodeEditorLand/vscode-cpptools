@@ -8,6 +8,7 @@
  */
 export class ManualPromise<T = void> implements Promise<T> {
 	readonly [Symbol.toStringTag] = "Promise";
+
 	private promise: Promise<T>;
 
 	/**
@@ -103,16 +104,21 @@ export class ManualPromise<T = void> implements Promise<T> {
 						`Can't resolve; Promise has already been resolved as ${this.state}`,
 					);
 				}
+
 				this.state = "resolved";
+
 				r(v as any);
 			};
+
 			this.reject = (e: any) => {
 				if ((global as any).DEVMODE && this.state !== "pending") {
 					throw new Error(
 						`Can't reject; Promise has already been resolved as ${this.state}`,
 					);
 				}
+
 				this.state = "rejected";
+
 				j(e);
 			};
 		});

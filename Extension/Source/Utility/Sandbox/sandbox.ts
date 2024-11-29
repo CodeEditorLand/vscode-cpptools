@@ -17,12 +17,14 @@ export function createSandbox(): <T>(code: string, context?: any) => T {
 
 	return (code: string, context?: any) => {
 		const response = `SAFE_EVAL_${Math.floor(Math.random() * 1000000)}`;
+
 		sandbox[response] = {};
 
 		if (context) {
 			Object.keys(context).forEach(
 				(key) => (sandbox[key] = context[key]),
 			);
+
 			runInContext(
 				`try {  ${response} = ${code} } catch (e) { ${response} = undefined }`,
 				sandbox,
@@ -39,6 +41,7 @@ export function createSandbox(): <T>(code: string, context?: any) => T {
 				sandbox[response] = undefined;
 			}
 		}
+
 		return sandbox[response];
 	};
 }
@@ -92,6 +95,7 @@ export class Sandbox {
 		parameterNames: string[],
 		options?: CreateOptions & { async?: false },
 	): ScriptError[] | T;
+
 	createFunction<T = (...args: any[]) => Promise<unknown>>(
 		sourceCode: string,
 		parameterNames: string[],

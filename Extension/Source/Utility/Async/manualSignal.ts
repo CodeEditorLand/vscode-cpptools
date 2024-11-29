@@ -25,21 +25,27 @@ export class ManualSignal<T> implements Promise<T>, Resetable<T> {
 			this.promise.resolve();
 		}
 	}
+
 	get isPending(): boolean {
 		return this.promise.isPending;
 	}
+
 	get isCompleted(): boolean {
 		return this.promise.isCompleted;
 	}
+
 	get isResolved(): boolean {
 		return this.promise.isResolved;
 	}
+
 	get isRejected(): boolean {
 		return this.promise.isRejected;
 	}
+
 	get isSet(): boolean {
 		return this.promise.isCompleted;
 	}
+
 	get isReset(): boolean {
 		return !this.promise.isCompleted;
 	}
@@ -96,6 +102,7 @@ export class ManualSignal<T> implements Promise<T>, Resetable<T> {
 		if (!this.promise.isCompleted) {
 			this.promise.resolve(value);
 		}
+
 		return this as unknown as Resetable<T>;
 	}
 
@@ -109,6 +116,7 @@ export class ManualSignal<T> implements Promise<T>, Resetable<T> {
 		if (!this.promise.isCompleted) {
 			this.promise.reject(reason);
 		}
+
 		return this as unknown as Resetable<T>;
 	}
 
@@ -117,6 +125,7 @@ export class ManualSignal<T> implements Promise<T>, Resetable<T> {
 		if (this.promise.isCompleted) {
 			this.promise = new ManualPromise<T>();
 		}
+
 		return this as unknown as Resetable<T>;
 	}
 }

@@ -28,6 +28,7 @@ export class CppTools1 implements CppToolsTestApi, CppToolsTestExtension {
 		if (!this.backupApi) {
 			this.backupApi = new CppTools(Version.v0);
 		}
+
 		return this.backupApi;
 	}
 

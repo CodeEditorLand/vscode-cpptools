@@ -22,23 +22,35 @@ import { ReadableLineStream, ReadWriteLineStream } from "./streams";
 
 export interface _Process extends Emitter {
 	readonly console: ReadWriteLineStream;
+
 	readonly error: ReadableLineStream;
 
 	readonly active: boolean;
+
 	readonly exitCode: Promise<number>;
+
 	write(data: string): Promise<void>;
+
 	writeln(data: string): Promise<void>;
+
 	all(): string[];
+
 	clear(): void;
+
 	stop(): void;
 }
 
 interface ProcessEvents {
 	on(event: "started", handler: Callback<void>): Unsubscribe;
+
 	on(event: "exited", handler: Callback<void>): Unsubscribe;
+
 	on(event: string, handler: Callback<any>): Unsubscribe;
+
 	once(event: "started", handler: Callback<void>): Unsubscribe;
+
 	once(event: "exited", handler: Callback<void>): Unsubscribe;
+
 	once(event: string, handler: Callback<any>): Unsubscribe;
 }
 
@@ -49,6 +61,7 @@ export class Process extends Async(
 		#process: ChildProcess;
 
 		readonly stdio: ReadWriteLineStream;
+
 		readonly error: ReadableLineStream;
 
 		get active() {
@@ -76,6 +89,7 @@ export class Process extends Async(
 		});
 
 		exitCode = new ManualPromise<number>();
+
 		init: Promise<void> | undefined;
 
 		constructor(
@@ -91,9 +105,11 @@ export class Process extends Async(
 			this.subscribe(...subscribers);
 
 			let spawned = false;
+
 			executable = resolve(executable); // ensure that slashes are correct -- if they aren't, cmd.exe itself fails when slashes are wrong. (other apps don't necessarily fail, but cmd.exe does)
 
 			const startTime = Date.now();
+
 			verbose(
 				`Starting '${this.name}' ${args.map((each) => each.toString()).join(" ")}`,
 			);
@@ -113,6 +129,7 @@ export class Process extends Async(
 				})
 				.on("spawn", () => {
 					spawned = true;
+
 					void this.started();
 				})
 				.on("close", (code: number, signal: NodeJS.Signals) => {
@@ -121,6 +138,7 @@ export class Process extends Async(
 					if (spawned) {
 						// ensure the streams are completely closed before we emit the exited event
 						finalize(this.stdio);
+
 						finalize(this.error);
 					}
 
@@ -132,6 +150,7 @@ export class Process extends Async(
 				}));
 
 			this.stdio = new ReadWriteLineStream(process.stdout, process.stdin);
+
 			this.error = new ReadableLineStream(process.stderr);
 
 			// enable stdio stream events/notifications
@@ -140,18 +159,21 @@ export class Process extends Async(
 					descriptors: { stdio: this.name },
 				}),
 			);
+
 			this.stdio.setReadEvent(
 				this.newEvent<string, string>(events.reading, {
 					descriptors: { stdio: this.name },
 					now: true,
 				}),
 			);
+
 			this.stdio.setWriteNotifier(
 				this.newNotification<string>(notifications.wrote, {
 					descriptors: { stdio: this.name },
 					now: true,
 				}),
 			);
+
 			this.stdio.setWriteEvent(
 				this.newEvent<string, string>(events.writing, {
 					descriptors: { stdio: this.name },
@@ -165,6 +187,7 @@ export class Process extends Async(
 					descriptors: { error: this.name },
 				}),
 			);
+
 			this.error.setReadEvent(
 				this.newEvent<string, string>(events.reading, {
 					descriptors: { error: this.name },
@@ -187,11 +210,13 @@ export class Process extends Async(
 
 		clear() {
 			this.stdio.clear();
+
 			this.error.clear();
 		}
 
 		close() {
 			verbose(`closing process ${this.name}`);
+
 			this.#process.kill("SIGTERM");
 		}
 	},

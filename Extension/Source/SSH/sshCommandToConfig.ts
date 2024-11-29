@@ -161,13 +161,16 @@ export function sshCommandToConfig(
 			const { hostname, port, username } = parseConnectionString(
 				parts[offset],
 			);
+
 			entries.Host = name || hostname;
+
 			entries.HostName = hostname;
 
 			// In OpenSSH, provided flags take precedence over options in the connection string:
 			if (!entries.Port && port) {
 				entries.Port = port;
 			}
+
 			if (!entries.User && username) {
 				entries.User = username;
 			}
@@ -260,7 +263,9 @@ function parseFlags(
  */
 function parseConnectionString(str: string): {
 	hostname: string;
+
 	port?: string;
+
 	username?: string;
 } {
 	let url: URL | undefined;

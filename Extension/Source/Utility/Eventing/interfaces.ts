@@ -5,14 +5,19 @@
 
 export interface EventData<TInput = any | undefined> {
 	readonly name: string;
+
 	completed?: Promise<unknown>;
+
 	readonly source?: ArbitraryObject;
+
 	readonly data: TInput;
+
 	readonly text: string;
 }
 
 export interface Descriptor {
 	name: string;
+
 	values?: string[];
 }
 

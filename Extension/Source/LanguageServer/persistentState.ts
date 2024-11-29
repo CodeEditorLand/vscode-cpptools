@@ -11,14 +11,20 @@ import * as util from "../common";
 
 class PersistentStateBase<T> {
 	private key: string;
+
 	private defaultvalue: T;
+
 	private state?: vscode.Memento;
+
 	private curvalue: T;
 
 	constructor(key: string, defaultValue: T, state?: vscode.Memento) {
 		this.key = key;
+
 		this.defaultvalue = defaultValue;
+
 		this.state = state;
+
 		this.curvalue = defaultValue;
 	}
 
@@ -32,6 +38,7 @@ class PersistentStateBase<T> {
 		if (this.state) {
 			void this.state.update(this.key, newValue);
 		}
+
 		this.curvalue = newValue;
 	}
 
@@ -43,6 +50,7 @@ class PersistentStateBase<T> {
 		if (this.state) {
 			void this.state.update(this.key, this.defaultvalue);
 		}
+
 		this.curvalue = this.defaultvalue;
 	}
 }
@@ -91,6 +99,7 @@ export class PersistentFolderState<T> extends PersistentWorkspaceState<T> {
 				);
 			}
 		}
+
 		const newKey: string =
 			key + (folder ? `-${folder.uri.fsPath}` : "-untitled");
 

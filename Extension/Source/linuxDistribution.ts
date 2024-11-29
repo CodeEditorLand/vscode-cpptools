@@ -47,6 +47,7 @@ export class LinuxDistribution {
 
 					return;
 				}
+
 				resolve(LinuxDistribution.getDistroInformation(data));
 			});
 		});

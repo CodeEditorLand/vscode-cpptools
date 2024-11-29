@@ -44,6 +44,7 @@ chdir($root);
 // dump unhandled async errors to the console and exit.
 process.on('unhandledRejection', (reason: any, _promise) => {
     error(`${reason?.stack?.split(/\r?\n/).filter(l => !l.includes('node:internal') && !l.includes('node_modules')).join('\n')}`);
+
     process.exit(1);
 });
 
@@ -71,15 +72,20 @@ export async function rimraf(...paths: string[]) {
         if (!each) {
             continue;
         }
+
         if (await filepath.isFolder(each)) {
             verbose(`Removing folder ${red(each)}`);
+
             all.push(rm(each, {recursive: true, force: true}));
 
             continue;
         }
+
         verbose(`Removing file ${red(each)}`);
+
         all.push(rm(each, {force: true}));
     }
+
     await Promise.all(all);
 }
 
@@ -90,6 +96,7 @@ export async function mkdir(filePath: string) {
         if (info.isDirectory()) {
             return fullPath;
         }
+
         throw new Error(`Cannot create directory '${filePath}' because there is a file there.`);
     }
 
@@ -130,16 +137,19 @@ export async function write(filePath: string, data: Buffer | string) {
     }
 
     verbose(`Writing file '${filePath}'`);
+
     await writeFile(filePath, data);
 }
 
 export async function updateFiles(files: string[], dest: string | Promise<string>) {
     const target = is.promise(dest) ? await dest : dest;
+
     await Promise.all(files.map(async (each) => {
         const sourceFile = await filepath.isFile(each, $root);
 
         if (sourceFile) {
             const targetFile = resolve(target, each);
+
             await write(targetFile, await readFile(sourceFile));
         }
     }));
@@ -160,6 +170,7 @@ export async function go() {
         }
 
         verbose(`${yellow("Running task:")} ${green($cmd)} ${green($args.join(' '))}`);
+
         require.main.exports[$cmd](...$args);
     }
 }
@@ -167,6 +178,7 @@ void then(go);
 
 export async function read(filename: string) {
     const content = await readFile(filename);
+
     ok(content, `File '${filename}' has no content`);
 
     return content.toString();
@@ -253,6 +265,7 @@ export function heading(text: string, level = 1) {
         case 3:
             return `${green(text)}`;
     }
+
     return `${bold(text)}\n`;
 }
 
@@ -292,10 +305,12 @@ export async function assertAnyFolder(oneOrMoreFolders: string | string[], error
             return result;
         }
     }
+
     if (errorMessage) {
         if (!$switches.includes('--quiet')) {
             error(errorMessage);
         }
+
         process.exit(1);
     }
 }
@@ -312,10 +327,12 @@ export async function assertAnyFile(oneOrMoreFiles: string | string[], errorMess
             return result;
         }
     }
+
     if (errorMessage) {
         if (!$switches.includes('--quiet')) {
             error(errorMessage);
         }
+
         process.exit(1);
     }
 }
@@ -326,47 +343,62 @@ export async function checkPrep() {
     let failing = false;
 
     failing = !await assertAnyFolder('dist/test') && (quiet || warn(`The compiled test files are not in place.`)) || failing;
+
     failing = !await assertAnyFolder('dist/walkthrough') && (quiet || warn(`The walkthrough files are not in place.`)) || failing;
+
     failing = !await assertAnyFolder('dist/html') && (quiet || warn(`The html files are not in place.`)) || failing;
+
     failing = !await assertAnyFolder('dist/schema') && (quiet || warn(`The schema files are not in place.`)) || failing;
+
     failing = !await assertAnyFile('dist/nls.metadata.json') && (quiet || warn(`The extension translation file '${$root}/dist/nls.metadata.json is missing.`)) || failing;
+
     failing = await checkDTS() || failing;
 
     if (!failing) {
         verbose('Prep files appear to be in place.');
     }
+
     return failing;
 }
 
 export async function checkCompiled() {
     let failing = false;
+
     failing = await checkDTS() || failing;
+
     failing = !await assertAnyFile('dist/src/main.js') && (quiet || warn(`The extension entry point '${$root}/dist/src/main.js is missing.`)) || failing;
 
     if (!failing) {
         verbose('Compiled files appear to be in place.');
     }
+
     return failing;
 }
 
 export async function checkDTS() {
     let failing = false;
+
     failing = !await assertAnyFile('vscode.d.ts') && (quiet || warn(`The VSCode import file '${$root}/dist/src/vscode.d.ts is missing.`)) || failing;
+
     failing = !await assertAnyFile('vscode.proposed.terminalDataWriteEvent.d.ts') && (quiet || warn(`The VSCode import file '${$root}/dist/src/vscode.proposed.terminalDataWriteEvent.d.ts is missing.`)) || failing;
+
     failing = !await assertAnyFile('vscode.proposed.lmTools.d.ts') && (quiet || warn(`The VSCode import file '${$root}/dist/src/vscode.proposed.lmTools.d.ts is missing.`)) || failing;
 
     if (!failing) {
         verbose('VSCode d.ts files appear to be in place.');
     }
+
     return failing;
 }
 
 export async function checkBinaries() {
     let failing = false;
+
     failing = !await assertAnyFile(['bin/cpptools.exe', 'bin/cpptools']) && (quiet || warn(`The native binary files are not present. You should either build or install the native binaries\n\n.`)) || failing;
 
     if (!failing) {
         verbose('Native binary files appear to be in place.');
     }
+
     return failing;
 }

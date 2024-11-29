@@ -20,7 +20,9 @@ import { CppSettings } from "./settings";
 export interface CustomConfigurationProvider1
 	extends CustomConfigurationProvider {
 	isReady: boolean;
+
 	readonly isValid: boolean;
+
 	readonly version: Version;
 }
 
@@ -33,16 +35,20 @@ const newCmakeToolsExtensionId: string = "ms-vscode.cmake-tools";
  */
 class CustomProviderWrapper implements CustomConfigurationProvider1 {
 	private provider: CustomConfigurationProvider;
+
 	private _isReady: boolean;
+
 	private _version: Version;
 
 	constructor(provider: CustomConfigurationProvider, version: Version) {
 		this._isReady = version < Version.v2;
+
 		this.provider = provider;
 
 		if (provider.extensionId && version === Version.v0) {
 			version = Version.v1; // provider implemented the new API but is interfacing with the extension using the old API version.
 		}
+
 		this._version = version;
 	}
 
@@ -63,16 +69,19 @@ class CustomProviderWrapper implements CustomConfigurationProvider1 {
 		if (valid && this._version > Version.v0) {
 			valid = !!this.provider.extensionId && !!this.provider.dispose;
 		}
+
 		if (valid && this._version > Version.v1) {
 			valid =
 				!!this.provider.canProvideBrowseConfiguration &&
 				!!this.provider.provideBrowseConfiguration;
 		}
+
 		if (valid && this._version > Version.v2) {
 			valid =
 				!!this.provider.canProvideBrowseConfigurationsPerFolder &&
 				!!this.provider.provideFolderBrowseConfiguration;
 		}
+
 		return valid;
 	}
 
@@ -163,36 +172,45 @@ export class CustomConfigurationProviderCollection {
 		if (!provider.name) {
 			missing.push("'name'");
 		}
+
 		if (version !== Version.v0 && !provider.extensionId) {
 			missing.push("'extensionId'");
 		}
+
 		if (!provider.canProvideConfiguration) {
 			missing.push("'canProvideConfiguration'");
 		}
+
 		if (!provider.provideConfigurations) {
 			missing.push("'canProvideConfiguration'");
 		}
+
 		if (version !== Version.v0 && !provider.dispose) {
 			missing.push("'dispose'");
 		}
+
 		if (version >= Version.v2 && !provider.canProvideBrowseConfiguration) {
 			missing.push("'canProvideBrowseConfiguration'");
 		}
+
 		if (version >= Version.v2 && !provider.provideBrowseConfiguration) {
 			missing.push("'provideBrowseConfiguration'");
 		}
+
 		if (
 			version >= Version.v3 &&
 			!provider.canProvideBrowseConfigurationsPerFolder
 		) {
 			missing.push("'canProvideBrowseConfigurationsPerFolder'");
 		}
+
 		if (
 			version >= Version.v3 &&
 			!provider.provideFolderBrowseConfiguration
 		) {
 			missing.push("'provideFolderBrowseConfiguration'");
 		}
+
 		console.error(
 			`CustomConfigurationProvider was not registered. The following properties are missing from the implementation: ${missing.join(", ")}.`,
 		);
@@ -265,6 +283,7 @@ export class CustomConfigurationProviderCollection {
 				`CustomConfigurationProvider '${wrapper.extensionId}' has already been registered.`,
 			);
 		}
+
 		return !exists;
 	}
 
@@ -284,10 +303,12 @@ export class CustomConfigurationProviderCollection {
 			} else if (provider === oldCmakeToolsExtensionId) {
 				id = newCmakeToolsExtensionId;
 			}
+
 			if (this.providers.has(id)) {
 				return this.providers.get(id);
 			}
 		}
+
 		return undefined;
 	}
 
@@ -311,9 +332,11 @@ export class CustomConfigurationProviderCollection {
 		if (!providerId) {
 			return undefined;
 		}
+
 		const found: CustomConfigurationProvider1[] = [];
 
 		let noUpdate: boolean = false;
+
 		this.forEach((provider) => {
 			if (provider.extensionId === providerId) {
 				noUpdate = true;
@@ -328,11 +351,13 @@ export class CustomConfigurationProviderCollection {
 		if (noUpdate) {
 			return providerId;
 		}
+
 		if (found.length === 1) {
 			return found[0].extensionId;
 		} else if (found.length > 1) {
 			console.warn("duplicate provider name found. Not upgrading.");
 		}
+
 		return providerId;
 	}
 }
@@ -351,6 +376,7 @@ export function isSameProviderExtensionId(
 	if (!settingExtensionId && !providerExtensionId) {
 		return true;
 	}
+
 	if (settingExtensionId === providerExtensionId) {
 		return true;
 	}
@@ -363,5 +389,6 @@ export function isSameProviderExtensionId(
 	) {
 		return true;
 	}
+
 	return false;
 }

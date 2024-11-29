@@ -11,6 +11,7 @@ import { ReferenceInfo, ReferencesResult, ReferenceType } from "./references";
 export class ReferencesModel {
 	readonly nodes: TreeNode[] = []; // Raw flat list of references
 	private originalSymbol: string = "";
+
 	public groupByFile: boolean;
 
 	constructor(
@@ -20,6 +21,7 @@ export class ReferencesModel {
 		readonly refreshCallback: () => void,
 	) {
 		this.originalSymbol = resultsInput.text;
+
 		this.groupByFile = groupByFile;
 
 		// Only filter out confirmed references when operation has finished.
@@ -42,9 +44,13 @@ export class ReferencesModel {
 					this,
 					NodeType.fileWithPendingRef,
 				);
+
 				node.fileUri = vscode.Uri.file(r.file);
+
 				node.filename = r.file;
+
 				node.referenceType = r.type;
+
 				this.nodes.push(node);
 			} else {
 				const range: vscode.Range = new vscode.Range(
@@ -62,12 +68,19 @@ export class ReferencesModel {
 				);
 
 				const node: TreeNode = new TreeNode(this, NodeType.reference);
+
 				node.fileUri = uri;
+
 				node.filename = r.file;
+
 				node.referencePosition = r.position;
+
 				node.referenceLocation = location;
+
 				node.referenceText = r.text;
+
 				node.referenceType = r.type;
+
 				this.nodes.push(node);
 			}
 		}
@@ -90,10 +103,13 @@ export class ReferencesModel {
 					this,
 					NodeType.referenceType,
 				);
+
 				node.referenceType = n.referenceType;
+
 				result.push(node);
 			}
 		}
+
 		return result;
 	}
 
@@ -124,12 +140,17 @@ export class ReferencesModel {
 						: NodeType.file;
 
 				const node: TreeNode = new TreeNode(this, nodeType);
+
 				node.filename = n.filename;
+
 				node.fileUri = n.fileUri;
+
 				node.referenceType = refType;
+
 				result.push(node);
 			}
 		}
+
 		result.sort((a, b) => {
 			if (a.filename === undefined) {
 				if (b.filename === undefined) {
@@ -152,11 +173,14 @@ export class ReferencesModel {
 			if (filename === undefined || filename === null) {
 				return this.nodes;
 			}
+
 			return this.nodes.filter((i) => i.filename === filename);
 		}
+
 		if (filename === undefined || filename === null) {
 			return this.nodes.filter((i) => i.referenceType === refType);
 		}
+
 		return this.nodes.filter(
 			(i) => i.filename === filename && i.referenceType === refType,
 		);
@@ -170,6 +194,7 @@ export class ReferencesModel {
 		const result: TreeNode[] = this.nodes.filter(
 			(i) => i.node === NodeType.fileWithPendingRef,
 		);
+
 		result.sort((a, b) => {
 			if (a.filename === undefined) {
 				if (b.filename === undefined) {
@@ -199,12 +224,16 @@ export enum NodeType {
 export class TreeNode {
 	// Optional properties for file related info
 	public filename?: string;
+
 	public fileUri?: vscode.Uri;
 
 	// Optional properties for reference item info
 	public referencePosition?: vscode.Position;
+
 	public referenceLocation?: vscode.Location;
+
 	public referenceText?: string;
+
 	public referenceType?: ReferenceType;
 
 	constructor(

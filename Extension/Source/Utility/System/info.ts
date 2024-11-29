@@ -20,11 +20,13 @@ export function typeOf(instance: any) {
 			if (instance === null) {
 				return "null";
 			}
+
 			if (is.promise(instance)) {
 				return c.class
 					? `Promise<${classOf(c.class)?.name || parentClassOf(classOf(c.class)!)?.name}>`
 					: "Promise";
 			}
+
 			return (
 				classOf(instance)?.name ||
 				parentClassOf(classOf(instance)!)?.name ||
@@ -35,8 +37,10 @@ export function typeOf(instance: any) {
 			if (is.Constructor(instance)) {
 				return `class ${c?.name || parentClassOf(c!)?.name || "<anonymous>"}`;
 			}
+
 			return "function";
 	}
+
 	return t;
 }
 
@@ -49,8 +53,10 @@ export function hierarchy(instance: AribtraryObject | Constructor): string[] {
 		if (type.name) {
 			result.push(type.name);
 		}
+
 		type = parentClassOf(type);
 	}
+
 	return result;
 }
 
@@ -60,6 +66,7 @@ export function parentClassOf(
 	if (is.nullish(instance)) {
 		return undefined;
 	}
+
 	const parent = Object.getPrototypeOf(
 		typeof instance === "function" ? instance : instance.constructor,
 	);
@@ -101,7 +108,9 @@ interface FunctionInfo {
 
 interface Members {
 	methods: Map<string, FunctionInfo>;
+
 	fields: Map<string, string>;
+
 	properties: Map<string, string>;
 }
 
@@ -143,6 +152,7 @@ export function members(obj: any): Members {
 					} catch {
 						continue;
 					}
+
 					const type = typeof value;
 
 					// is it a function
@@ -184,5 +194,6 @@ export function members(obj: any): Members {
 			// eslint-disable-next-line no-cond-assign
 		} while ((instance = Object.getPrototypeOf(instance)));
 	}
+
 	return result;
 }

@@ -43,8 +43,11 @@ export type IFingerprintConfirmationProvider = (
 
 export interface IInteraction {
 	canceled?: boolean;
+
 	postAction?: "consume" | "keep";
+
 	response?: string;
+
 	isPassword?: boolean;
 
 	continue?: boolean; // Continue without waiting for the program to finish or pause
@@ -52,11 +55,13 @@ export interface IInteraction {
 
 export interface IInteractorDataDetails {
 	detectedServerKey?: string;
+
 	detail?: string;
 }
 
 export interface IInteractor {
 	id: string;
+
 	onData(
 		data: string,
 		cancelToken?: vscode.CancellationToken,
@@ -106,6 +111,7 @@ export class FingerprintInteractor implements IInteractor {
 		const fingerprintMatcher: RegExp = /fingerprint\sis\s(.+)\./;
 
 		const result: IInteraction = { postAction: "keep" };
+
 		data = data.trim();
 
 		let fingerprintMatch: RegExpMatchArray | null;
@@ -174,6 +180,7 @@ export class DifferingHostKeyInteractor implements IInteractor {
 		_extraDetails?: IInteractorDataDetails,
 	): Promise<IInteraction> {
 		const result: IInteraction = { postAction: "keep" };
+
 		data = data.trim();
 
 		if (
@@ -235,6 +242,7 @@ export class PassphraseInteractor implements IInteractor {
 				); // TODO keep track of the key name
 			if (typeof passphrase === "string") {
 				result.response = passphrase;
+
 				result.isPassword = true;
 			} else {
 				result.canceled = true;
@@ -341,7 +349,9 @@ export class PasswordInteractor implements IInteractor {
 				!autoFilledPasswordForUsers.has(actualUser)
 			) {
 				autoFilledPasswordForUsers.add(actualUser);
+
 				result.response = cachedPassword;
+
 				result.isPassword = true;
 			} else {
 				const password: string | undefined =
@@ -356,8 +366,11 @@ export class PasswordInteractor implements IInteractor {
 						passwordCacheKey,
 						password,
 					);
+
 					autoFilledPasswordForUsers.add(actualUser);
+
 					result.response = password;
+
 					result.isPassword = true;
 				} else {
 					result.canceled = true;
@@ -402,6 +415,7 @@ export class TwoFacInteractor implements IInteractor {
 
 			if (typeof verificationCode === "string") {
 				result.response = verificationCode;
+
 				result.isPassword = true;
 			} else {
 				result.canceled = true;
@@ -441,6 +455,7 @@ export class DuoTwoFacInteractor implements IInteractor {
 
 			if (typeof verificationCode === "string") {
 				result.response = verificationCode;
+
 				result.isPassword = true;
 			} else {
 				result.canceled = true;
@@ -473,6 +488,7 @@ export class ContinueOnInteractor implements IInteractor {
 		if (data.match(re)) {
 			result.continue = true;
 		}
+
 		return result;
 	}
 }
@@ -494,6 +510,7 @@ export class ConnectionFailureInteractor implements IInteractor {
 			data.includes("Could not resolve hostname")
 		) {
 			result.postAction = "consume";
+
 			void getOutputChannelLogger().showErrorMessage(
 				localize(
 					"failed.to.connect",
@@ -502,6 +519,7 @@ export class ConnectionFailureInteractor implements IInteractor {
 				),
 			);
 		}
+
 		return result;
 	}
 }
@@ -528,7 +546,9 @@ export class ComposedInteractor implements IInteractor {
 
 export interface ISystemInteractor {
 	createTerminal(options: vscode.TerminalOptions): vscode.Terminal;
+
 	onDidCloseTerminal: typeof vscode.window.onDidCloseTerminal;
+
 	onDidWriteTerminalData: typeof vscode.window.onDidWriteTerminalData;
 }
 

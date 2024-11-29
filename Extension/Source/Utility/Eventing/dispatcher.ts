@@ -34,12 +34,17 @@ import {
 
 interface Event<TInput = any, TResult = void> {
 	readonly name: string;
+
 	readonly descriptors: Descriptors;
 
 	completed?: ManualPromise<EventStatus | TResult>;
+
 	readonly variableArgs: any[];
+
 	source?: ArbitraryObject;
+
 	data?: TInput;
+
 	text?: string;
 }
 
@@ -64,6 +69,7 @@ async function drain() {
 	while ((event = queue.shift())) {
 		await dispatch(event);
 	}
+
 	DispatcherBusy.resolve();
 }
 
@@ -83,6 +89,7 @@ async function dispatch<TResult>(event: Event<any, TResult>): Promise<void> {
 
 			// call the callback, collate the result.
 			let r = callback(event as EventData, ...captures);
+
 			r = is.promise(r)
 				? await r.catch((e) => {
 						console.error(e);
@@ -126,6 +133,7 @@ async function dispatch<TResult>(event: Event<any, TResult>): Promise<void> {
 				/* ignore */
 			}
 		}
+
 		return;
 	}
 	// this is an event/request (supports a result or cancellation)
@@ -141,6 +149,7 @@ async function dispatch<TResult>(event: Event<any, TResult>): Promise<void> {
 		// call the event handler, but capture the result
 		try {
 			const r = callback(event as EventData, ...captures);
+
 			results.push(
 				is.promise(r)
 					? r
@@ -247,7 +256,9 @@ export function removeAllListeners(eventSrc: ArbitraryObject) {
 				unsubscribe();
 			}
 		}
+
 		autoUnsubscribe.unregister(eventSrc);
+
 		collectGarbage();
 	}
 }
@@ -263,6 +274,7 @@ export function on<T>(
 		triggerExpression,
 		eventSrc,
 	);
+
 	out: if ((global as any).DEVMODE && is.emitter(eventSrc)) {
 		const filterNames = [...filters.keys()];
 
@@ -277,6 +289,7 @@ export function on<T>(
 			`Handler with ${filterNames} [${triggerExpression}] has no events in ${typeOf(eventSrc)}`,
 		);
 	}
+
 	const subscriber = {
 		filters,
 		eventSource: eventSource ? new WeakRef(eventSource) : undefined,
@@ -323,6 +336,7 @@ export function on<T>(
 	subscriber.handler = once
 		? (...args) => {
 				unsubscribe();
+
 				return callback(...args);
 			}
 		: callback;
@@ -348,8 +362,11 @@ export function subscribe(
 	subscriber: string,
 	options?: {
 		folder?: string;
+
 		bindAll?: boolean;
+
 		eventSource?: ArbitraryObject;
+
 		once?: boolean;
 	},
 ): Promise<Unsubscribe>;
@@ -363,7 +380,9 @@ export function subscribe(
 	subscriber: Record<string, string>,
 	options?: {
 		folder: string;
+
 		bindAll?: boolean;
+
 		eventSource?: ArbitraryObject;
 	},
 ): Promise<Unsubscribe>;
@@ -381,8 +400,11 @@ export function subscribe<T extends Record<string, any>>(
 		| Record<string, string>,
 	options: {
 		folder?: string;
+
 		bindAll?: boolean;
+
 		eventSource?: ArbitraryObject;
+
 		once?: boolean;
 	} = {},
 ): Unsubscribe | Promise<Unsubscribe> {
@@ -422,8 +444,10 @@ export function subscribe<T extends Record<string, any>>(
 							for (const each of fn) {
 								console.error(each);
 							}
+
 							throw new Error(`Error loading ${filename}: ${fn}`);
 						}
+
 						unsubs.push(
 							on(
 								options.once ? `once ${name}` : name,
@@ -444,8 +468,10 @@ export function subscribe<T extends Record<string, any>>(
 						for (const each of fn) {
 							console.error(each);
 						}
+
 						throw new Error(`Error loading ${name}: ${fn}`);
 					}
+
 					unsubs.push(
 						on(
 							options.once ? `once ${name}` : name,
@@ -483,6 +509,7 @@ export function subscribe<T extends Record<string, any>>(
 			);
 		}
 	}
+
 	return () => unsubs.forEach((u) => u());
 }
 
@@ -501,7 +528,9 @@ function expandVariableArgs<TInput = any, TResult = void>(
 	switch (event.variableArgs.length) {
 		case 0:
 			event.text = "";
+
 			event.data = undefined;
+
 			event.source = undefined;
 
 			return event;
@@ -511,34 +540,45 @@ function expandVariableArgs<TInput = any, TResult = void>(
 				event.text = first;
 			} else {
 				event.text = "";
+
 				event.data = first;
 			}
+
 			return event;
 
 		case 2:
 			if (typeof first === "string") {
 				event.text = first;
+
 				event.data = second;
 			} else {
 				if (typeof second === "string") {
 					event.text = second;
+
 					event.source = first;
+
 					event.data = undefined;
 				} else {
 					event.text = "";
+
 					event.source = first;
+
 					event.data = second;
 				}
 			}
+
 			return event;
 
 		case 3:
 			event.source = first;
+
 			event.text = second;
+
 			event.data = third;
 
 			return event;
 	}
+
 	throw new Error("Invalid number of arguments");
 }
 
@@ -645,6 +685,7 @@ export async function emit<TResult>(
 		// return the promise
 		return result;
 	}
+
 	return Continue;
 }
 
@@ -737,6 +778,7 @@ export async function emitNow<TResult>(
 		// return the result promise
 		return result;
 	}
+
 	return Continue;
 }
 

@@ -7,11 +7,17 @@ import { is } from "../System/guards";
 
 export interface ScriptError {
 	line: number;
+
 	column: number;
+
 	message: string;
+
 	file: string;
+
 	category: number;
+
 	code: number;
+
 	offset: number;
 }
 
@@ -39,5 +45,6 @@ export function hasErrors(instance: any): instance is ScriptError[] {
 	if (is.array(instance)) {
 		return instance.length > 0;
 	}
+
 	return false;
 }

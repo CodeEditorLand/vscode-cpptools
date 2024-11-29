@@ -75,6 +75,7 @@ export class SshTargetsProvider
 
 	private async getTargets(): Promise<BaseNode[]> {
 		filesWritable.clear();
+
 		_targets = await getSshConfigHostInfos();
 
 		const targetNodes: BaseNode[] = [];
@@ -98,9 +99,11 @@ export class SshTargetsProvider
 				}
 			}
 		}
+
 		if (activeTargetRemoved) {
 			await setActiveSshTarget(undefined);
 		}
+
 		return targetNodes;
 	}
 }
@@ -118,9 +121,11 @@ export async function initializeSshTargets(): Promise<void> {
 			activeTargetRemoved = false;
 		}
 	}
+
 	if (activeTargetRemoved) {
 		await setActiveSshTarget(undefined);
 	}
+
 	await setActiveSshTarget(
 		extensionContext?.workspaceState.get(workspaceState_activeSshTarget),
 	);
@@ -132,6 +137,7 @@ export async function getActiveSshTarget(
 	if (_targets.size === 0 && !selectWhenNotSet) {
 		return undefined;
 	}
+
 	if (!_activeTarget && selectWhenNotSet) {
 		const name: string | undefined = await selectSshTarget();
 
@@ -143,9 +149,12 @@ export async function getActiveSshTarget(
 				),
 			);
 		}
+
 		await setActiveSshTarget(name);
+
 		await vscode.commands.executeCommand(refreshCppSshTargetsViewCmd);
 	}
+
 	return _activeTarget;
 }
 
@@ -168,8 +177,10 @@ export async function selectSshTarget(): Promise<string | undefined> {
 	if (!selection) {
 		return undefined;
 	}
+
 	if (selection === addNewSshTarget) {
 		return vscode.commands.executeCommand(addSshTargetCmd);
 	}
+
 	return selection;
 }

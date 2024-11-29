@@ -22,20 +22,26 @@ export class TimeTelemetryCollector {
 			const curTimeStamps: TimeStampSequence = this.getTimeStamp(
 				uri.path,
 			);
+
 			curTimeStamps.firstFile = new Date().getTime();
+
 			this.cachedTimeStamps.set(uri.path, curTimeStamps);
 		}
 	}
 
 	public setDidOpenTime(uri: vscode.Uri): void {
 		const curTimeStamps: TimeStampSequence = this.getTimeStamp(uri.path);
+
 		curTimeStamps.didOpen = new Date().getTime();
+
 		this.cachedTimeStamps.set(uri.path, curTimeStamps);
 	}
 
 	public setSetupTime(uri: vscode.Uri): void {
 		const curTimeStamps: TimeStampSequence = this.getTimeStamp(uri.path);
+
 		curTimeStamps.setup = new Date().getTime();
+
 		this.cachedTimeStamps.set(uri.path, curTimeStamps);
 
 		if (curTimeStamps.didOpen && curTimeStamps.updateRange) {
@@ -48,8 +54,10 @@ export class TimeTelemetryCollector {
 
 		if (!curTimeStamps.updateRange) {
 			curTimeStamps.updateRange = new Date().getTime();
+
 			this.cachedTimeStamps.set(uri.path, curTimeStamps);
 		}
+
 		if (curTimeStamps.didOpen && curTimeStamps.setup) {
 			this.logTelemetry(uri.path, curTimeStamps);
 		}
@@ -57,6 +65,7 @@ export class TimeTelemetryCollector {
 
 	public clear(): void {
 		console.log("clearing timestamp log");
+
 		this.cachedTimeStamps.clear();
 	}
 
@@ -85,11 +94,13 @@ export class TimeTelemetryCollector {
 
 		if (timeStamps.firstFile) {
 			properties = { "coldstart": "true" };
+
 			metrics = {
 				"activationTime": timeStamps.didOpen - startTime,
 				...metrics,
 			};
 		}
+
 		telemetry.logLanguageServerEvent("timeStamps", properties, metrics);
 
 		this.removeTimeStamp(uri);

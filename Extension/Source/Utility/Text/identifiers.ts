@@ -10,6 +10,7 @@ export function deconstruct(identifier: string | string[]): string[] {
 	if (is.array(identifier)) {
 		return identifier.flatMap(deconstruct);
 	}
+
 	return `${identifier}`
 		.replace(/([a-z]+)([A-Z])/g, "$1 $2")
 		.replace(/(\d+)([a-z|A-Z]+)/g, "$1 $2")

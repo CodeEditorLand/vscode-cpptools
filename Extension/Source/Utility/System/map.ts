@@ -44,6 +44,7 @@ export function getOrAdd<TKey, TValue>(
 	if (!is.nullish(value)) {
 		return value;
 	}
+
 	const initializer =
 		defaultValue instanceof Function ? defaultValue() : defaultValue;
 
@@ -52,12 +53,14 @@ export function getOrAdd<TKey, TValue>(
 			if (v !== undefined) {
 				map.set(key, v);
 			}
+
 			return v;
 		});
 	} else {
 		if (initializer !== undefined) {
 			map.set(key, initializer);
 		}
+
 		return initializer;
 	}
 }

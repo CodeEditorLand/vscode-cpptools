@@ -14,8 +14,10 @@ import {
 
 export class TestHook implements CppToolsTestHook {
 	private disposed = false;
+
 	private intelliSenseStatusChangedEvent: vscode.EventEmitter<IntelliSenseStatus> =
 		new vscode.EventEmitter<IntelliSenseStatus>();
+
 	private statusChangedEvent: vscode.EventEmitter<Status> =
 		new vscode.EventEmitter<Status>();
 
@@ -42,14 +44,19 @@ export class TestHook implements CppToolsTestHook {
 
 	public updateStatus(status: IntelliSenseStatus): void {
 		ok(!this.disposed, "TestHook is disposed.");
+
 		this.intelliSenseStatusChangedEvent.fire(status);
+
 		this.statusChangedEvent.fire(status.status);
 	}
 
 	public dispose(): void {
 		ok(!this.disposed, "TestHook is disposed.");
+
 		this.disposed = true;
+
 		this.intelliSenseStatusChangedEvent.dispose();
+
 		this.statusChangedEvent.dispose();
 	}
 }
@@ -60,5 +67,6 @@ export function getTestHook(): TestHook {
 	if (!testHook || !testHook.valid) {
 		testHook = new TestHook();
 	}
+
 	return testHook;
 }

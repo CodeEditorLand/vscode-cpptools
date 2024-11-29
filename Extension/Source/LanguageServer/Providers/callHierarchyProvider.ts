@@ -53,6 +53,7 @@ interface CallHierarchyItem {
 
 export interface CallHierarchyParams {
 	textDocument: TextDocumentIdentifier;
+
 	position: Position;
 }
 
@@ -113,6 +114,7 @@ const CallHierarchyCallsFromRequest: RequestType<
 export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 	// Indicates whether a request is from an entry root node (e.g. top function in the call tree).
 	private isEntryRootNodeTelemetry: boolean = false;
+
 	private client: DefaultClient;
 
 	constructor(client: DefaultClient) {
@@ -129,6 +131,7 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 		workspaceReferences.cancelCurrentReferenceRequest(
 			CancellationSender.NewRequest,
 		);
+
 		workspaceReferences.clearViews();
 
 		const range: vscode.Range | undefined =
@@ -173,15 +176,18 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 			) {
 				return undefined;
 			}
+
 			throw e;
 		} finally {
 			cancellationTokenListener.dispose();
+
 			requestCanceledListener.dispose();
 		}
 
 		if (cancelSource.token.isCancellationRequested) {
 			throw new vscode.CancellationError();
 		}
+
 		if (response.item === undefined) {
 			return undefined;
 		}
@@ -196,6 +202,7 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 		token: vscode.CancellationToken,
 	): Promise<vscode.CallHierarchyIncomingCall[] | undefined> {
 		await this.client.ready;
+
 		workspaceReferences.cancelCurrentReferenceRequest(
 			CancellationSender.NewRequest,
 		);
@@ -221,12 +228,14 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 		const cancellationTokenListener: vscode.Disposable =
 			token.onCancellationRequested(() => {
 				requestCanceled = CancellationSender.ProviderToken;
+
 				cancelSource.cancel();
 			});
 
 		const requestCanceledListener: vscode.Disposable =
 			workspaceReferences.onCancellationRequested((sender) => {
 				requestCanceled = sender;
+
 				cancelSource.cancel();
 			});
 
@@ -263,9 +272,13 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 		// Reset anything that can be cleared before processing the result.
 		const progressBarDuration: number | undefined =
 			workspaceReferences.getCallHierarchyProgressBarDuration();
+
 		workspaceReferences.resetProgressBar();
+
 		workspaceReferences.resetReferences();
+
 		cancellationTokenListener.dispose();
+
 		requestCanceledListener.dispose();
 
 		// Process the result.
@@ -278,6 +291,7 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 				requestCanceled === CancellationSender.User
 					? CallHierarchyRequestStatus.CanceledByUser
 					: CallHierarchyRequestStatus.Canceled;
+
 			this.logTelemetry(
 				CallHierarchyCallsToEvent,
 				requestStatus,
@@ -344,6 +358,7 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 				throw e;
 			}
 		}
+
 		if (token.isCancellationRequested || cancelled) {
 			this.logTelemetry(
 				CallHierarchyCallsFromEvent,
@@ -405,12 +420,14 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 				this.makeVscodeCallHierarchyItem(call.item);
 
 			const ranges: vscode.Range[] = [];
+
 			call.fromRanges.forEach((r) => {
 				ranges.push(makeVscodeRange(r));
 			});
 
 			const incomingCall: vscode.CallHierarchyIncomingCall =
 				new vscode.CallHierarchyIncomingCall(item, ranges);
+
 			result.push(incomingCall);
 		}
 
@@ -427,12 +444,14 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 				this.makeVscodeCallHierarchyItem(call.item);
 
 			const ranges: vscode.Range[] = [];
+
 			call.fromRanges.forEach((r) => {
 				ranges.push(makeVscodeRange(r));
 			});
 
 			const outgoingCall: vscode.CallHierarchyOutgoingCall =
 				new vscode.CallHierarchyOutgoingCall(item, ranges);
+
 			result.push(outgoingCall);
 		}
 
@@ -453,26 +472,32 @@ export class CallHierarchyProvider implements vscode.CallHierarchyProvider {
 		switch (requestStatus) {
 			case CallHierarchyRequestStatus.Unknown:
 				status = "Unknown";
+
 				break;
 
 			case CallHierarchyRequestStatus.Succeeded:
 				status = "Succeeded";
+
 				break;
 
 			case CallHierarchyRequestStatus.Canceled:
 				status = "Canceled";
+
 				break;
 
 			case CallHierarchyRequestStatus.CanceledByUser:
 				status = "CanceledByUser";
+
 				break;
 
 			case CallHierarchyRequestStatus.Failed:
 				status = "Failed";
+
 				break;
 		}
 
 		properties["Status"] = status;
+
 		metrics["FirstRequest"] = this.isEntryRootNodeTelemetry ? 1 : 0;
 
 		if (progressBarDuration) {

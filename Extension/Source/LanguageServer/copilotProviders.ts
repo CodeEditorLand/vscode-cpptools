@@ -12,8 +12,11 @@ import { getActiveClient } from "./extension";
 
 export interface CopilotTrait {
 	name: string;
+
 	value: string;
+
 	includeInPrompt?: boolean;
+
 	promptTextOverride?: string;
 }
 
@@ -97,6 +100,7 @@ export async function registerRelatedFilesProvider(): Promise<void> {
 							const excludeTraits =
 								(context.flags
 									.copilotcppExcludeTraits as string[]) ?? [];
+
 							traits = traits.filter(
 								(trait) => !excludeTraits.includes(trait.name),
 							);

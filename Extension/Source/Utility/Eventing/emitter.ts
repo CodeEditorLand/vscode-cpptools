@@ -34,8 +34,11 @@ export interface EventOptions<TOutput = any> {
 		| Promise<TOutput>
 		| (() => TOutput)
 		| (() => Promise<TOutput>);
+
 	cancel?(): TOutput | never;
+
 	descriptors?: Record<string, string | string[]>;
+
 	once?: boolean;
 }
 
@@ -53,15 +56,18 @@ export abstract class Emitter {
 
 	/** adds an event to the queue, to be dispatched when it is unqueued */
 	protected async emit(event: string, text: string): Promise<EventStatus>;
+
 	protected async emit(
 		event: string,
 		data: ArbitraryObject,
 	): Promise<EventStatus>;
+
 	protected async emit(
 		event: string,
 		text: string,
 		data: ArbitraryObject,
 	): Promise<EventStatus>;
+
 	protected async emit(
 		event: string,
 		tOrD: any,
@@ -74,15 +80,18 @@ export abstract class Emitter {
 
 	/** immediately dispatches an event */
 	protected async emitNow(event: string, text: string): Promise<EventStatus>;
+
 	protected async emitNow(
 		event: string,
 		data: ArbitraryObject,
 	): Promise<EventStatus>;
+
 	protected async emitNow(
 		event: string,
 		text: string,
 		data: ArbitraryObject,
 	): Promise<EventStatus>;
+
 	protected async emitNow(
 		event: string,
 		tOrD: any,
@@ -95,8 +104,11 @@ export abstract class Emitter {
 
 	/** adds a notification event to the queue, to be dispatched when it is unqueued */
 	protected notify(event: string, text: string): void;
+
 	protected notify(event: string, data: ArbitraryObject): void;
+
 	protected notify(event: string, text: string, data: ArbitraryObject): void;
+
 	protected notify(event: string, tOrD: any, data?: ArbitraryObject): void {
 		return data
 			? notify(event, this.descriptors, this, tOrD, data)
@@ -105,12 +117,15 @@ export abstract class Emitter {
 
 	/** immediately dispatches a notification event */
 	protected notifyNow(event: string, text: string): void;
+
 	protected notifyNow(event: string, data: ArbitraryObject): void;
+
 	protected notifyNow(
 		event: string,
 		text: string,
 		data: ArbitraryObject,
 	): void;
+
 	protected notifyNow(
 		event: string,
 		tOrD: any,
@@ -197,23 +212,28 @@ export abstract class Emitter {
 		eventName: string,
 		options?: EventOptions<TOutput>,
 	): (text: TText, data: TData) => Promise<TOutput>;
+
 	protected newEvent<TOutput>(
 		eventName: string,
 		options?: EventOptions & WithDefault<TOutput>,
 	): () => Promise<TOutput>;
+
 	protected newEvent<TData, TOutput>(
 		eventName: string,
 		options?: EventOptions & WithDefault<TOutput>,
 	): (input: TData) => Promise<TOutput>;
+
 	protected newEvent<TText extends string, TData, TOutput>(
 		eventName: string,
 		options?: EventOptions<TOutput> & WithDefault<TOutput>,
 	): (text: TText, data: TData) => Promise<TOutput>;
+
 	protected newEvent<TText extends string, TData, TOutput>(
 		eventName: string,
 		options?: EventOptions<TOutput> & WithDefault<TOutput>,
 	): (text: TText, data: TData) => Promise<EventStatus | TOutput> {
 		eventName = smash(eventName);
+
 		this.#knownEvents.add(eventName);
 
 		const descriptors = options?.descriptors
@@ -317,11 +337,13 @@ export abstract class Emitter {
 		eventName: string,
 		options?: EventOptions,
 	): (text: TText, data: TData) => void;
+
 	protected newNotification<TText extends string, TData>(
 		eventName: string,
 		options?: EventOptions,
 	): (text: TText, data: TData) => void {
 		eventName = smash(eventName);
+
 		this.#knownEvents.add(eventName);
 
 		const descriptors = options?.descriptors
@@ -392,10 +414,13 @@ export abstract class Emitter {
 
 	/** subscribe directly to events on this object */
 	subscribe(): void;
+
 	subscribe<T>(...subscribers: string[]): Promise<void>;
+
 	subscribe<T extends Record<string, any>>(
 		...subscribers: Subscription<T>[]
 	): void;
+
 	subscribe<T extends Record<string, any>>(
 		...subscribers: string[] | Subscription<T>[]
 	): void | Promise<void> {
@@ -406,6 +431,7 @@ export abstract class Emitter {
 				}) && undefined
 			);
 		}
+
 		if (typeof subscribers[0] === "string") {
 			return Promise.all(
 				subscribers.map((each) =>

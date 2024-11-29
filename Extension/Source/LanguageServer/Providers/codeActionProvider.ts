@@ -34,16 +34,23 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 interface GetCodeActionsRequestParams {
 	uri: string;
+
 	range: Range;
 }
 
 interface CodeActionCommand {
 	localizeStringParams: LocalizeStringParams;
+
 	command: string;
+
 	arguments?: any[];
+
 	edit?: TextEdit;
+
 	uri?: string;
+
 	range?: Range;
+
 	disabledReason?: string;
 }
 
@@ -68,8 +75,10 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 
 	private static inlineMacroKind: vscode.CodeActionKind =
 		vscode.CodeActionKind.RefactorInline.append("macro");
+
 	private static extractToFunctionKind: vscode.CodeActionKind =
 		vscode.CodeActionKind.RefactorExtract.append("function");
+
 	private static expandSelectionKind: vscode.CodeActionKind =
 		CodeActionProvider.extractToFunctionKind.append("expandSelection");
 
@@ -122,6 +131,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 			) {
 				throw new vscode.CancellationError();
 			}
+
 			throw e;
 		}
 
@@ -170,6 +180,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				if (command.command === "C_Cpp.AddMissingInclude") {
 					command.edit.newText += "\n";
 				}
+
 				wsEdit.replace(
 					document.uri,
 					makeVscodeRange(command.edit.range),
@@ -179,6 +190,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				if (command.command === "edit") {
 					// Inline macro feature.
 					codeActionKind = CodeActionProvider.inlineMacroKind;
+
 					hasInlineMacro = true;
 				}
 			} else if (
@@ -197,6 +209,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				if (codeActionDiagnosticInfo === undefined) {
 					return;
 				}
+
 				const fixCodeActions: vscode.CodeAction[] = [];
 
 				const disableCodeActions: vscode.CodeAction[] = [];
@@ -214,6 +227,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 					if (!codeAction.range.contains(vsCodeRange)) {
 						continue;
 					}
+
 					let codeActionCodeInfo: CodeActionCodeInfo | undefined;
 
 					if (codeAnalysisCodeToFixes.has(codeAction.code)) {
@@ -221,9 +235,11 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 							codeAction.code,
 						);
 					}
+
 					if (codeAction.fixCodeAction !== undefined) {
 						// Potentially we could make the "fix all" or "fix all type" preferred instead.
 						codeAction.fixCodeAction.isPreferred = true;
+
 						fixCodeActions.push(codeAction.fixCodeAction);
 
 						if (codeActionCodeInfo !== undefined) {
@@ -243,9 +259,11 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 							}
 						}
 					}
+
 					if (codeAction.removeCodeAction === undefined) {
 						continue;
 					}
+
 					let removeAllTypeAvailable: boolean = false;
 
 					if (codeActionCodeInfo !== undefined) {
@@ -257,6 +275,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 								codeActionCodeInfo.disableAllTypeCodeAction,
 							);
 						}
+
 						if (
 							codeActionCodeInfo.removeAllTypeCodeAction !==
 								undefined &&
@@ -269,6 +288,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 							removeAllTypeAvailable = true;
 						}
 					}
+
 					if (showClear !== "None") {
 						if (
 							!removeAllTypeAvailable ||
@@ -278,6 +298,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 							// some of the cases, and then run "fix all type" for the rest.
 							removeCodeActions.push(codeAction.removeCodeAction);
 						}
+
 						if (
 							removeAllTypeAvailable &&
 							codeActionCodeInfo?.removeAllTypeCodeAction
@@ -294,8 +315,10 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 					) {
 						continue;
 					}
+
 					docCodeActions.push(codeActionCodeInfo.docCodeAction);
 				}
+
 				if (fixCodeActions.length > 0) {
 					resultCodeActions.push(...fixCodeActions);
 
@@ -310,6 +333,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 						);
 					}
 				}
+
 				if (showClear !== "None") {
 					let showClearAllAvailable: boolean = false;
 
@@ -319,16 +343,20 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 					) {
 						showClearAllAvailable = true;
 					}
+
 					if (!showClearAllAvailable || showClear !== "AllOnly") {
 						resultCodeActions.push(...removeCodeActions);
 					}
+
 					if (showClearAllAvailable) {
 						resultCodeActions.push(
 							codeAnalysisAllFixes.removeAllCodeAction,
 						);
 					}
 				}
+
 				resultCodeActions.push(...disableCodeActions);
+
 				resultCodeActions.push(...docCodeActions);
 
 				return;
@@ -339,6 +367,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				command.range !== undefined
 			) {
 				command.arguments = [];
+
 				command.arguments.push({
 					sender: "codeAction",
 					range: command.range,
@@ -347,6 +376,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				command.command === "C_Cpp.SelectIntelliSenseConfiguration"
 			) {
 				command.arguments = ["codeAction"];
+
 				hasSelectIntelliSenseConfiguration = true;
 
 				if (hasConfigurationSet) {
@@ -372,6 +402,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 			} else if (command.command === "C_Cpp.ExpandSelection") {
 				codeActionKind = CodeActionProvider.expandSelectionKind;
 			}
+
 			const vscodeCodeAction: vscode.CodeAction = {
 				title: title,
 				command:
@@ -388,6 +419,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 					? { reason: command.disabledReason }
 					: undefined,
 			};
+
 			resultCodeActions.push(vscodeCodeAction);
 		};
 
@@ -406,6 +438,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				if (!editor) {
 					return false;
 				}
+
 				const result: vscode.Hover[] =
 					(await vscode.commands.executeCommand(
 						"vscode.executeHoverProvider",
@@ -416,6 +449,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				if (result.length === 0) {
 					return false;
 				}
+
 				const hoverResult: vscode.MarkdownString = result[0]
 					.contents[0] as vscode.MarkdownString;
 
@@ -426,6 +460,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 				) {
 					return false;
 				}
+
 				try {
 					response = await this.client.languageClient.sendRequest(
 						GetCodeActionsRequest,
@@ -440,11 +475,14 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 					) {
 						return false;
 					}
+
 					throw e;
 				}
+
 				if (token.isCancellationRequested) {
 					return false;
 				}
+
 				for (const command of response.commands) {
 					if (command.edit) {
 						processCommand(command);
@@ -452,6 +490,7 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 						return true;
 					}
 				}
+
 				return false;
 			};
 
@@ -474,9 +513,11 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 						),
 					},
 				};
+
 				resultCodeActions.push(disabledCodeAction);
 			}
 		}
+
 		return resultCodeActions;
 	}
 }

@@ -25,7 +25,9 @@ export class ReferencesTreeDataProvider
 	implements vscode.TreeDataProvider<TreeNode>
 {
 	private referencesModel: ReferencesModel | undefined;
+
 	private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
+
 	readonly onDidChangeTreeData: vscode.Event<void>;
 
 	constructor() {
@@ -39,22 +41,26 @@ export class ReferencesTreeDataProvider
 				"refView.isGroupedByFile",
 				this.referencesModel.groupByFile,
 			);
+
 			this._onDidChangeTreeData.fire();
 		}
 	}
 
 	setModel(model: ReferencesModel): void {
 		this.referencesModel = model;
+
 		void vscode.commands.executeCommand(
 			"setContext",
 			"refView.isGroupedByFile",
 			this.referencesModel.groupByFile,
 		);
+
 		this._onDidChangeTreeData.fire();
 	}
 
 	clear(): void {
 		this.referencesModel = undefined;
+
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -68,6 +74,7 @@ export class ReferencesTreeDataProvider
 				if (element.referenceType === undefined) {
 					throw new Error("Undefined referenceType in getTreeItem()");
 				}
+
 				const label: string = getReferenceTagString(
 					element.referenceType,
 					this.referencesModel.isCanceled,
@@ -86,12 +93,16 @@ export class ReferencesTreeDataProvider
 				if (element.fileUri === undefined) {
 					throw new Error("Undefined fileUri in getTreeItem()");
 				}
+
 				const resultFile: vscode.TreeItem = new vscode.TreeItem(
 					element.fileUri,
 				);
+
 				resultFile.collapsibleState =
 					vscode.TreeItemCollapsibleState.Expanded;
+
 				resultFile.iconPath = vscode.ThemeIcon.File;
+
 				resultFile.description = true;
 
 				if (element.node === NodeType.fileWithPendingRef) {
@@ -105,7 +116,9 @@ export class ReferencesTreeDataProvider
 						ReferenceType.ConfirmationInProgress,
 						this.referencesModel.isCanceled,
 					);
+
 					resultFile.tooltip = `[${tag}]\n${element.filename}`;
+
 					resultFile.collapsibleState =
 						vscode.TreeItemCollapsibleState.None;
 				}
@@ -116,13 +129,16 @@ export class ReferencesTreeDataProvider
 				if (element.referenceText === undefined) {
 					throw new Error("Undefined referenceText in getTreeItem()");
 				}
+
 				if (element.referenceType === undefined) {
 					throw new Error("Undefined referenceType in getTreeItem()");
 				}
+
 				const resultRef: vscode.TreeItem = new vscode.TreeItem(
 					element.referenceText,
 					vscode.TreeItemCollapsibleState.None,
 				);
+
 				resultRef.iconPath = getReferenceItemIconPath(
 					element.referenceType,
 					this.referencesModel.isCanceled,
@@ -132,6 +148,7 @@ export class ReferencesTreeDataProvider
 					element.referenceType,
 					this.referencesModel.isCanceled,
 				);
+
 				resultRef.tooltip = `[${tag}]\n${element.referenceText}`;
 
 				resultRef.command = {
@@ -142,6 +159,7 @@ export class ReferencesTreeDataProvider
 
 				return resultRef;
 		}
+
 		throw new Error("Invalid NoteType in getTreeItem()");
 	}
 
@@ -164,6 +182,7 @@ export class ReferencesTreeDataProvider
 					type,
 				);
 			}
+
 			if (element.node === NodeType.referenceType) {
 				return this.referencesModel.getFileNodes(element.referenceType);
 			}

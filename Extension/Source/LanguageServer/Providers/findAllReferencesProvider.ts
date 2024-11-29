@@ -37,6 +37,7 @@ export class FindAllReferencesProvider implements vscode.ReferenceProvider {
 		token: vscode.CancellationToken,
 	): Promise<vscode.Location[] | undefined> {
 		await this.client.ready;
+
 		workspaceReferences.cancelCurrentReferenceRequest(
 			CancellationSender.NewRequest,
 		);
@@ -86,7 +87,9 @@ export class FindAllReferencesProvider implements vscode.ReferenceProvider {
 		} finally {
 			// Reset anything that can be cleared before processing the result.
 			workspaceReferences.resetProgressBar();
+
 			cancellationTokenListener.dispose();
+
 			requestCanceledListener.dispose();
 		}
 
@@ -114,6 +117,7 @@ export class FindAllReferencesProvider implements vscode.ReferenceProvider {
 						referenceInfo.position.line,
 						referenceInfo.position.character + response.text.length,
 					);
+
 					locationsResult.push(new vscode.Location(uri, range));
 				}
 			});

@@ -55,12 +55,14 @@ function parseTaggedLiteral(templateString: string) {
 
 						continue;
 				}
+
 				template += char;
 
 				continue;
 
 			case "escape":
 				template = `${template}\\${char}`;
+
 				result.state = "text";
 
 				continue;
@@ -68,12 +70,16 @@ function parseTaggedLiteral(templateString: string) {
 			case "dollar":
 				if (char === "{") {
 					result.state = "substitution";
+
 					result.template.push(template);
+
 					template = "";
 
 					continue;
 				}
+
 				template = `${template}$${char}`;
+
 				result.state = "text";
 
 				continue;
@@ -82,7 +88,9 @@ function parseTaggedLiteral(templateString: string) {
 				switch (char) {
 					case "}":
 						result.expressions.push(expression);
+
 						expression = "";
+
 						result.state = "text";
 
 						continue;
@@ -99,6 +107,7 @@ function parseTaggedLiteral(templateString: string) {
 
 						continue;
 				}
+
 				if (expression) {
 					if (
 						isIdentifierPart(char.codePointAt(0)!) ||
@@ -122,6 +131,7 @@ function parseTaggedLiteral(templateString: string) {
 
 				// not a valid character for an expression
 				result.state = "error";
+
 				result.message = `Unexpected character '${char}' in expression ${expression}`;
 
 				return result;
@@ -131,12 +141,14 @@ function parseTaggedLiteral(templateString: string) {
 	switch (result.state) {
 		case "escape":
 			result.state = "error";
+
 			result.message = "Unexpected end of string (trailing backslash)";
 
 			return result;
 
 		case "substitution":
 			result.state = "error";
+
 			result.message = "Unexpected end of string parsing expression ${ ";
 
 			return result;
@@ -146,7 +158,9 @@ function parseTaggedLiteral(templateString: string) {
 
 			break;
 	}
+
 	result.state = "ok";
+
 	result.template.push(template);
 
 	return result;
@@ -197,6 +211,7 @@ class as {
 		if (isNaN(value)) {
 			return undefined;
 		}
+
 		value = parseFloat(value);
 
 		return isNaN(value) ? undefined : value;
@@ -225,6 +240,7 @@ class as {
 			case "false":
 				return false;
 		}
+
 		return undefined;
 	}
 
@@ -296,6 +312,7 @@ export function render(
 	if (!templateString.includes("${")) {
 		return templateString;
 	}
+
 	const { template, expressions, state, message } =
 		parseTaggedLiteral(templateString);
 
@@ -349,5 +366,6 @@ export function recursiveRender<T extends Record<string, any>>(
 			result[newKey] = value;
 		}
 	}
+
 	return result as T;
 }

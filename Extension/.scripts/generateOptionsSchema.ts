@@ -90,6 +90,7 @@ function replaceReferences(definitions: any, objects: any): any {
         // Recursively replace references if this object has properties.
         if (objects[key].hasOwnProperty('type') && objects[key].type === 'object' && objects[key].properties !== null) {
             objects[key].properties = replaceReferences(definitions, objects[key].properties);
+
             objects[key].properties = updateDefaults(objects[key].properties, objects[key].default);
         }
 
@@ -112,6 +113,7 @@ function mergeReferences(baseDefinitions: any, additionalDefinitions: any): void
         if (baseDefinitions[key]) {
             throw `Error: '${key}' defined in multiple schema files.`;
         }
+
         baseDefinitions[key] = additionalDefinitions[key];
     }
 }
@@ -130,10 +132,12 @@ export async function main() {
     // Hard Code adding in configurationAttributes launch and attach.
     // cppdbg
     packageJSON.contributes.debuggers[0].configurationAttributes.launch = schemaJSON.definitions.CppdbgLaunchOptions;
+
     packageJSON.contributes.debuggers[0].configurationAttributes.attach = schemaJSON.definitions.CppdbgAttachOptions;
 
     // cppvsdbg
     packageJSON.contributes.debuggers[1].configurationAttributes.launch = schemaJSON.definitions.CppvsdbgLaunchOptions;
+
     packageJSON.contributes.debuggers[1].configurationAttributes.attach = schemaJSON.definitions.CppvsdbgAttachOptions;
 
     let content: string = JSON.stringify(packageJSON, null, 4);

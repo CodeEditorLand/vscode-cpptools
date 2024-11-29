@@ -39,6 +39,7 @@ export class OnTypeFormattingEditProvider
 		if (settings.formattingEngine === "disabled") {
 			return [];
 		}
+
 		await this.client.ready;
 
 		const filePath: string = document.uri.fsPath;
@@ -83,11 +84,14 @@ export class OnTypeFormattingEditProvider
 				) {
 					throw new vscode.CancellationError();
 				}
+
 				throw e;
 			}
+
 			if (token.isCancellationRequested) {
 				throw new vscode.CancellationError();
 			}
+
 			return makeVscodeTextEdits(response.edits);
 		};
 

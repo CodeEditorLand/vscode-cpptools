@@ -23,6 +23,7 @@ export async function all() {
 
 export async function reset() {
     verbose(`Resetting all .gitignored files in extension`);
+
     await rimraf(...await getModifiedIgnoredFiles());
 }
 
@@ -38,10 +39,13 @@ async function details(files: string[]) {
             modified: stats.mtime
         };
     }));
+
     all = all.sort((a, b) => a.modified.getTime() - b.modified.getTime());
     // print a formatted table so the date and time are aligned
     const max = all.reduce((max, each) => Math.max(max, each.filename.length), 0);
+
     all.forEach(each => console.log(`  ${each.filename.padEnd(max)}  [${each.date} ${each.time}]`));
+
     console.log('');
 }
 

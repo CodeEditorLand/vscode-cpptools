@@ -35,9 +35,13 @@ export const searchPaths = lazy(() =>
 
 interface ProgramOptions {
 	cwd?: string;
+
 	env?: NodeJS.ProcessEnv;
+
 	noninteractive?: boolean;
+
 	on?: ArbitraryObject;
+
 	choices?: Promise<Set<string>>;
 }
 
@@ -53,13 +57,17 @@ function options<T extends Record<string, any>>(
 
 interface Launcher {
 	executable: Promise<string>;
+
 	cmdlineArgs: Primitive[];
+
 	options: ProgramOptions;
 }
 
 interface CommandResult {
 	code: number;
+
 	stdio: ReadableLineStream;
+
 	error: ReadableLineStream;
 }
 
@@ -153,7 +161,9 @@ async function processFactory(
 		});
 	} else {
 		cmdlineArgs = [...(executable as Launcher).cmdlineArgs, ...cmdlineArgs];
+
 		opts = { ...opts, ...((executable as Launcher).options || {}) };
+
 		fullPath = (executable as Launcher).executable;
 	}
 

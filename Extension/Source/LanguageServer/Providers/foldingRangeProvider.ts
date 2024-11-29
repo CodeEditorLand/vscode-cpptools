@@ -23,7 +23,9 @@ interface FoldingRangeRequestInfo {
 
 export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 	private client: DefaultClient;
+
 	public onDidChangeFoldingRangesEvent = new vscode.EventEmitter<void>();
+
 	public onDidChangeFoldingRanges?: vscode.Event<void>;
 
 	// Mitigate an issue where VS Code sends us an inordinate number of requests
@@ -35,9 +37,11 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 
 	constructor(client: DefaultClient) {
 		this.client = client;
+
 		this.onDidChangeFoldingRanges =
 			this.onDidChangeFoldingRangesEvent.event;
 	}
+
 	async provideFoldingRanges(
 		document: vscode.TextDocument,
 		context: vscode.FoldingContext,
@@ -60,6 +64,7 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 					vscode.FoldingRange[] | undefined
 				>();
 			}
+
 			console.log(
 				"Redundant folding ranges request received for: " +
 					document.uri.toString(),
@@ -67,9 +72,11 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 
 			return pendingRequest.promise;
 		}
+
 		const foldingRangeRequestInfo: FoldingRangeRequestInfo = {
 			promise: undefined,
 		};
+
 		this.pendingRequests.set(
 			document.uri.toString(),
 			foldingRangeRequestInfo,
@@ -77,7 +84,9 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 
 		const promise: Promise<vscode.FoldingRange[] | undefined> =
 			this.requestRanges(document.uri.toString(), token);
+
 		await promise;
+
 		this.pendingRequests.delete(document.uri.toString());
 
 		if (foldingRangeRequestInfo.promise !== undefined) {
@@ -92,6 +101,7 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 				},
 			);
 		}
+
 		return promise;
 	}
 
@@ -118,12 +128,16 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 			) {
 				throw new vscode.CancellationError();
 			}
+
 			throw e;
 		}
+
 		if (token.isCancellationRequested) {
 			throw new vscode.CancellationError();
 		}
+
 		const result: vscode.FoldingRange[] = [];
+
 		response.ranges.forEach((r: CppFoldingRange) => {
 			const foldingRange: vscode.FoldingRange = {
 				start: r.range.startLine,
@@ -149,6 +163,7 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 				default:
 					break;
 			}
+
 			result.push(foldingRange);
 		});
 
@@ -159,8 +174,11 @@ export class FoldingRangeProvider implements vscode.FoldingRangeProvider {
 		// Consider all pending requests as being outdated. Cancel them all.
 		const oldPendingRequests: Map<string, FoldingRangeRequestInfo> =
 			this.pendingRequests;
+
 		this.pendingRequests = new Map<string, FoldingRangeRequestInfo>();
+
 		this.onDidChangeFoldingRangesEvent.fire();
+
 		oldPendingRequests.forEach(
 			(value: FoldingRangeRequestInfo | undefined, _key: string) => {
 				if (value !== undefined && value.promise !== undefined) {

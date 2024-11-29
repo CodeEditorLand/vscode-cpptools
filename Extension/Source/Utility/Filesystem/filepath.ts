@@ -42,29 +42,41 @@ export async function filterToFolders(paths: string[]): Promise<string[]> {
 			set.delete(each);
 		}
 	}
+
 	return [...set.keys()];
 }
 
 export interface Entry {
 	name: string;
+
 	fullPath: string;
+
 	isFolder: boolean;
+
 	isFile: boolean;
+
 	isLink: boolean;
 }
 
 export interface File extends Entry {
 	extension: string;
+
 	basename: string;
+
 	isFolder: false;
+
 	isFile: true;
+
 	isExecutable: boolean;
+
 	size: number;
 }
 
 export interface Folder extends Entry {
 	isFolder: true;
+
 	isFile: false;
+
 	isExecutable: false;
 }
 
@@ -115,13 +127,18 @@ export class filepath {
 
 			if (isWindows) {
 				const fp = fullPath.toLowerCase();
+
 				entry.extension = extname(fp);
+
 				entry.basename = basename(fp, entry.extension);
+
 				entry.isExecutable = executableExtensions.has(entry.extension);
 
 				return entry;
 			}
+
 			entry.extension = extname(fullPath);
+
 			entry.basename = basename(fullPath, entry.extension);
 			// eslint-disable-next-line no-bitwise
 			entry.isExecutable = !!(
@@ -131,6 +148,7 @@ export class filepath {
 
 			return entry;
 		}
+
 		if (entry.isFolder) {
 			return entry;
 		}
@@ -177,7 +195,9 @@ export class filepath {
 	static parent(
 		name: Promise<string | undefined>,
 	): Promise<string | undefined>;
+
 	static parent(name: string | undefined): string | undefined;
+
 	static parent(
 		name: string | undefined | Promise<string | undefined>,
 	): string | undefined | Promise<string | undefined> {

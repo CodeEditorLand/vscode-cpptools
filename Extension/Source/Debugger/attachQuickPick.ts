@@ -48,15 +48,22 @@ export async function showQuickPick(
 	return new Promise<string | undefined>((resolve, reject) => {
 		const quickPick: vscode.QuickPick<AttachItem> =
 			vscode.window.createQuickPick<AttachItem>();
+
 		quickPick.title = localize("attach.to.process", "Attach to process");
+
 		quickPick.canSelectMany = false;
+
 		quickPick.matchOnDescription = true;
+
 		quickPick.matchOnDetail = true;
+
 		quickPick.placeholder = localize(
 			"select.process.attach",
 			"Select the process to attach to",
 		);
+
 		quickPick.buttons = [new RefreshButton()];
+
 		quickPick.items = processEntries;
 
 		const disposables: vscode.Disposable[] = [];
@@ -86,6 +93,7 @@ export async function showQuickPick(
 					quickPick.selectedItems[0].id;
 
 				disposables.forEach((item) => item.dispose());
+
 				quickPick.dispose();
 
 				resolve(selectedId);
@@ -97,6 +105,7 @@ export async function showQuickPick(
 		quickPick.onDidHide(
 			() => {
 				disposables.forEach((item) => item.dispose());
+
 				quickPick.dispose();
 
 				reject(

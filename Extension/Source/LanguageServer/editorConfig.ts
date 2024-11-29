@@ -23,10 +23,12 @@ export function mapIndentationReferenceToEditorConfig(
 		if (value === "statementBegin") {
 			return "statement_begin";
 		}
+
 		if (value === "outermostParenthesis") {
 			return "outermost_parenthesis";
 		}
 	}
+
 	return "innermost_parenthesis";
 }
 
@@ -36,10 +38,12 @@ export function mapIndentToEditorConfig(value: string | undefined): string {
 		if (value === "leftmostColumn") {
 			return "leftmost_column";
 		}
+
 		if (value === "oneLeft") {
 			return "one_left";
 		}
 	}
+
 	return "none";
 }
 
@@ -51,10 +55,12 @@ export function mapNewOrSameLineToEditorConfig(
 		if (value === "newLine") {
 			return "new_line";
 		}
+
 		if (value === "sameLine") {
 			return "same_line";
 		}
 	}
+
 	return "ignore";
 }
 
@@ -64,10 +70,12 @@ export function mapWrapToEditorConfig(value: string | undefined): string {
 		if (value === "allOneLineScopes") {
 			return "all_one_line_scopes";
 		}
+
 		if (value === "oneLiners") {
 			return "one_liners";
 		}
 	}
+
 	return "never";
 }
 
@@ -78,7 +86,9 @@ export function matchesSection(
 ): boolean {
 	// The following code is copied from: https://github.com/editorconfig/editorconfig-core-js
 	const matchOptions = { matchBase: true, dot: true };
+
 	pathPrefix = pathPrefix.replace(/[?*+@!()|[\]{}]/g, "\\$&");
+
 	pathPrefix = pathPrefix.replace(/^#/, "\\#");
 
 	switch (section.indexOf("/")) {
@@ -95,7 +105,9 @@ export function matchesSection(
 		default:
 			break;
 	}
+
 	section = section.replace(/\\\\/g, "\\\\\\\\");
+
 	section = section.replace(/\*\*/g, "{*,**/**/**}");
 
 	const matcher = new Minimatch(`${pathPrefix}/${section}`, matchOptions);
@@ -121,6 +133,7 @@ function parseEditorConfigContent(content: string): Record<string, any> {
 		if (line.startsWith("[") && line.endsWith("]")) {
 			// New section (e.g., [*.js])
 			currentSection = line.slice(1, -1).trim();
+
 			config[currentSection] = config[currentSection] || {};
 		} else {
 			// Key-value pair (e.g., indent_style = space).
@@ -145,6 +158,7 @@ function parseEditorConfigContent(content: string): Record<string, any> {
 					if (!config[currentSection]) {
 						config[currentSection] = {};
 					}
+
 					config[currentSection][trimmedKey] = value;
 				}
 			}
@@ -211,9 +225,11 @@ function getEditorConfig(filePath: string): any {
 				break; // Stop searching after processing the root = true file.
 			}
 		}
+
 		if (currentDir === rootDir) {
 			break; // Stop the loop after checking the root directory.
 		}
+
 		currentDir = path.dirname(currentDir);
 	}
 
@@ -231,7 +247,9 @@ export function getEditorConfigSettings(fsPath: string): Promise<any> {
 
 	if (!editorConfigSettings) {
 		editorConfigSettings = getEditorConfig(fsPath);
+
 		cachedEditorConfigSettings.set(fsPath, editorConfigSettings);
 	}
+
 	return editorConfigSettings;
 }

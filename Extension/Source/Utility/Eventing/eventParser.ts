@@ -63,6 +63,7 @@ export function parse(
 			default:
 				throw new Error(`unexpected keyword ${token.kind}`);
 		}
+
 		scanner.takeWhiteSpaceAndNewLines();
 	}
 
@@ -70,16 +71,19 @@ export function parse(
 
 	function addFilter(name: string) {
 		scanner.takeWhiteSpaceAndNewLines();
+
 		token = scanner.take();
 
 		if (token.kind === Kind.OpenBracket) {
 			// has a filter expression of some kind.
 			filters.set(name, generateFilterFn(scanner));
+
 			token = scanner.take();
 		} else {
 			// if there isn't a filter, then we just need to add a filter with 'true'
 			filters.set(name, true);
 		}
+
 		scanner.takeWhiteSpaceAndNewLines();
 
 		return token.kind === Kind.EndOfFile;
@@ -101,17 +105,20 @@ export function parse(
 				if (addFilter("*")) {
 					break processing;
 				}
+
 				break;
 
 			case Kind.Identifier:
 				if (addFilter(smash(token.text))) {
 					break processing;
 				}
+
 				break;
 
 			case Kind.OpenBracket:
 				// filter without event or discriminator name
 				filters.set("*", generateFilterFn(scanner));
+
 				token = scanner.take();
 
 				break;
@@ -143,6 +150,7 @@ export function parse(
 			`source specified but 'this' not found in handler name or expression for '${triggerExpression}' `,
 		);
 	}
+
 	return [isSync, once, filters, source];
 }
 
@@ -180,6 +188,7 @@ function generateFilterFn(scanner: Scanner): Filter {
 
 					while (inner.length) {
 						token = inner.shift()!;
+
 						rxExpression.push(token); // store this token as part of the regex
 
 						switch (token.kind) {
@@ -215,6 +224,7 @@ function generateFilterFn(scanner: Scanner): Filter {
 						}
 					}
 				}
+
 				break;
 
 			case Kind.OpenParen:
@@ -267,8 +277,10 @@ function generateFilterFn(scanner: Scanner): Filter {
 
 							continue;
 					}
+
 					break;
 				}
+
 				const jsExpression = js.map((each) => each.text).join("");
 
 				// sandbox style, assumes $data is set to Event.data and $strings is the collection of strings for the discriminator or the event itself

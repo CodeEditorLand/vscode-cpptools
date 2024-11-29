@@ -53,8 +53,10 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
 			) {
 				throw new vscode.CancellationError();
 			}
+
 			throw e;
 		}
+
 		const resultSymbols: vscode.SymbolInformation[] = [];
 
 		if (token.isCancellationRequested) {
@@ -73,6 +75,7 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
 				} else if (symbol.scope === SymbolScope.Protected) {
 					suffix = getLocalizedSymbolScope("protected", suffix);
 				}
+
 				name = name + " (" + suffix + ")";
 			} else {
 				if (symbol.scope === SymbolScope.Private) {
@@ -81,6 +84,7 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
 					name = name + " (protected)";
 				}
 			}
+
 			const vscodeSymbol: vscode.SymbolInformation =
 				new vscode.SymbolInformation(
 					name,
@@ -88,6 +92,7 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
 					symbol.containerName,
 					makeVscodeLocation(symbol.location),
 				);
+
 			resultSymbols.push(vscodeSymbol);
 		});
 

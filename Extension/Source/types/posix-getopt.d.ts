@@ -6,8 +6,11 @@
 declare module "posix-getopt" {
 	export interface IParsedOption {
 		error: boolean;
+
 		option: string;
+
 		optarg: string;
+
 		optopt?: string;
 	}
 
@@ -19,6 +22,7 @@ declare module "posix-getopt" {
 		);
 
 		getopt(): IParsedOption | undefined;
+
 		optind(): number;
 	}
 }

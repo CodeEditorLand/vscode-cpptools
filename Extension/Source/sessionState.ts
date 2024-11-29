@@ -43,22 +43,27 @@ export abstract class SessionState {
 		"cpptools.trustedCompilerFound",
 		false,
 	);
+
 	public static scanForCompilersDone = new SessionStateVariable<boolean>(
 		"cpptools.scanForCompilersDone",
 		false,
 	);
+
 	public static scanForCompilersEmpty = new SessionStateVariable<boolean>(
 		"cpptools.scanForCompilersEmpty",
 		false,
 	);
+
 	public static buildAndDebugIsFolderOpen = new SessionStateVariable<boolean>(
 		"cpptools.buildAndDebug.isFolderOpen",
 		false,
 	);
+
 	public static buildAndDebugIsSourceFile = new SessionStateVariable<boolean>(
 		"cpptools.buildAndDebug.isSourceFile",
 		false,
 	);
+
 	public static windowsVersion =
 		new SessionStateVariable<SupportedWindowsVersions>(
 			"cpptools.windowsVersion",

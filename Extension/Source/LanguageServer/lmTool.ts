@@ -94,24 +94,33 @@ export class CppConfigurationLanguageModelTool
 
 			if (chatContext.language) {
 				contextString += `The user is working on a ${chatContext.language} project. `;
+
 				telemetryProperties["language"] = chatContext.language;
 			}
+
 			if (chatContext.standardVersion) {
 				contextString += `The project uses language version ${chatContext.standardVersion}. `;
+
 				telemetryProperties["standardVersion"] =
 					chatContext.standardVersion;
 			}
+
 			if (chatContext.compiler) {
 				contextString += `The project compiles using the ${chatContext.compiler} compiler. `;
+
 				telemetryProperties["compiler"] = chatContext.compiler;
 			}
+
 			if (chatContext.targetPlatform) {
 				contextString += `The project targets the ${chatContext.targetPlatform} platform. `;
+
 				telemetryProperties["targetPlatform"] =
 					chatContext.targetPlatform;
 			}
+
 			if (chatContext.targetArchitecture) {
 				contextString += `The project targets the ${chatContext.targetArchitecture} architecture. `;
+
 				telemetryProperties["targetArchitecture"] =
 					chatContext.targetArchitecture;
 			}
@@ -119,6 +128,7 @@ export class CppConfigurationLanguageModelTool
 			return contextString;
 		} catch {
 			await this.reportError();
+
 			telemetryProperties["error"] = "true";
 
 			return "";

@@ -10,12 +10,15 @@ class Deferral {
 	constructor(callback: () => void, timeout: number) {
 		this.timer = setTimeout(() => {
 			this.timer = undefined;
+
 			callback();
 		}, timeout);
 	}
+
 	public cancel() {
 		if (this.timer) {
 			clearTimeout(this.timer);
+
 			this.timer = undefined;
 		}
 	}
@@ -23,7 +26,9 @@ class Deferral {
 
 export class DataBinding<T> {
 	private valueChanged = new vscode.EventEmitter<T>();
+
 	private isActive: boolean = true;
+
 	private deferral?: Deferral;
 
 	/**
@@ -50,18 +55,22 @@ export class DataBinding<T> {
 		if (value !== this.value) {
 			if (this.delay === 0 || value !== this.delayValueTrigger) {
 				this.value = value;
+
 				this.valueChanged.fire(this.value);
 			} else {
 				if (this.deferral) {
 					this.deferral.cancel();
 				}
+
 				this.deferral = new Deferral(() => {
 					this.value = value;
+
 					this.valueChanged.fire(this.value);
 				}, this.delay);
 			}
 		} else if (this.deferral) {
 			this.deferral.cancel();
+
 			this.deferral = undefined;
 		}
 	}
@@ -82,6 +91,7 @@ export class DataBinding<T> {
 
 	public activate(): void {
 		this.isActive = true;
+
 		this.valueChanged.fire(this.value);
 	}
 
@@ -91,6 +101,7 @@ export class DataBinding<T> {
 
 	public dispose(): void {
 		this.deactivate();
+
 		this.valueChanged.dispose();
 	}
 }

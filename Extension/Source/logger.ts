@@ -64,6 +64,7 @@ export class Logger {
 		if (!items) {
 			return vscode.window.showInformationMessage(message);
 		}
+
 		return vscode.window.showInformationMessage(message, ...items);
 	}
 
@@ -77,6 +78,7 @@ export class Logger {
 		if (!items) {
 			return vscode.window.showWarningMessage(message);
 		}
+
 		return vscode.window.showWarningMessage(message, ...items);
 	}
 
@@ -90,6 +92,7 @@ export class Logger {
 		if (!items) {
 			return vscode.window.showErrorMessage(message);
 		}
+
 		return vscode.window.showErrorMessage(message, ...items);
 	}
 }
@@ -120,6 +123,7 @@ export function getOutputChannel(): vscode.OutputChannel {
 			outputChannel.appendLine(`loggingLevel: ${loggingLevel}`);
 		}
 	}
+
 	return outputChannel;
 }
 
@@ -129,6 +133,7 @@ export function getDiagnosticsChannel(): vscode.OutputChannel {
 			localize("c.cpp.diagnostics", "C/C++ Diagnostics"),
 		);
 	}
+
 	return diagnosticsChannel;
 }
 
@@ -140,6 +145,7 @@ export function getCrashCallStacksChannel(): vscode.OutputChannel {
 				"C/C++ Crash Call Stacks",
 			),
 		);
+
 		crashCallStacksChannel.appendLine(
 			localize(
 				{
@@ -151,6 +157,7 @@ export function getCrashCallStacksChannel(): vscode.OutputChannel {
 			),
 		);
 	}
+
 	return crashCallStacksChannel;
 }
 
@@ -160,6 +167,7 @@ export function getSshChannel(): vscode.OutputChannel {
 			localize("c.cpp.ssh.channel", "{0}: SSH", "Cpptools"),
 		);
 	}
+
 	return sshChannel;
 }
 
@@ -175,6 +183,7 @@ export function getOutputChannelLogger(): Logger {
 			getOutputChannel().append(message),
 		);
 	}
+
 	return outputChannelLogger;
 }
 
@@ -182,12 +191,15 @@ export function log(output: string): void {
 	if (!outputChannel) {
 		outputChannel = getOutputChannel();
 	}
+
 	outputChannel.appendLine(`${output}`);
 }
 
 export interface DebugProtocolParams {
 	jsonrpc: string;
+
 	method: string;
+
 	params?: any;
 }
 
@@ -197,10 +209,13 @@ export function logDebugProtocol(output: DebugProtocolParams): void {
 			`${localize("c.cpp.debug.protocol", "C/C++ Debug Protocol")}`,
 		);
 	}
+
 	debugChannel.appendLine("");
+
 	debugChannel.appendLine(
 		"************************************************************************************************************************",
 	);
+
 	debugChannel.append(`${output}`);
 }
 
@@ -217,6 +232,7 @@ export function showWarning(params: ShowWarningParams): void {
 		warningChannel = vscode.window.createOutputChannel(
 			`${localize("c.cpp.warnings", "C/C++ Configuration Warnings")}`,
 		);
+
 		showChannel = true;
 	}
 	// Append before showing the channel, to avoid a delay.
@@ -229,6 +245,7 @@ export function showWarning(params: ShowWarningParams): void {
 
 export function logLocalized(params: LocalizeStringParams): void {
 	const output: string = getLocalizedString(params);
+
 	log(output);
 }
 
@@ -236,12 +253,15 @@ export function disposeOutputChannels(): void {
 	if (outputChannel) {
 		outputChannel.dispose();
 	}
+
 	if (diagnosticsChannel) {
 		diagnosticsChannel.dispose();
 	}
+
 	if (debugChannel) {
 		debugChannel.dispose();
 	}
+
 	if (warningChannel) {
 		warningChannel.dispose();
 	}

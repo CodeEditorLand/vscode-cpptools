@@ -60,6 +60,7 @@ export class Descriptors extends Map<string, Set<string>> {
 	add(key: string, ...values: string[]) {
 		if (values.length) {
 			const set = getOrAdd(this, smash(key), () => new Set<string>());
+
 			values.forEach((each) => set.add(each));
 		}
 	}

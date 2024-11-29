@@ -20,17 +20,24 @@ let ripgrep: Instance<ProcessFunction> | undefined;
 export async function initRipGrep(filename: string) {
 	if (!ripgrep) {
 		const rg = await filepath.isExecutable(filename);
+
 		strict(rg, `File ${filename} is not executable`);
+
 		ripgrep = await new Program(filename);
 	}
 }
 
 export class FastFinder implements AsyncIterable<string> {
 	private keepOnlyExecutables: boolean;
+
 	private executableExtensions = new Array<string>();
+
 	private processes = new Array<Instance<Process>>();
+
 	private pending = 0;
+
 	private readyToComplete = false;
+
 	private distinct = new Set<string>();
 
 	#files = accumulator<string>().autoComplete(false);
@@ -70,7 +77,9 @@ export class FastFinder implements AsyncIterable<string> {
 	 *
 	 */
 	scan(...location: string[]): FastFinder;
+
 	scan(depth: number, ...location: string[]): FastFinder;
+
 	scan(...location: (string | number)[]): FastFinder {
 		const depth =
 			(typeof location[0] === "number"
@@ -95,6 +104,7 @@ export class FastFinder implements AsyncIterable<string> {
 		// only search if there are globs and locations to search
 		if (globs.length && location.length) {
 			this.pending++;
+
 			void ripgrep!(
 				...globs.map((each) => ["--glob", each]).flat(),
 				"--max-depth",
@@ -107,12 +117,14 @@ export class FastFinder implements AsyncIterable<string> {
 			)
 				.then(async (proc) => {
 					const process = proc as unknown as Instance<Process>;
+
 					this.processes.push(process);
 
 					for await (const line of process.stdio) {
 						if (this.distinct.has(line)) {
 							continue;
 						}
+
 						this.distinct.add(line);
 
 						if (
@@ -132,6 +144,7 @@ export class FastFinder implements AsyncIterable<string> {
 					}
 				});
 		}
+
 		return this;
 	}
 }
@@ -140,16 +153,21 @@ interface MatchData {
 	path: {
 		text: string;
 	};
+
 	lines: {
 		text: string;
 	};
+
 	line_number: number;
+
 	absolute_offset: number;
+
 	submatches: unknown[];
 }
 
 interface RipGrepMatch {
 	type: "match";
+
 	data: MatchData;
 }
 
@@ -163,8 +181,11 @@ export async function* ripGrep(
 	regex: string,
 	options?: {
 		glob?: string;
+
 		binary?: boolean;
+
 		encoding?: "utf-16" | "utf-8";
+
 		ignoreCase?: boolean;
 	},
 ): AsyncGenerator<MatchData> {
@@ -175,15 +196,19 @@ export async function* ripGrep(
 	if (options?.binary) {
 		optionalArguments.push("--binary");
 	}
+
 	if (options?.encoding) {
 		optionalArguments.push("-E", options.encoding);
 	}
+
 	if (options?.glob) {
 		optionalArguments.push("--iglob", options.glob);
 	}
+
 	if (options?.ignoreCase) {
 		optionalArguments.push("--ignore-case");
 	}
+
 	regex = regex.replace(/\?\</g, "?P<");
 
 	const proc = await ripgrep(

@@ -50,6 +50,7 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 					if (offset_paren < 0) {
 						offset_paren = symbol.name.length;
 					}
+
 					const offset_scope: number = symbol.name.lastIndexOf(
 						"::",
 						offset_paren - 2,
@@ -57,6 +58,7 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 
 					if (offset_scope > 0) {
 						detail = symbol.name.substring(0, offset_scope);
+
 						symbol.name = symbol.name.substring(offset_scope + 2);
 					}
 				}
@@ -68,6 +70,7 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 				if (!r.contains(sr)) {
 					r = sr;
 				}
+
 				const vscodeSymbol: vscode.DocumentSymbol =
 					new vscode.DocumentSymbol(
 						symbol.name,
@@ -76,6 +79,7 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 						r,
 						sr,
 					);
+
 				vscodeSymbol.children = this.getChildrenSymbols(
 					symbol.children,
 				);
@@ -83,8 +87,10 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 				documentSymbols.push(vscodeSymbol);
 			});
 		}
+
 		return documentSymbols;
 	}
+
 	public async provideDocumentSymbols(
 		document: vscode.TextDocument,
 		token: vscode.CancellationToken,
@@ -93,6 +99,7 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 
 		if (client instanceof DefaultClient) {
 			const defaultClient: DefaultClient = <DefaultClient>client;
+
 			await client.ready;
 
 			const params: GetDocumentSymbolRequestParams = {
@@ -114,16 +121,20 @@ export class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 				) {
 					throw new vscode.CancellationError();
 				}
+
 				throw e;
 			}
+
 			if (token.isCancellationRequested) {
 				throw new vscode.CancellationError();
 			}
+
 			const resultSymbols: vscode.DocumentSymbol[] =
 				this.getChildrenSymbols(response.symbols);
 
 			return resultSymbols;
 		}
+
 		return [];
 	}
 }

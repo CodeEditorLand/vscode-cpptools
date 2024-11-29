@@ -26,7 +26,9 @@ export enum MessageCategory {
 
 export interface Message {
 	code: number;
+
 	category: MessageCategory;
+
 	text: string;
 }
 
@@ -280,8 +282,11 @@ export class Scanner implements Token {
 
 	constructor(text: string) {
 		this.#text = text;
+
 		this.#length = text.length;
+
 		this.advance(0);
+
 		this.markPosition();
 
 		// let's hide these, then we can clone this nicely.
@@ -303,14 +308,21 @@ export class Scanner implements Token {
 			case undefined:
 			case 1:
 				offsetAdvancedBy = this.#chSz;
+
 				this.#offset += this.#chSz;
+
 				this.#ch = this.#chNext;
+
 				this.#chSz = this.#chNextSz;
+
 				this.#chNext = this.#chNextNext;
+
 				this.#chNextSz = this.#chNextNextSz;
 
 				newOffset = this.#offset + this.#chSz + this.#chNextSz;
+
 				codeOrChar = this.#text.charCodeAt(newOffset);
+
 				this.#chNextNext =
 					(this.#chNextNextSz = sizeOf(codeOrChar)) === 1
 						? codeOrChar
@@ -320,19 +332,26 @@ export class Scanner implements Token {
 
 			case 2:
 				offsetAdvancedBy = this.#chSz + this.#chNextSz;
+
 				this.#offset += this.#chSz + this.#chNextSz;
+
 				this.#ch = this.#chNextNext;
+
 				this.#chSz = this.#chNextNextSz;
 
 				newOffset = this.#offset + this.#chSz;
+
 				codeOrChar = this.#text.charCodeAt(newOffset);
+
 				this.#chNext =
 					(this.#chNextSz = sizeOf(codeOrChar)) === 1
 						? codeOrChar
 						: this.#text.codePointAt(newOffset)!;
 
 				newOffset += this.#chNextSz;
+
 				codeOrChar = this.#text.charCodeAt(newOffset);
+
 				this.#chNextNext =
 					(this.#chNextNextSz = sizeOf(codeOrChar)) === 1
 						? codeOrChar
@@ -344,6 +363,7 @@ export class Scanner implements Token {
 			case 3:
 				offsetAdvancedBy =
 					this.#chSz + this.#chNextSz + this.#chNextNextSz;
+
 				count -= 3;
 
 				while (count) {
@@ -352,26 +372,33 @@ export class Scanner implements Token {
 						this.#text.charCodeAt(this.#offset + offsetAdvancedBy),
 					);
 				}
+
 				this.#offset += offsetAdvancedBy;
 
 			// eslint-disable-next-line no-fallthrough
 			case 0:
 				newOffset = this.#offset;
+
 				codeOrChar = this.#text.charCodeAt(newOffset);
+
 				this.#ch =
 					(this.#chSz = sizeOf(codeOrChar)) === 1
 						? codeOrChar
 						: this.#text.codePointAt(newOffset)!;
 
 				newOffset += this.#chSz;
+
 				codeOrChar = this.#text.charCodeAt(newOffset);
+
 				this.#chNext =
 					(this.#chNextSz = sizeOf(codeOrChar)) === 1
 						? codeOrChar
 						: this.#text.codePointAt(newOffset)!;
 
 				newOffset += this.#chNextSz;
+
 				codeOrChar = this.#text.charCodeAt(newOffset);
+
 				this.#chNextNext =
 					(this.#chNextNextSz = sizeOf(codeOrChar)) === 1
 						? codeOrChar
@@ -385,6 +412,7 @@ export class Scanner implements Token {
 		const originalOffset = this.#offset;
 
 		const offsetAdvancedBy = this.advance(count);
+
 		this.text =
 			value || this.#text.substr(originalOffset, offsetAdvancedBy);
 
@@ -405,10 +433,13 @@ export class Scanner implements Token {
 	/** updates the position and marks the location  */
 	private newLine(count = 1) {
 		this.text = this.#text.substr(this.#offset, count);
+
 		this.advance(count);
 
 		this.#line++;
+
 		this.#column = 0;
+
 		this.markPosition(); // make sure the map has the new location
 
 		return (this.kind = Kind.NewLine);
@@ -418,6 +449,7 @@ export class Scanner implements Token {
 		if (this.offset === undefined) {
 			this.scan();
 		}
+
 		return this;
 	}
 
@@ -432,6 +464,7 @@ export class Scanner implements Token {
 	scan(): Kind {
 		// this token starts at
 		this.offset = this.#offset;
+
 		this.stringValue = undefined;
 
 		if (!(this.eof || isNaN(this.#ch))) {
@@ -689,6 +722,7 @@ export class Scanner implements Token {
 
 	take(): Token {
 		const result = { ...this };
+
 		this.scan();
 
 		return result;
@@ -780,6 +814,7 @@ export class Scanner implements Token {
 			case Kind.MultiLineHashComment:
 				return true;
 		}
+
 		return false;
 	}
 
@@ -800,6 +835,7 @@ export class Scanner implements Token {
 					? this.next(Kind.GreaterThanEquals, 2)
 					: this.next(Kind.GreaterThan);
 		}
+
 		return this.kind;
 	}
 
@@ -815,6 +851,7 @@ export class Scanner implements Token {
 						return false;
 					}
 				}
+
 				return (
 					this.#ch === CharacterCodes.equals ||
 					this.#text.charCodeAt(
@@ -834,6 +871,7 @@ export class Scanner implements Token {
 		do {
 			// advance the position
 			this.#column += this.widthOfCh;
+
 			this.advance();
 		} while (isWhiteSpaceSingleLine(this.#ch));
 
@@ -851,6 +889,7 @@ export class Scanner implements Token {
 		while (isDigit(this.#ch)) {
 			this.advance();
 		}
+
 		return this.#text.substring(start, this.#offset);
 	}
 
@@ -865,6 +904,7 @@ export class Scanner implements Token {
 
 		if (this.#ch === CharacterCodes.dot) {
 			this.advance();
+
 			decimal = this.scanDigits();
 		}
 
@@ -873,7 +913,9 @@ export class Scanner implements Token {
 				isDigit(this.#chNext),
 				"ParseError: Digit expected (0-9)",
 			);
+
 			this.advance();
+
 			scientific = this.scanDigits();
 		}
 
@@ -896,6 +938,7 @@ export class Scanner implements Token {
 			isHexDigit(this.#chNextNext),
 			"ParseError: Hex Digit expected (0-F,0-f)",
 		);
+
 		this.advance(2);
 
 		this.text = `0x${this.scanUntil((ch) => !isHexDigit(ch), "Hex Digit")}`;
@@ -942,11 +985,15 @@ export class Scanner implements Token {
 						? 2
 						: 1,
 				);
+
 				this.#line++;
+
 				this.#column = 0;
+
 				this.markPosition(); // make sure the map has the new location
 			} else {
 				this.#column += this.widthOfCh;
+
 				this.advance();
 			}
 
@@ -975,11 +1022,13 @@ export class Scanner implements Token {
 
 		return (this.kind = Kind.SingleLineComment);
 	}
+
 	private scanHashComment() {
 		this.text = this.scanUntil(isLineBreak);
 
 		return (this.kind = Kind.SingleLineHashComment);
 	}
+
 	private scanMultiLineComment() {
 		this.text = this.scanUntil(
 			(ch, chNext) =>
@@ -991,6 +1040,7 @@ export class Scanner implements Token {
 
 		return (this.kind = Kind.MultiLineComment);
 	}
+
 	private scanMultiLineHashComment() {
 		this.text = this.scanUntil(
 			(ch, chNext) =>
@@ -1034,6 +1084,7 @@ export class Scanner implements Token {
 					if (chNext === CharacterCodes.lineFeed) {
 						crlf = true;
 					}
+
 					return false;
 				}
 
@@ -1060,6 +1111,7 @@ export class Scanner implements Token {
 		}
 
 		this.text = text;
+
 		this.stringValue = value;
 
 		return (this.kind = Kind.StringLiteral);
@@ -1110,7 +1162,9 @@ export class Scanner implements Token {
 			}
 
 			result += text.substring(start, pos);
+
 			pos++;
+
 			ch = text.charCodeAt(pos);
 
 			switch (ch) {
@@ -1158,6 +1212,7 @@ export class Scanner implements Token {
 			}
 
 			pos++;
+
 			start = pos;
 		}
 
@@ -1174,6 +1229,7 @@ export class Scanner implements Token {
 
 	scanVariable() {
 		this.text = "$";
+
 		this.text += this.scanUntil((ch) => !isIdentifierPart(ch));
 
 		return (this.kind = Kind.Variable);
@@ -1197,19 +1253,24 @@ export class Scanner implements Token {
 
 		while (first <= last) {
 			middle = Math.floor((first + last) / 2);
+
 			position = this.#map[middle];
 
 			if (position.offset === offset) {
 				return { line: position.line, column: position.column };
 			}
+
 			if (position.offset < offset) {
 				first = middle + 1;
 
 				continue;
 			}
+
 			last = middle - 1;
+
 			position = this.#map[last];
 		}
+
 		return {
 			line: position.line,
 			column: position.column + (offset - position.offset),

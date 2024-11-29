@@ -37,6 +37,7 @@ export class DocumentFormattingEditProvider
 		if (settings.formattingEngine === "disabled") {
 			return [];
 		}
+
 		await this.client.ready;
 
 		const filePath: string = document.uri.fsPath;
@@ -57,13 +58,16 @@ export class DocumentFormattingEditProvider
 				typeof editor.options.insertSpaces === "boolean"
 			) {
 				options.insertSpaces = editor.options.insertSpaces;
+
 				insertSpacesSet = true;
 			}
+
 			if (
 				editor.options.tabSize &&
 				typeof editor.options.tabSize === "number"
 			) {
 				options.tabSize = editor.options.tabSize;
+
 				tabSizeSet = true;
 			}
 
@@ -75,11 +79,13 @@ export class DocumentFormattingEditProvider
 				if (!insertSpacesSet) {
 					options.insertSpaces = settings.editorInsertSpaces ?? true;
 				}
+
 				if (!tabSizeSet) {
 					options.tabSize = settings.editorTabSize ?? 4;
 				}
 			}
 		}
+
 		const useVcFormat: boolean = settings.useVcFormat(document);
 
 		const configCallBack = async (
@@ -120,11 +126,14 @@ export class DocumentFormattingEditProvider
 				) {
 					throw new vscode.CancellationError();
 				}
+
 				throw e;
 			}
+
 			if (token.isCancellationRequested) {
 				throw new vscode.CancellationError();
 			}
+
 			const results: vscode.TextEdit[] = makeVscodeTextEdits(
 				response.edits,
 			);
@@ -144,6 +153,7 @@ export class DocumentFormattingEditProvider
 					// Check if there is an existing edit that extends the end of the file.
 					// It would be the last edit, but edit may not be sorted.  If multiple, we need the last one.
 					let lastEdit: vscode.TextEdit | undefined;
+
 					results.forEach((edit) => {
 						if (
 							edit.range.end.isAfterOrEqual(endPosition) &&
@@ -169,6 +179,7 @@ export class DocumentFormattingEditProvider
 					}
 				}
 			}
+
 			return results;
 		};
 

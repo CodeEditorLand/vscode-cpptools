@@ -22,10 +22,12 @@ const maxSettingLengthForTelemetry: number = 50;
 
 export class SettingsTracker {
 	private previousCppSettings: { [key: string]: any } = {};
+
 	private resource: vscode.Uri | undefined;
 
 	constructor(resource: vscode.Uri | undefined) {
 		this.resource = resource;
+
 		this.collectSettings(() => true);
 	}
 
@@ -87,6 +89,7 @@ export class SettingsTracker {
 					// Limit settings recursion to 4 dots (not counting the first one in: `C_Cpp.`)
 					return;
 				}
+
 				for (const subKey in val) {
 					const newKey: string = key + "." + subKey;
 
@@ -105,6 +108,7 @@ export class SettingsTracker {
 					if (subVal === undefined) {
 						continue;
 					}
+
 					if (
 						newRawSetting === undefined &&
 						subVal instanceof Object
@@ -172,6 +176,7 @@ export class SettingsTracker {
 					if (type !== "string") {
 						return val;
 					}
+
 					const curEnum: any[] = curSetting["enum"];
 
 					if (
@@ -182,6 +187,7 @@ export class SettingsTracker {
 					) {
 						return "<invalid>";
 					}
+
 					return val;
 				} else if (val === curSetting["default"]) {
 					// C_Cpp.default.browse.path is a special case where the default value is null and doesn't match the type definition.
@@ -189,6 +195,7 @@ export class SettingsTracker {
 				}
 			}
 		}
+
 		return undefined;
 	}
 
@@ -205,12 +212,15 @@ export class SettingsTracker {
 						if (typeof value === t) {
 							return t;
 						}
+
 						if (t === "integer" && typeof value === "number") {
 							return "number";
 						}
+
 						if (t === "array" && value instanceof Array) {
 							return t;
 						}
+
 						if (t === "null" && value === null) {
 							return t;
 						}
@@ -220,11 +230,13 @@ export class SettingsTracker {
 				if (typeof value === type) {
 					return type;
 				}
+
 				if (type === "integer" && typeof value === "number") {
 					return "number";
 				}
 			}
 		}
+
 		return undefined;
 	}
 
@@ -236,6 +248,7 @@ export class SettingsTracker {
 	): KeyValuePair | undefined {
 		if (filter(key, val, settings)) {
 			let value: string;
+
 			this.previousCppSettings[key] = val;
 
 			switch (key) {
@@ -258,6 +271,7 @@ export class SettingsTracker {
 
 								break;
 							}
+
 							default: {
 								value = "...";
 
@@ -267,12 +281,15 @@ export class SettingsTracker {
 					} else {
 						value = "null";
 					}
+
 					key = newKey;
 
 					break;
 				}
+
 				case "commentContinuationPatterns": {
 					key = "commentContinuationPatterns2";
+
 					value = this.areEqual(
 						val,
 						settings.inspect(key)?.defaultValue,
@@ -281,6 +298,7 @@ export class SettingsTracker {
 						: "..."; // Track whether it's being used, but nothing specific about it.
 					break;
 				}
+
 				default: {
 					if (
 						key === "clang_format_path" ||
@@ -307,12 +325,15 @@ export class SettingsTracker {
 					}
 				}
 			}
+
 			if (value && value.length > maxSettingLengthForTelemetry) {
 				value =
 					value.substring(0, maxSettingLengthForTelemetry) + "...";
 			}
+
 			return { key: key, value: value };
 		}
+
 		return undefined;
 	}
 
@@ -320,6 +341,7 @@ export class SettingsTracker {
 		if (value1 instanceof Object && value2 instanceof Object) {
 			return JSON.stringify(value1) === JSON.stringify(value2);
 		}
+
 		return value1 === value2;
 	}
 }

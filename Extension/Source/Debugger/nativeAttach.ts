@@ -67,11 +67,14 @@ abstract class NativeAttachItemsProvider implements AttachItemsProvider {
 				if (b.name === undefined) {
 					return 0;
 				}
+
 				return 1;
 			}
+
 			if (b.name === undefined) {
 				return -1;
 			}
+
 			const aLower: string = a.name.toLowerCase();
 
 			const bLower: string = b.name.toLowerCase();
@@ -79,6 +82,7 @@ abstract class NativeAttachItemsProvider implements AttachItemsProvider {
 			if (aLower === bLower) {
 				return 0;
 			}
+
 			return aLower < bLower ? -1 : 1;
 		});
 
@@ -140,6 +144,7 @@ export class PsAttachItemsProvider extends NativeAttachItemsProvider {
 					),
 				);
 		}
+
 		const processes: string = await spawnChildProcess(processCmd, token);
 
 		return PsProcessParser.ParseProcessFromPs(processes);
@@ -150,6 +155,7 @@ export class PsProcessParser {
 	private static get secondColumnCharacters(): number {
 		return 50;
 	}
+
 	private static get commColumnTitle(): string {
 		return Array(PsProcessParser.secondColumnCharacters).join("a");
 	}
@@ -161,9 +167,11 @@ export class PsProcessParser {
 	public static get psLinuxCommand(): string {
 		return `ps axww -o pid=,comm=${PsProcessParser.commColumnTitle},args=`;
 	}
+
 	public static get psDarwinCommand(): string {
 		return `ps axww -o pid=,comm=${PsProcessParser.commColumnTitle},args= -c`;
 	}
+
 	public static get psToyboxCommand(): string {
 		return `ps -A -o pid=,comm=${PsProcessParser.commColumnTitle},args=`;
 	}
@@ -255,6 +263,7 @@ function spawnChildProcess(
 				} catch (e) {
 					// Failed to kill process.
 				}
+
 				reject(
 					new Error(
 						localize(
@@ -272,6 +281,7 @@ function spawnChildProcess(
 			// Handle cancellation
 			cancellationTokenListener = token?.onCancellationRequested(() => {
 				clearTimeout(processTimeout);
+
 				process.removeAllListeners();
 
 				try {
@@ -279,6 +289,7 @@ function spawnChildProcess(
 				} catch (e) {
 					// Failed to kill process.
 				}
+
 				reject(
 					new Error(
 						localize(
@@ -294,6 +305,7 @@ function spawnChildProcess(
 
 			const cleanUpCallbacks = () => {
 				clearTimeout(processTimeout);
+
 				process.removeAllListeners();
 
 				if (cancellationTokenListener) {
@@ -328,8 +340,10 @@ function spawnChildProcess(
 
 					if (stderr && stderr.length > 0) {
 						errorMessage += os.EOL;
+
 						errorMessage += stderr;
 					}
+
 					reject(new Error(errorMessage));
 
 					return;
@@ -352,6 +366,7 @@ function spawnChildProcess(
 			// Handle process error
 			process.on("error", (error) => {
 				cleanUpCallbacks();
+
 				reject(error);
 			});
 		} else {
@@ -393,9 +408,11 @@ export class WmicProcessParser {
 	private static get wmicNameTitle(): string {
 		return "Name";
 	}
+
 	private static get wmicCommandLineTitle(): string {
 		return "CommandLine";
 	}
+
 	private static get wmicPidTitle(): string {
 		return "ProcessId";
 	}
@@ -424,6 +441,7 @@ export class WmicProcessParser {
 			// Each entry of processes has ProcessId as the last line
 			if (line.lastIndexOf(WmicProcessParser.wmicPidTitle, 0) === 0) {
 				processEntries.push(currentProcess);
+
 				currentProcess = new Process(
 					"current process",
 					undefined,
@@ -487,7 +505,9 @@ export class CimAttachItemsProvider extends NativeAttachItemsProvider {
 
 type CimProcessInfo = {
 	Name: string;
+
 	ProcessId: number;
+
 	CommandLine: string | null;
 };
 
@@ -495,6 +515,7 @@ export class CimProcessParser {
 	private static get extendedLengthPathPrefix(): string {
 		return "\\\\?\\";
 	}
+
 	private static get ntObjectManagerPathPrefix(): string {
 		return "\\??\\";
 	}
@@ -509,9 +530,11 @@ export class CimProcessParser {
 			if (cmdline?.startsWith(this.extendedLengthPathPrefix)) {
 				cmdline = cmdline.slice(this.extendedLengthPathPrefix.length);
 			}
+
 			if (cmdline?.startsWith(this.ntObjectManagerPathPrefix)) {
 				cmdline = cmdline.slice(this.ntObjectManagerPathPrefix.length);
 			}
+
 			return new Process(info.Name, `${info.ProcessId}`, cmdline);
 		});
 	}

@@ -69,24 +69,34 @@ const elementId: { [key: string]: string } = {
 
 export class SettingsPanel {
 	private telemetry: { [key: string]: number } = {};
+
 	private disposable?: vscode.Disposable;
 
 	// Events
 	private settingsPanelActivated = new vscode.EventEmitter<void>();
+
 	private configValuesChanged = new vscode.EventEmitter<void>();
+
 	private configSelectionChanged = new vscode.EventEmitter<void>();
+
 	private addConfigRequested = new vscode.EventEmitter<string>();
 
 	// Configuration data
 	private configValues: config.Configuration = { name: "" };
+
 	private isIntelliSenseModeDefined: boolean = false;
+
 	private configIndexSelected: number = 0;
+
 	private compilerPaths: string[] = [];
 
 	// WebviewPanel objects
 	private panel?: vscode.WebviewPanel;
+
 	private disposablesPanel?: vscode.Disposable;
+
 	private static readonly viewType: string = "settingsPanel";
+
 	private static readonly title: string = localize(
 		"c.cpp.configurations",
 		"C/C++ Configurations",
@@ -264,6 +274,7 @@ export class SettingsPanel {
 	private onPanelDisposed(): void {
 		if (this.disposablesPanel) {
 			this.disposablesPanel.dispose();
+
 			this.panel = undefined;
 		}
 	}
@@ -282,11 +293,13 @@ export class SettingsPanel {
 				command: "setKnownCompilers",
 				compilers: this.compilerPaths,
 			});
+
 			void this.panel.webview.postMessage({
 				command: "updateConfigSelection",
 				selections: configSelection,
 				selectedIndex: this.configIndexSelected,
 			});
+
 			void this.panel.webview.postMessage({
 				command: "updateConfig",
 				config: this.configValues,
@@ -319,6 +332,7 @@ export class SettingsPanel {
 		if (message === null || message === undefined) {
 			return;
 		}
+
 		switch (message.command) {
 			case "change":
 				this.updateConfig(message);
@@ -342,6 +356,7 @@ export class SettingsPanel {
 
 			case "initialized":
 				this.initialized = true;
+
 				this.settingsPanelActivated.fire();
 
 				break;
@@ -350,12 +365,15 @@ export class SettingsPanel {
 
 	private addConfig(name: string): void {
 		this.addConfigRequested.fire(name);
+
 		this.logTelemetryForElement(elementId.addConfigName);
 	}
 
 	private configSelect(index: number): void {
 		this.configIndexSelected = index;
+
 		this.configSelectionChanged.fire();
+
 		this.logTelemetryForElement(elementId.configSelection);
 	}
 
@@ -411,6 +429,7 @@ export class SettingsPanel {
 				} else {
 					this.configValues.intelliSenseMode = undefined;
 				}
+
 				break;
 
 			case elementId.cStandard:
@@ -466,6 +485,7 @@ export class SettingsPanel {
 				if (!this.configValues.browse) {
 					this.configValues.browse = {};
 				}
+
 				this.configValues.browse.path = splitEntries(message.value);
 
 				break;
@@ -474,6 +494,7 @@ export class SettingsPanel {
 				if (!this.configValues.browse) {
 					this.configValues.browse = {};
 				}
+
 				this.configValues.browse.limitSymbolsToIncludedHeaders =
 					message.value;
 
@@ -483,6 +504,7 @@ export class SettingsPanel {
 				if (!this.configValues.browse) {
 					this.configValues.browse = {};
 				}
+
 				this.configValues.browse.databaseFilename =
 					message.value || undefined;
 
@@ -490,6 +512,7 @@ export class SettingsPanel {
 		}
 
 		this.configValuesChanged.fire();
+
 		this.logTelemetryForElement(message.key);
 	}
 
@@ -497,6 +520,7 @@ export class SettingsPanel {
 		if (this.telemetry[elementId] === undefined) {
 			this.telemetry[elementId] = 0;
 		}
+
 		this.telemetry[elementId]++;
 	}
 
@@ -516,6 +540,7 @@ export class SettingsPanel {
 					),
 				),
 			);
+
 			content = content.replace(
 				/{{cpp_image_uri}}/g,
 				cppImageUri.toString(),
@@ -526,6 +551,7 @@ export class SettingsPanel {
 					path.join(util.extensionPath, "dist/ui/settings.js"),
 				),
 			);
+
 			content = content.replace(
 				/{{settings_js_uri}}/g,
 				settingsJsUri.toString(),
@@ -548,6 +574,7 @@ export class SettingsPanel {
 				Math.floor(Math.random() * possible.length),
 			);
 		}
+
 		return nonce;
 	}
 }

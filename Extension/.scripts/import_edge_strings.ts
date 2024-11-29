@@ -20,6 +20,7 @@ export async function main() {
     }
 
     console.log("Importing EDGE strings from Localize repo: " + localizeRepoPath);
+
     console.log("Writing to cpptools repo: " + cpptoolsRepoPath);
 
     if (!fs.existsSync(path.join(localizeRepoPath, ".git"))) {
@@ -56,6 +57,7 @@ export async function main() {
         if (!languageInfo) {
             return;
         }
+
         const languageId = languageInfo.id;
 
         const outputLanguageFolder = path.join(cpptoolsRepoPath, "Extension/bin/messages", languageId);
@@ -66,6 +68,7 @@ export async function main() {
 
         // Scan once, just to determine how many there are the size of the array we need
         let highestValue = 0;
+
         parseString(sourceContent, function (err, result) {
             result.LCX.Item.forEach((item) => {
                 if (item.$.ItemId === ";String Table") {
@@ -83,6 +86,7 @@ export async function main() {
         });
 
         const resultArray = new Array(highestValue);
+
         parseString(sourceContent, function (err, result) {
             result.LCX.Item.forEach((item) => {
                 if (item.$.ItemId === ";String Table") {
@@ -102,6 +106,7 @@ export async function main() {
         });
 
         await mkdir(outputLanguageFolder);
+
         await write(outputPath, JSON.stringify(resultArray, null, 4) + "\n");
     }
 }

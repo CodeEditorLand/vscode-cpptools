@@ -53,19 +53,29 @@ declare module "ssh-config" {
 	 */
 	export interface ResolvedConfiguration {
 		Host: string;
+
 		HostName: string;
+
 		IdentityFile?: string[];
+
 		User?: string;
+
 		Port?: string;
+
 		ConnectTimeout?: string;
+
 		RemoteCommand?: string;
+
 		LocalForward?: string[];
+
 		AddressFamily?: string;
 	}
 
 	export interface BaseConfigurationDirective {
 		type: Type.Directive;
+
 		param: string;
+
 		value: string | string[];
 	}
 
@@ -76,11 +86,13 @@ declare module "ssh-config" {
 	export interface HostConfigurationDirective
 		extends BaseConfigurationDirective {
 		param: "Host";
+
 		config: LeafConfigurationEntry[];
 	}
 
 	export interface ConfigurationComment {
 		type: Type.Comment;
+
 		content: string;
 	}
 

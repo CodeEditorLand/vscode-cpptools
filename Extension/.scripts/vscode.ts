@@ -29,6 +29,7 @@ export async function install() {
         // keeping this out of the Extension folder means we're not worried about VS Code getting weird with locking files and such.
 
         verbose(`Isolated VSCode test folder: ${isolated}`);
+
         await mkdir(isolated);
 
         const vscodeExecutablePath = await downloadAndUnzipVSCode(options);
@@ -49,6 +50,7 @@ export async function install() {
         }
 
         settingsJson["git.openRepositoryInParentFolders"] = "never";
+
         await write(settings, JSON.stringify(settingsJson, null, 4));
 
         return {
@@ -63,5 +65,6 @@ export async function install() {
 
 export async function reset() {
     verbose(`Removing VSCode test folder: ${isolated}`);
+
     await rimraf(isolated);
 }

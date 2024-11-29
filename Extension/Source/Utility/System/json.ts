@@ -28,6 +28,7 @@ export function stringify(
 	if (is.promise(value)) {
 		return value.then((v) => stringify(v));
 	}
+
 	const types = options?.types ?? [];
 
 	const format = options?.format ?? false;
@@ -41,19 +42,23 @@ export function stringify(
 				if (visited.has(value)) {
 					return "['Circular']";
 				}
+
 				visited.add(value);
 			}
+
 			if (
 				value?.constructor?.name === "Error" ||
 				types.filter((each) => value instanceof each).length
 			) {
 				const result = {} as Record<string, any>;
+
 				Object.getOwnPropertyNames(value).forEach(
 					(propName) => (result[propName] = (value as any)[propName]),
 				);
 
 				return result;
 			}
+
 			return value;
 		},
 		format ? 2 : undefined,

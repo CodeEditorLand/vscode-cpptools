@@ -70,6 +70,7 @@ export async function getSshConfigHostInfos(): Promise<
 		const config: Configuration = await getSshConfiguration(configPath);
 
 		const hosts: { [host: string]: string } = extractHostNames(config);
+
 		Object.keys(hosts).forEach((name) =>
 			hostInfos.set(name, { hostName: hosts[name], file: configPath }),
 		);
@@ -96,6 +97,7 @@ function extractHostNames(parsedConfig: Configuration): {
 				),
 			);
 		}
+
 		if (resolvedConfig?.HostName !== undefined) {
 			hostNames[host] = resolvedConfig.HostName;
 		} else {
@@ -138,11 +140,13 @@ export async function getSshConfiguration(
 
 		return parse("");
 	}
+
 	const config: Configuration = caseNormalizeConfigProps(parsedSrc);
 
 	if (resolveIncludes) {
 		await resolveConfigIncludes(config, configurationPath);
 	}
+
 	return config;
 }
 
@@ -210,6 +214,7 @@ async function getIncludedConfigFile(
 
 		return;
 	}
+
 	config.push(...parsedIncludedContents);
 }
 
@@ -223,6 +228,7 @@ export async function writeSshConfiguration(
 		await vscode.workspace.fs.createDirectory(
 			vscode.Uri.file(path.dirname(configurationPath)),
 		);
+
 		await fs.writeFile(configurationPath, configuration.toString());
 	} catch (e) {
 		getSshChannel().appendLine(
@@ -248,6 +254,7 @@ async function getSshConfigSource(configurationPath: string): Promise<string> {
 		if ((e as NodeJS.ErrnoException).code === "ENOENT") {
 			return "";
 		}
+
 		getSshChannel().appendLine(
 			localize(
 				"failed.to.read.file",
@@ -310,6 +317,7 @@ function caseNormalizeConfigProps(config: Configuration): Configuration {
 
 function extractHosts(parsedConfig: Configuration): string[] {
 	const hosts: Set<string> = new Set<string>();
+
 	parsedConfig.filter(isHostDirective).forEach((c) => {
 		getHostsFromHostConfig(c.value).forEach((h) => hosts.add(h));
 	});

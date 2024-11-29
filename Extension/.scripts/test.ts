@@ -44,6 +44,7 @@ function filterStdio() {
                 return true;
             }
         }
+
         if (args[0] instanceof Buffer) {
             const text = args[0].toString();
 
@@ -51,6 +52,7 @@ function filterStdio() {
                 return true;
             }
         }
+
         return sowrite(...args);
     };
 
@@ -62,6 +64,7 @@ function filterStdio() {
                 return true;
             }
         }
+
         if (args[0] instanceof Buffer) {
             const text = args[0].toString();
 
@@ -69,6 +72,7 @@ function filterStdio() {
                 return true;
             }
         }
+
         return sewrite(...args);
     };
 }
@@ -81,6 +85,7 @@ async function unitTests() {
     const mocha = await assertAnyFile(["node_modules/.bin/mocha.cmd", "node_modules/.bin/mocha"], `Can't find the mocha testrunner. You might need to run ${brightGreen("yarn install")}\n\n`);
 
     const result = spawnSync(mocha, [`${$root}/dist/test/unit/**/*.test.js`, '--timeout', '30000'], { stdio:'inherit', shell: true });
+
     verbose(`\n${green("NOTE:")} If you want to run a scenario test (end-to-end) use ${cmdSwitch('scenario=<NAME>')} \n\n`);
 
     return result.status;
@@ -90,6 +95,7 @@ async function scenarioTests(assets: string, name: string, workspace: string) {
     if (await checkBinaries()) {
         process.exit(1);
     }
+
     return runTests({
         ...options,
         extensionDevelopmentPath: $root,
@@ -122,6 +128,7 @@ export async function main() {
     if (!await filepath.isFolder(isolated)) {
         await install();
     }
+
     process.exit(await scenarioTests(testInfo.assets, testInfo.name, testInfo.workspace));
 }
 
@@ -129,18 +136,22 @@ export async function all() {
     if (await checkBinaries()) {
         process.exit(1);
     }
+
     const finished: string[] = [];
 
     if (await unitTests() !== 0) {
         console.log(`${cyan("  UNIT TESTS: ")}${red("failed")}`);
+
         process.exit(1);
     }
+
     finished.push(`${cyan("  UNIT TESTS: ")}${green("success")}`);
 
     // at this point, we're going to run some vscode tests
     if (!await filepath.isFolder(isolated)) {
         await install();
     }
+
     try {
         const scenarios = await getScenarioNames();
 
@@ -155,9 +166,12 @@ export async function all() {
 
                     if (result) {
                         console.log(finished.join('\n'));
+
                         console.log(`  ${cyan(`${ti.name} Tests:`)}${red("failed")}`);
+
                         process.exit(result);
                     }
+
                     finished.push(`  ${cyan(`${ti.name} Tests:`)}${green("success")}`);
                 }
             }
@@ -171,8 +185,11 @@ export async function all() {
 
 interface Input {
     id: string;
+
     type: string;
+
     description: string;
+
     options: CommentArray<{label: string; value: string}>;
 }
 
@@ -205,6 +222,7 @@ export async function regen() {
     if (!is.object(launch)) {
         return error(`The file ${$root}/.vscode/launch.json is not valid json`);
     }
+
     if (!is.array(launch.inputs)) {
         return error(`The file ${$root}/.vscode/launch.json is missing the 'inputs' array`);
     }
@@ -216,6 +234,7 @@ export async function regen() {
     if (!pickScenario) {
         return error(`The file ${$root}/.vscode/launch.json is missing the 'pickScenario' input`);
     }
+
     const pickWorkspace = inputs.find(each => each.id === 'pickWorkspace');
 
     if (!pickWorkspace) {
@@ -238,6 +257,7 @@ export async function regen() {
 
                 if (!scenario) {
                     console.log(`Adding scenario ${green(scenarioFolder)} to pickScenario`);
+
                     pickScenario.options.push({ label, value });
                 } else {
                     verbose(`Skipping scenario ${scenarioFolder} because it already exists`);
@@ -247,6 +267,7 @@ export async function regen() {
 
                 if (!wrkspace) {
                     console.log(`Adding workspace ${green(scenarioFolder)} to pickWorkspace`);
+
                     pickWorkspace.options.push({ label, value });
                 } else {
                     verbose(`Skipping workspace ${scenarioFolder} because it already exists`);
@@ -256,5 +277,6 @@ export async function regen() {
             }
         }
     }
+
     await writeJson(`${$root}/.vscode/launch.json`, launch);
 }

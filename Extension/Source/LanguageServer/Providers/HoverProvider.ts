@@ -32,10 +32,12 @@ export class HoverProvider implements vscode.HoverProvider {
 		if (settings.hover === "disabled") {
 			return undefined;
 		}
+
 		const params: TextDocumentPositionParams = {
 			textDocument: { uri: document.uri.toString() },
 			position: Position.create(position.line, position.character),
 		};
+
 		await this.client.ready;
 
 		let hoverResult: vscode.Hover;
@@ -53,8 +55,10 @@ export class HoverProvider implements vscode.HoverProvider {
 			) {
 				throw new vscode.CancellationError();
 			}
+
 			throw e;
 		}
+
 		if (token.isCancellationRequested) {
 			throw new vscode.CancellationError();
 		}
@@ -70,11 +74,16 @@ export class HoverProvider implements vscode.HoverProvider {
 					oldMarkdownString.value,
 					oldMarkdownString.supportThemeIcons,
 				);
+
 			newMarkdownString.isTrusted = oldMarkdownString.isTrusted;
+
 			newMarkdownString.supportHtml = oldMarkdownString.supportHtml;
+
 			newMarkdownString.baseUri = oldMarkdownString.baseUri;
+
 			strings.push(newMarkdownString);
 		}
+
 		let range: vscode.Range | undefined;
 
 		if (hoverResult.range) {

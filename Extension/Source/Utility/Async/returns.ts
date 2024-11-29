@@ -33,6 +33,7 @@ export const logAndReturn = {
 		if (e) {
 			console.log(e);
 		}
+
 		return undefined;
 	},
 
@@ -41,6 +42,7 @@ export const logAndReturn = {
 		if (e) {
 			console.log(e);
 		}
+
 		return [];
 	},
 
@@ -49,6 +51,7 @@ export const logAndReturn = {
 		if (e) {
 			console.log(e);
 		}
+
 		return null;
 	},
 
@@ -57,6 +60,7 @@ export const logAndReturn = {
 		if (e) {
 			console.log(e);
 		}
+
 		return false;
 	},
 
@@ -65,6 +69,7 @@ export const logAndReturn = {
 		if (e) {
 			console.log(e);
 		}
+
 		return true;
 	},
 
@@ -73,6 +78,7 @@ export const logAndReturn = {
 		if (e) {
 			console.log(e);
 		}
+
 		return 0;
 	},
 
@@ -81,6 +87,7 @@ export const logAndReturn = {
 		if (e) {
 			console.log(e);
 		}
+
 		return "";
 	},
 };

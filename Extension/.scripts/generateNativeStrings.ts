@@ -32,6 +32,7 @@ export async function main() {
 
         if (typeof stringValue !== "string") {
             hintValue = stringValue.hint;
+
             stringValue = stringValue.text;
         }
 
@@ -52,6 +53,7 @@ export async function main() {
                     numArgs = i + 1;
                 }
             }
+
             typeScriptSwitchContent += `        case ${stringIndex}:\n`;
 
             if (numArgs !== 0) {
@@ -62,16 +64,20 @@ export async function main() {
                 } else {
                     typeScriptSwitchContent += `                message = localize(${JSON.stringify(property)}, ${JSON.stringify(stringValue)}`;
                 }
+
                 for (let i = 0; i < numArgs; i++) {
                     typeScriptSwitchContent += `, stringArgs[${i}]`;
                 }
+
                 typeScriptSwitchContent += `);\n                break;\n            }\n`;
             }
+
             if (hintValue) {
                 typeScriptSwitchContent += `            message = localize({ key: ${JSON.stringify(property)}, comment: [${JSON.stringify(hintValue)}] }, ${JSON.stringify(stringValue)}`;
             } else {
                 typeScriptSwitchContent += `            message = localize(${JSON.stringify(property)}, ${JSON.stringify(stringValue)}`;
             }
+
             typeScriptSwitchContent += `);\n            break;\n`;
         }
         ++stringIndex;
@@ -106,11 +112,13 @@ export function lookupString(stringId: number, stringArgs?: string[]): string {
             // Special case for blank string
             break;
 ${typeScriptSwitchContent}
+
         default:
             console.assert(\"Unrecognized string ID\");
 
             break;
     }
+
     return message;
 }
 `;

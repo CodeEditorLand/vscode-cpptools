@@ -32,14 +32,18 @@ export async function foreach<T, TResult>(
 				result.push(predicate(item)); // run the predicate on each item
 			}
 		}
+
 		return Promise.all(result);
 	}
+
 	return []; // return an empty array if there is nothing to iterate over
 }
 
 interface Cursor<T> {
 	identity: number;
+
 	iterator: AsyncIterator<T>;
+
 	result?: IteratorResult<T>;
 }
 
@@ -60,9 +64,11 @@ export function reiterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
 					if (index < cache.length) {
 						return { value: cache[index++], done: false };
 					}
+
 					if (done) {
 						return { value: undefined, done: true };
 					}
+
 					index++;
 
 					if (!is.promise(nextElement)) {
@@ -72,11 +78,13 @@ export function reiterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
 								if (!(done = element.done)) {
 									cache.push(element.value);
 								}
+
 								nextElement = undefined;
 
 								return element;
 							});
 					}
+
 					return nextElement;
 				},
 			};
@@ -93,8 +101,11 @@ export type AsynchIterable<T> = AsyncIterable<T> & {
 			| Promise<undefined | T>
 		)[]
 	): void;
+
 	complete(): void;
+
 	autoComplete(shouldAutocomplete: boolean): AsynchIterable<T>;
+
 	reiterable(): AsyncIterable<T>;
 };
 
@@ -105,6 +116,7 @@ export function accumulator<T>(...iterables: Some<T>[]): AsynchIterable<T> {
 	const signal = new Signal<boolean>();
 
 	const result = combiner(iterables) as unknown as AsynchIterable<T>;
+
 	result.add = (
 		...iterables: (Some<T> | undefined | Promise<undefined | T>)[]
 	) => {
@@ -117,14 +129,18 @@ export function accumulator<T>(...iterables: Some<T>[]): AsynchIterable<T> {
 				}),
 			);
 		}
+
 		signal.resolve(true);
 	};
 
 	result.autoComplete = (shouldAutocomplete: boolean) => {
 		completeWhenEmpty = shouldAutocomplete;
+
 		return result;
 	};
+
 	result.complete = () => signal.dispose((completeWhenEmpty = true));
+
 	result.reiterable = () => reiterable(result);
 
 	return result;
@@ -165,6 +181,7 @@ export function accumulator<T>(...iterables: Some<T>[]): AsynchIterable<T> {
 
 				// Yield the result from the iterator, and await the next item
 				const { value } = element.result!;
+
 				iterators.set(element.identity, awaitNext(element));
 
 				if (value !== undefined && value !== null) {
@@ -172,6 +189,7 @@ export function accumulator<T>(...iterables: Some<T>[]): AsynchIterable<T> {
 				}
 			}
 		} while (!completeWhenEmpty);
+
 		signal.dispose(false);
 
 		// prevent any more iterators from being added
@@ -199,8 +217,10 @@ export async function* asyncOf<T>(
 
 				continue;
 			}
+
 			yield item as any;
 		}
+
 		return;
 	}
 
@@ -212,6 +232,7 @@ export async function* asyncOf<T>(
 
 				continue;
 			}
+
 			yield item as any;
 		}
 	}

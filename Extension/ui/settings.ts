@@ -67,16 +67,19 @@ declare function acquireVsCodeApi(): VsCodeApi;
 
 class SettingsApp {
 	private readonly vsCodeApi: VsCodeApi;
+
 	private updating: boolean = false;
 
 	constructor() {
 		this.vsCodeApi = acquireVsCodeApi();
 
 		window.addEventListener("keydown", this.onTabKeyDown.bind(this));
+
 		window.addEventListener("message", this.onMessageReceived.bind(this));
 
 		// Add event listeners to UI elements
 		this.addEventsToConfigNameChanges();
+
 		this.addEventsToInputValues();
 
 		document
@@ -103,6 +106,7 @@ class SettingsApp {
 		document
 			.getElementById(elementId.showAdvanced)
 			?.addEventListener("click", this.onShowAdvanced.bind(this));
+
 		this.vsCodeApi.postMessage({
 			command: "initialized",
 		});
@@ -111,6 +115,7 @@ class SettingsApp {
 	private addEventsToInputValues(): void {
 		const elements: NodeListOf<HTMLElement> =
 			document.getElementsByName("inputValue");
+
 		elements.forEach((el) => {
 			el.addEventListener("change", this.onChanged.bind(this, el.id));
 		});
@@ -168,14 +173,18 @@ class SettingsApp {
 	private onTabKeyDown(e: any): void {
 		if (e.keyCode === 9) {
 			document.body.classList.add("tabbing");
+
 			window.removeEventListener("keydown", this.onTabKeyDown);
+
 			window.addEventListener("mousedown", this.onMouseDown.bind(this));
 		}
 	}
 
 	private onMouseDown(): void {
 		document.body.classList.remove("tabbing");
+
 		window.removeEventListener("mousedown", this.onMouseDown);
+
 		window.addEventListener("keydown", this.onTabKeyDown.bind(this));
 	}
 
@@ -196,17 +205,21 @@ class SettingsApp {
 		const element: HTMLElement = document.getElementById(
 			elementId.showAdvanced,
 		)!;
+
 		element.classList.toggle("collapse");
+
 		element.classList.toggle("expand");
 	}
 
 	private onAddConfigBtn(): void {
 		this.showElement(elementId.addConfigDiv, false);
+
 		this.showElement(elementId.addConfigInputDiv, true);
 	}
 
 	private onAddConfigConfirm(request: boolean): void {
 		this.showElement(elementId.addConfigInputDiv, false);
+
 		this.showElement(elementId.addConfigDiv, true);
 
 		// If request is yes, send message to create new config
@@ -249,6 +262,7 @@ class SettingsApp {
 
 		// Update name on selection
 		list.options[list.selectedIndex].value = configName.value;
+
 		list.options[list.selectedIndex].text = configName.value;
 
 		this.onChanged(elementId.configName);
@@ -276,12 +290,14 @@ class SettingsApp {
 		if (this.updating) {
 			return;
 		}
+
 		const el: HTMLSelectElement = <HTMLSelectElement>(
 			document.getElementById(elementId.knownCompilers)
 		);
 		(<HTMLInputElement>(
 			document.getElementById(elementId.compilerPath)
 		)).value = el.value;
+
 		this.onChanged(elementId.compilerPath);
 
 		// Post message that this control was used for telemetry
@@ -310,6 +326,7 @@ class SettingsApp {
 				return;
 			}
 		}
+
 		knownCompilers.value = "";
 	}
 
@@ -321,6 +338,7 @@ class SettingsApp {
 		const el: HTMLInputElement = <HTMLInputElement>(
 			document.getElementById(id)
 		);
+
 		this.vsCodeApi.postMessage({
 			command: "change",
 			key: id,
@@ -340,6 +358,7 @@ class SettingsApp {
 		if (id === elementId.compilerPath) {
 			this.fixKnownCompilerSelection();
 		}
+
 		this.vsCodeApi.postMessage({
 			command: "change",
 			key: id,
@@ -386,6 +405,7 @@ class SettingsApp {
 			(<HTMLInputElement>(
 				document.getElementById(elementId.compilerPath)
 			)).value = config.compilerPath ? config.compilerPath : "";
+
 			this.fixKnownCompilerSelection();
 			(<HTMLInputElement>(
 				document.getElementById(elementId.compilerArgs)
@@ -473,38 +493,47 @@ class SettingsApp {
 
 		try {
 			this.showErrorWithInfo(elementId.configNameInvalid, errors.name);
+
 			this.showErrorWithInfo(
 				elementId.intelliSenseModeInvalid,
 				errors.intelliSenseMode,
 			);
+
 			this.showErrorWithInfo(
 				elementId.compilerPathInvalid,
 				errors.compilerPath,
 			);
+
 			this.showErrorWithInfo(
 				elementId.includePathInvalid,
 				errors.includePath,
 			);
+
 			this.showErrorWithInfo(
 				elementId.macFrameworkPathInvalid,
 				errors.macFrameworkPath,
 			);
+
 			this.showErrorWithInfo(
 				elementId.forcedIncludeInvalid,
 				errors.forcedInclude,
 			);
+
 			this.showErrorWithInfo(
 				elementId.compileCommandsInvalid,
 				errors.compileCommands,
 			);
+
 			this.showErrorWithInfo(
 				elementId.browsePathInvalid,
 				errors.browsePath,
 			);
+
 			this.showErrorWithInfo(
 				elementId.databaseFilenameInvalid,
 				errors.databaseFilename,
 			);
+
 			this.showErrorWithInfo(
 				elementId.dotConfigInvalid,
 				errors.dotConfig,
@@ -537,8 +566,11 @@ class SettingsApp {
 			for (const name of message.selections) {
 				const option: HTMLOptionElement =
 					document.createElement("option");
+
 				option.text = name;
+
 				option.value = name;
+
 				list.append(option);
 			}
 
@@ -570,20 +602,27 @@ class SettingsApp {
 
 				const option: HTMLOptionElement =
 					document.createElement("option");
+
 				option.text = noCompilerSpan.textContent ?? "";
+
 				option.disabled = true;
+
 				list.append(option);
 			} else {
 				for (const path of compilers) {
 					const option: HTMLOptionElement =
 						document.createElement("option");
+
 					option.text = path;
+
 					option.value = path;
+
 					list.append(option);
 				}
 			}
 
 			this.showElement(elementId.compilerPath, true);
+
 			this.showElement(elementId.knownCompilers, true);
 
 			// Initialize list with no selected item

@@ -82,11 +82,15 @@ export class DebugConfigurationProvider
 	implements vscode.DebugConfigurationProvider
 {
 	private type: DebuggerType;
+
 	private assetProvider: IConfigurationAssetProvider;
 	// Keep a list of tasks detected by cppBuildTaskProvider.
 	private static detectedBuildTasks: CppBuildTask[] = [];
+
 	private static detectedCppBuildTasks: CppBuildTask[] = [];
+
 	private static detectedCBuildTasks: CppBuildTask[] = [];
+
 	protected static recentBuildTaskLabel: string;
 
 	public constructor(
@@ -94,11 +98,13 @@ export class DebugConfigurationProvider
 		type: DebuggerType,
 	) {
 		this.assetProvider = assetProvider;
+
 		this.type = type;
 	}
 
 	public static ClearDetectedBuildTasks(): void {
 		DebugConfigurationProvider.detectedCppBuildTasks = [];
+
 		DebugConfigurationProvider.detectedCBuildTasks = [];
 	}
 
@@ -120,6 +126,7 @@ export class DebugConfigurationProvider
 		if (!configs) {
 			configs = [];
 		}
+
 		const defaultTemplateConfig: CppDebugConfiguration | undefined =
 			configs.find(
 				(config) =>
@@ -132,6 +139,7 @@ export class DebugConfigurationProvider
 				"Default config not found in provideDebugConfigurations()",
 			);
 		}
+
 		const editor: vscode.TextEditor | undefined =
 			vscode.window.activeTextEditor;
 
@@ -152,6 +160,7 @@ export class DebugConfigurationProvider
 
 		// Find the recently used task and place it at the top of quickpick list.
 		let recentlyUsedConfig: CppDebugConfiguration | undefined;
+
 		configs = configs.filter((config) => {
 			if (config.taskStatus !== TaskStatus.recentlyUsed) {
 				return true;
@@ -182,6 +191,7 @@ export class DebugConfigurationProvider
 					"Default Configuration",
 				);
 			}
+
 			return menuItem;
 		});
 
@@ -251,9 +261,11 @@ export class DebugConfigurationProvider
 					configs.length === 1,
 					"More than one debug config is selected.",
 				);
+
 				config = configs[0];
 				// Keep track of the entry point where the debug config has been selected, for telemetry purposes.
 				config.debuggerEvent = DebuggerEvent.debugPanel;
+
 				config.configSource = folder
 					? ConfigSource.workspaceFolder
 					: ConfigSource.singleFile;
@@ -290,7 +302,9 @@ export class DebugConfigurationProvider
 					await cppBuildTaskProvider.runBuildTask(
 						config.preLaunchTask,
 					);
+
 					config.preLaunchTask = undefined;
+
 					Telemetry.logDebuggerEvent(DebuggerEvent.debugPanel, {
 						"debugType": DebugType.debug,
 						"configSource":
@@ -309,8 +323,10 @@ export class DebugConfigurationProvider
 						"succeeded": "false",
 					});
 				}
+
 				return config;
 			}
+
 			let resolveByVsCode: boolean = false;
 
 			const isDebugPanel: boolean =
@@ -371,9 +387,11 @@ export class DebugConfigurationProvider
 			if (!resolveByVsCode) {
 				if (singleFile || (isDebugPanel && !folder && isExistingTask)) {
 					await this.resolvePreLaunchTask(config, configMode);
+
 					config.preLaunchTask = undefined;
 				} else {
 					await this.resolvePreLaunchTask(config, configMode, folder);
+
 					DebugConfigurationProvider.recentBuildTaskLabelStr =
 						config.preLaunchTask;
 				}
@@ -438,6 +456,7 @@ export class DebugConfigurationProvider
 				if (config.externalConsole && !config.console) {
 					config.console = "externalTerminal";
 				}
+
 				delete config.externalConsole;
 			}
 
@@ -552,6 +571,7 @@ export class DebugConfigurationProvider
 						if (value === moreInfoButton) {
 							const helpURL: string =
 								"https://aka.ms/vscode-cpptools/LLDBFrameworkNotFound";
+
 							void vscode.env.openExternal(
 								vscode.Uri.parse(helpURL),
 							);
@@ -565,9 +585,11 @@ export class DebugConfigurationProvider
 		if (config.logging?.engineLogging) {
 			const outputChannel: logger.Logger =
 				logger.getOutputChannelLogger();
+
 			outputChannel.appendLine(
 				localize("debugger.launchConfig", "Launch configuration:"),
 			);
+
 			outputChannel.appendLine(JSON.stringify(config, undefined, 2));
 			// TODO: Enable when https://github.com/microsoft/vscode/issues/108619 is resolved.
 			// logger.showOutputChannel();
@@ -619,6 +641,7 @@ export class DebugConfigurationProvider
 			if (config.pipeTransport || config.useExtendedRemote) {
 				const remoteAttachPicker: RemoteAttachPicker =
 					new RemoteAttachPicker();
+
 				processId = await remoteAttachPicker.ShowAttachEntries(config);
 			} else {
 				const attachItemsProvider: AttachItemsProvider =
@@ -627,6 +650,7 @@ export class DebugConfigurationProvider
 				const attacher: AttachPicker = new AttachPicker(
 					attachItemsProvider,
 				);
+
 				processId = await attacher.ShowAttachEntries(token);
 			}
 
@@ -656,6 +680,7 @@ export class DebugConfigurationProvider
 					isDebugLaunchStr(config.name) &&
 					config.request === "launch",
 			);
+
 		console.assert(
 			defaultTemplateConfig,
 			"Could not find default debug configuration.",
@@ -669,6 +694,7 @@ export class DebugConfigurationProvider
 			await cppBuildTaskProvider.getJsonTasks();
 
 		let buildTasks: CppBuildTask[] = [];
+
 		await this.loadDetectedTasks();
 		// Remove the tasks that are already configured once in tasks.json.
 		const dedupDetectedBuildTasks: CppBuildTask[] =
@@ -680,6 +706,7 @@ export class DebugConfigurationProvider
 							taskDetected.definition.label,
 					),
 			);
+
 		buildTasks = buildTasks.concat(
 			configuredBuildTasks,
 			dedupDetectedBuildTasks,
@@ -693,6 +720,7 @@ export class DebugConfigurationProvider
 				if (!command) {
 					return false;
 				}
+
 				if (defaultTemplateConfig.name.startsWith("(Windows) ")) {
 					if (command.startsWith("cl.exe")) {
 						return true;
@@ -702,6 +730,7 @@ export class DebugConfigurationProvider
 						return true;
 					}
 				}
+
 				return false;
 			});
 		}
@@ -745,6 +774,7 @@ export class DebugConfigurationProvider
 										),
 									);
 							}
+
 							const compilerName: string =
 								path.basename(compilerPath);
 
@@ -758,6 +788,7 @@ export class DebugConfigurationProvider
 								compilerName +
 								" " +
 								this.buildAndDebugActiveFileStr();
+
 							newConfig.preLaunchTask = task.name;
 
 							if (newConfig.type === DebuggerType.cppdbg) {
@@ -768,6 +799,7 @@ export class DebugConfigurationProvider
 							// Extract the .exe path from the defined task.
 							const definedExePath: string | undefined =
 								util.findExePathInArgs(task.definition.args);
+
 							newConfig.program = definedExePath
 								? definedExePath
 								: util.defaultExePath();
@@ -778,7 +810,9 @@ export class DebugConfigurationProvider
 								"preLaunchTask: {0}",
 								task.name,
 							);
+
 							newConfig.taskDetail = task.detail;
+
 							newConfig.taskStatus = task.existing
 								? task.name ===
 									DebugConfigurationProvider.recentBuildTaskLabelStr
@@ -789,7 +823,9 @@ export class DebugConfigurationProvider
 							if (task.isDefault) {
 								newConfig.isDefault = true;
 							}
+
 							const isCl: boolean = compilerName === "cl.exe";
+
 							newConfig.cwd =
 								isWindows &&
 								!isCl &&
@@ -822,24 +858,29 @@ export class DebugConfigurationProvider
 													compilerName.substring(
 														suffixIndex,
 													);
+
 												debuggerName += suffix;
 											}
 										}
 									}
+
 									newConfig.type = DebuggerType.cppdbg;
 								} else if (compilerName === "cl.exe") {
 									newConfig.miDebuggerPath = undefined;
+
 									newConfig.type = DebuggerType.cppvsdbg;
 
 									return newConfig;
 								} else {
 									debuggerName = "gdb";
 								}
+
 								if (isWindows) {
 									debuggerName = debuggerName.endsWith(".exe")
 										? debuggerName
 										: debuggerName + ".exe";
 								}
+
 								const compilerDirname: string =
 									path.dirname(compilerPath);
 
@@ -889,12 +930,14 @@ export class DebugConfigurationProvider
 									}
 								}
 							}
+
 							return newConfig;
 						},
 					),
 				)
 			).filter((item): item is CppDebugConfiguration => !!item);
 		}
+
 		configs.push(defaultTemplateConfig);
 
 		const existingConfigs: CppDebugConfiguration[] | undefined =
@@ -906,6 +949,7 @@ export class DebugConfigurationProvider
 						config.preLaunchTask,
 					);
 				}
+
 				config.existing = true;
 
 				return config;
@@ -930,11 +974,14 @@ export class DebugConfigurationProvider
 
 								return true;
 							}
+
 							return false;
 						}),
 				);
+
 			configs = existingConfigs.concat(dedupExistingConfigs);
 		}
+
 		return configs;
 	}
 
@@ -986,6 +1033,7 @@ export class DebugConfigurationProvider
 				DebugConfigurationProvider.detectedCppBuildTasks =
 					await cppBuildTaskProvider.getTasks(true);
 			}
+
 			DebugConfigurationProvider.detectedBuildTasks =
 				DebugConfigurationProvider.detectedCppBuildTasks;
 		} else {
@@ -996,6 +1044,7 @@ export class DebugConfigurationProvider
 				DebugConfigurationProvider.detectedCBuildTasks =
 					await cppBuildTaskProvider.getTasks(true);
 			}
+
 			DebugConfigurationProvider.detectedBuildTasks =
 				DebugConfigurationProvider.detectedCBuildTasks;
 		}
@@ -1029,6 +1078,7 @@ export class DebugConfigurationProvider
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -1056,12 +1106,15 @@ export class DebugConfigurationProvider
 				LLDBFramework,
 			),
 		);
+
 		outputChannel.appendLine(localize("lldb.search.paths", "Searched in:"));
+
 		searchPaths.forEach((searchPath) => {
 			outputChannel.appendLine(`\t${searchPath}`);
 		});
 
 		const xcodeCLIInstallCmd: string = "xcode-select --install";
+
 		outputChannel.appendLine(
 			localize(
 				"lldb.install.help",
@@ -1069,6 +1122,7 @@ export class DebugConfigurationProvider
 				xcodeCLIInstallCmd,
 			),
 		);
+
 		logger.showOutputChannel();
 
 		return undefined;
@@ -1088,6 +1142,7 @@ export class DebugConfigurationProvider
 			try {
 				if (folder && folder.uri && folder.uri.fsPath) {
 					// Try to replace ${workspaceFolder} or ${workspaceRoot}
+
 					envFilePath = envFilePath.replace(
 						/(\${workspaceFolder}|\${workspaceRoot})/g,
 						folder.uri.fsPath,
@@ -1143,6 +1198,7 @@ export class DebugConfigurationProvider
 				let target: string | object = sourceFileMapTarget;
 
 				// TODO: pass config.environment as 'additionalEnvironment' to resolveVariables when it is { key: value } instead of { "key": key, "value": value }
+
 				const newSourceFileMapSource: string = util.resolveVariables(
 					sourceFileMapSource,
 					undefined,
@@ -1160,6 +1216,7 @@ export class DebugConfigurationProvider
 						);
 					// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
 					delete config.sourceFileMap[sourceFileMapSource];
+
 					source = newSourceFileMapSource;
 				}
 
@@ -1170,6 +1227,7 @@ export class DebugConfigurationProvider
 					if (sourceFileMapTarget !== newSourceFileMapTarget) {
 						// Add a space if source was changed, else just tab the target message.
 						message += message ? " " : "\t";
+
 						message += localize(
 							"replacing.targetpath",
 							"Replacing {0} '{1}' with '{2}'.",
@@ -1177,6 +1235,7 @@ export class DebugConfigurationProvider
 							sourceFileMapTarget,
 							newSourceFileMapTarget,
 						);
+
 						target = newSourceFileMapTarget;
 					}
 				} else if (util.isObject(sourceFileMapTarget)) {
@@ -1184,6 +1243,7 @@ export class DebugConfigurationProvider
 						"editorPath": string;
 						"useForBreakpoints": boolean;
 					} = sourceFileMapTarget;
+
 					newSourceFileMapTarget["editorPath"] =
 						util.resolveVariables(
 							sourceFileMapTarget["editorPath"],
@@ -1193,6 +1253,7 @@ export class DebugConfigurationProvider
 					if (sourceFileMapTarget !== newSourceFileMapTarget) {
 						// Add a space if source was changed, else just tab the target message.
 						message += message ? " " : "\t";
+
 						message += localize(
 							"replacing.editorPath",
 							"Replacing {0} '{1}' with '{2}'.",
@@ -1200,12 +1261,14 @@ export class DebugConfigurationProvider
 							sourceFileMapTarget,
 							newSourceFileMapTarget["editorPath"],
 						);
+
 						target = newSourceFileMapTarget;
 					}
 				}
 
 				if (message) {
 					config.sourceFileMap[source] = target;
+
 					messages.push(message);
 				}
 			}
@@ -1220,9 +1283,11 @@ export class DebugConfigurationProvider
 							"sourceFileMap",
 						),
 					);
+
 				messages.forEach((message) => {
 					logger.getOutputChannel().appendLine(message);
 				});
+
 				logger.showOutputChannel();
 			}
 		}
@@ -1260,6 +1325,7 @@ export class DebugConfigurationProvider
 
 					break;
 				}
+
 				case TaskStatus.configured: {
 					item.detail = localize(
 						"configured.task",
@@ -1268,15 +1334,18 @@ export class DebugConfigurationProvider
 
 					break;
 				}
+
 				case TaskStatus.detected: {
 					item.detail = localize("detected.task", "Detected Task");
 
 					break;
 				}
+
 				default: {
 					break;
 				}
 			}
+
 			if (item.configuration.taskDetail) {
 				// Add the compiler path of the preLaunchTask to the description of the debug configuration.
 				item.detail =
@@ -1312,6 +1381,7 @@ export class DebugConfigurationProvider
 		) {
 			return false;
 		}
+
 		return cppBuildTaskProvider.isExistingTask(
 			config.preLaunchTask,
 			folder,
@@ -1325,6 +1395,7 @@ export class DebugConfigurationProvider
 		if (config.existing) {
 			return config.existing;
 		}
+
 		const configs: CppDebugConfiguration[] | undefined =
 			this.getLaunchConfigs(folder, config.type);
 
@@ -1337,6 +1408,7 @@ export class DebugConfigurationProvider
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -1347,6 +1419,7 @@ export class DebugConfigurationProvider
 		if (config.configSource) {
 			return config.configSource;
 		}
+
 		const isExistingConfig: boolean = this.isExistingConfig(config, folder);
 
 		if (!isExistingConfig && !folder) {
@@ -1365,6 +1438,7 @@ export class DebugConfigurationProvider
 		if (matchingConfig?.configSource) {
 			return matchingConfig.configSource;
 		}
+
 		return ConfigSource.unknown;
 	}
 
@@ -1384,6 +1458,7 @@ export class DebugConfigurationProvider
 		if (!configs) {
 			return undefined;
 		}
+
 		let detailedConfigs: CppDebugConfiguration[] = [];
 
 		if (configs.workspaceFolderValue !== undefined) {
@@ -1397,6 +1472,7 @@ export class DebugConfigurationProvider
 				),
 			);
 		}
+
 		if (configs.workspaceValue !== undefined) {
 			detailedConfigs = detailedConfigs.concat(
 				configs.workspaceValue.map((item: CppDebugConfiguration) => {
@@ -1406,6 +1482,7 @@ export class DebugConfigurationProvider
 				}),
 			);
 		}
+
 		if (configs.globalValue !== undefined) {
 			detailedConfigs = detailedConfigs.concat(
 				configs.globalValue.map((item: CppDebugConfiguration) => {
@@ -1415,6 +1492,7 @@ export class DebugConfigurationProvider
 				}),
 			);
 		}
+
 		detailedConfigs = detailedConfigs.filter((config: any) =>
 			config.name && config.request === "launch" && type
 				? config.type === type
@@ -1450,26 +1528,37 @@ export class DebugConfigurationProvider
 					void vscode.window.showTextDocument(doc);
 				}
 			}
+
 			return;
 		}
+
 		const rawLaunchJson: any = await this.getRawLaunchJson();
 
 		if (!rawLaunchJson.configurations) {
 			rawLaunchJson.configurations = [];
 		}
+
 		if (!rawLaunchJson.version) {
 			rawLaunchJson.version = "2.0.0";
 		}
 
 		// Remove the extra properties that are not a part of the vsCode.DebugConfiguration.
 		config.detail = undefined;
+
 		config.taskStatus = undefined;
+
 		config.isDefault = undefined;
+
 		config.source = undefined;
+
 		config.debuggerEvent = undefined;
+
 		config.debugType = undefined;
+
 		config.existing = undefined;
+
 		config.taskDetail = undefined;
+
 		rawLaunchJson.configurations.push(config);
 
 		if (!launchJsonPath) {
@@ -1479,10 +1568,12 @@ export class DebugConfigurationProvider
 		}
 
 		const settings: OtherSettings = new OtherSettings();
+
 		await util.writeFileText(
 			launchJsonPath,
 			jsonc.stringify(rawLaunchJson, null, settings.editorTabSize),
 		);
+
 		await vscode.workspace.openTextDocument(launchJsonPath);
 
 		const doc: vscode.TextDocument =
@@ -1502,6 +1593,7 @@ export class DebugConfigurationProvider
 		if (!folder) {
 			return;
 		}
+
 		const selectedConfig: vscode.DebugConfiguration | undefined =
 			await this.selectConfiguration(textEditor, false, true);
 
@@ -1533,12 +1625,17 @@ export class DebugConfigurationProvider
 		}
 		// Remove the extra properties that are not a part of the DebugConfiguration, as these properties will be written in launch.json.
 		selectedConfig.detail = undefined;
+
 		selectedConfig.taskStatus = undefined;
+
 		selectedConfig.isDefault = undefined;
+
 		selectedConfig.source = undefined;
+
 		selectedConfig.debuggerEvent = undefined;
 		// Write debug configuration in launch.json file.
 		await this.writeDebugConfig(selectedConfig, isExistingConfig, folder);
+
 		Telemetry.logDebuggerEvent(DebuggerEvent.addConfigGear, {
 			"configSource": ConfigSource.workspaceFolder,
 			"configMode": ConfigMode.launchConfig,
@@ -1585,6 +1682,7 @@ export class DebugConfigurationProvider
 		) {
 			folder = undefined;
 		}
+
 		selectedConfig.debugType = debugModeOn
 			? DebugType.debug
 			: DebugType.run;
@@ -1628,6 +1726,7 @@ export class DebugConfigurationProvider
 				),
 			);
 		}
+
 		if (onlyWorkspaceFolder) {
 			configs = configs.filter(
 				(item) =>
@@ -1672,14 +1771,18 @@ export class DebugConfigurationProvider
 				recentTask[0].detail !== TaskStatus.detected
 			) {
 				recentTask[0].detail = TaskStatus.recentlyUsed;
+
 				sortedItems.push(recentTask[0]);
 			}
+
 			sortedItems = sortedItems.concat(
 				items.filter((item) => item.detail === TaskStatus.configured),
 			);
+
 			sortedItems = sortedItems.concat(
 				items.filter((item) => item.detail === TaskStatus.detected),
 			);
+
 			sortedItems = sortedItems.concat(
 				items.filter((item) => item.detail === undefined),
 			);
@@ -1697,6 +1800,7 @@ export class DebugConfigurationProvider
 				},
 			);
 		}
+
 		if (
 			selection &&
 			this.isClConfiguration(selection.configuration.name) &&
@@ -1704,6 +1808,7 @@ export class DebugConfigurationProvider
 		) {
 			return;
 		}
+
 		return selection?.configuration;
 	}
 
@@ -1731,6 +1836,7 @@ export class DebugConfigurationProvider
 				if (e && e.message === util.failedToParseJson) {
 					void vscode.window.showErrorMessage(util.failedToParseJson);
 				}
+
 				Telemetry.logDebuggerEvent(
 					config.debuggerEvent || DebuggerEvent.debugPanel,
 					{
@@ -1799,6 +1905,7 @@ export class DebugConfigurationProvider
 			NumSteps: config.deploySteps.length,
 			Duration: deployEnd - deployStart,
 		};
+
 		Telemetry.logDebuggerEvent(
 			"deploy",
 			telemetryProperties,
@@ -1820,6 +1927,7 @@ export class DebugConfigurationProvider
 			// Skip steps that doesn't match current launch mode. Explicit true/false check, since a step is always run when debug is undefined.
 			return true;
 		}
+
 		const stepType: StepType = step.type;
 
 		switch (stepType) {
@@ -1837,6 +1945,7 @@ export class DebugConfigurationProvider
 
 					return false;
 				}
+
 				const returnCode: unknown =
 					await vscode.commands.executeCommand(
 						step.command,
@@ -1845,6 +1954,7 @@ export class DebugConfigurationProvider
 
 				return !returnCode;
 			}
+
 			case StepType.scp:
 			case StepType.rsync: {
 				const isScp: boolean = stepType === StepType.scp;
@@ -1862,6 +1972,7 @@ export class DebugConfigurationProvider
 
 					return false;
 				}
+
 				const host: util.ISshHostInfo = util.isString(step.host)
 					? { hostName: step.host }
 					: {
@@ -1932,8 +2043,10 @@ export class DebugConfigurationProvider
 				) {
 					return false;
 				}
+
 				break;
 			}
+
 			case StepType.ssh: {
 				if (!step.host || !step.command) {
 					void logger
@@ -1947,6 +2060,7 @@ export class DebugConfigurationProvider
 
 					return false;
 				}
+
 				const host: util.ISshHostInfo = util.isString(step.host)
 					? { hostName: step.host }
 					: {
@@ -1978,8 +2092,10 @@ export class DebugConfigurationProvider
 				) {
 					return false;
 				}
+
 				break;
 			}
+
 			case StepType.shell: {
 				if (!step.command) {
 					void logger
@@ -1993,6 +2109,7 @@ export class DebugConfigurationProvider
 
 					return false;
 				}
+
 				const taskResult: util.ProcessReturnType =
 					await util.spawnChildProcess(
 						step.command,
@@ -2010,8 +2127,10 @@ export class DebugConfigurationProvider
 
 					return false;
 				}
+
 				break;
 			}
+
 			default: {
 				logger
 					.getOutputChannelLogger()
@@ -2026,6 +2145,7 @@ export class DebugConfigurationProvider
 				return false;
 			}
 		}
+
 		return true;
 	}
 }
@@ -2090,6 +2210,7 @@ abstract class DefaultConfigurationProvider
 					configuration.GetLaunchConfiguration(),
 				),
 			);
+
 			completionItems.push(
 				convertConfigurationSnippetToCompletionItem(
 					configuration.GetAttachConfiguration(),
@@ -2103,6 +2224,7 @@ abstract class DefaultConfigurationProvider
 
 class WindowsConfigurationProvider extends DefaultConfigurationProvider {
 	private executable: string = "a.exe";
+
 	private pipeProgram: string =
 		"<" +
 		localize(
@@ -2111,7 +2233,9 @@ class WindowsConfigurationProvider extends DefaultConfigurationProvider {
 			"plink.exe",
 		).replace(/"/g, "") +
 		">";
+
 	private MIMode: string = "gdb";
+
 	private setupCommandsBlock: string = `"setupCommands": [
     {
         "description": "${localize("enable.pretty.printing", "Enable pretty-printing for {0}", "gdb").replace(/"/g, "")}",
@@ -2127,6 +2251,7 @@ class WindowsConfigurationProvider extends DefaultConfigurationProvider {
 
 	constructor() {
 		super();
+
 		this.configurations = [
 			new MIConfigurations(
 				this.MIMode,
@@ -2158,11 +2283,14 @@ class WindowsConfigurationProvider extends DefaultConfigurationProvider {
 
 class OSXConfigurationProvider extends DefaultConfigurationProvider {
 	private MIMode: string = "lldb";
+
 	private executable: string = "a.out";
+
 	private pipeProgram: string = "/usr/bin/ssh";
 
 	constructor() {
 		super();
+
 		this.configurations = [
 			new MIConfigurations(
 				this.MIMode,
@@ -2175,6 +2303,7 @@ class OSXConfigurationProvider extends DefaultConfigurationProvider {
 
 class LinuxConfigurationProvider extends DefaultConfigurationProvider {
 	private MIMode: string = "gdb";
+
 	private setupCommandsBlock: string = `"setupCommands": [
     {
         "description": "${localize("enable.pretty.printing", "Enable pretty-printing for {0}", "gdb").replace(/"/g, "")}",
@@ -2187,11 +2316,14 @@ class LinuxConfigurationProvider extends DefaultConfigurationProvider {
         "ignoreFailures": true
     }
 ]`;
+
 	private executable: string = "a.out";
+
 	private pipeProgram: string = "/usr/bin/ssh";
 
 	constructor() {
 		super();
+
 		this.configurations = [
 			new MIConfigurations(
 				this.MIMode,
@@ -2226,12 +2358,15 @@ export class ConfigurationSnippetProvider
 	implements vscode.CompletionItemProvider
 {
 	private provider: IConfigurationAssetProvider;
+
 	private snippets: vscode.CompletionItem[];
 
 	constructor(provider: IConfigurationAssetProvider) {
 		this.provider = provider;
+
 		this.snippets = this.provider.getConfigurationSnippets();
 	}
+
 	public resolveCompletionItem(
 		item: vscode.CompletionItem,
 		_token: vscode.CancellationToken,
@@ -2255,6 +2390,7 @@ export class ConfigurationSnippetProvider
 
 		try {
 			const launch: any = jsonc.parse(document.getText());
+
 			hasLaunchConfigs = launch.configurations.length !== 0;
 		} catch {
 			// ignore

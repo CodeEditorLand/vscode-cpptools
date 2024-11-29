@@ -65,12 +65,15 @@ export class Signal<T> implements Promise<T>, Resolveable<T> {
 	get isPending(): boolean {
 		return this.promise.isPending;
 	}
+
 	get isCompleted(): boolean {
 		return this.promise.isCompleted;
 	}
+
 	get isResolved(): boolean {
 		return this.promise.isResolved;
 	}
+
 	get isRejected(): boolean {
 		return this.promise.isRejected;
 	}
@@ -83,9 +86,12 @@ export class Signal<T> implements Promise<T>, Resolveable<T> {
 	resolve(value: T): Resolveable<T> {
 		if (!this.isCompleted) {
 			const p = this.promise;
+
 			this.promise = new ManualPromise<T>();
+
 			p.resolve(value);
 		}
+
 		return this;
 	}
 
@@ -98,9 +104,12 @@ export class Signal<T> implements Promise<T>, Resolveable<T> {
 	reject(reason: any) {
 		if (!this.isCompleted) {
 			const p = this.promise;
+
 			this.promise = new ManualPromise<T>();
+
 			p.reject(reason);
 		}
+
 		return this;
 	}
 

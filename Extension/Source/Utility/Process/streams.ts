@@ -101,8 +101,10 @@ export class LineIterator
 					result.push(check[1] || check[0]);
 				}
 			}
+
 			return result;
 		}
+
 		for await (const line of stream) {
 			if (line.includes(expression)) {
 				result.push(line);
@@ -139,12 +141,14 @@ export class LineIterator
 
 			while (line === undefined) {
 				await this.lineBuffer.changed;
+
 				line = this.lineBuffer.at(this.current);
 
 				if (this.lineBuffer.completed) {
 					return this;
 				}
 			}
+
 			this.advance();
 
 			if (
@@ -166,8 +170,10 @@ export class LineIterator
 
 		while (line === undefined) {
 			await this.lineBuffer.changed;
+
 			line = this.lineBuffer.at(this.current);
 		}
+
 		this.advance();
 
 		return line;
@@ -253,12 +259,15 @@ export class ReadableLineStream implements AsyncIterable<string> {
 	setReadNotifier(notifier: (text: string) => void) {
 		this.readStream = notifier;
 	}
+
 	setReadEvent(reading: (text: string) => Promise<EventStatus | string>) {
 		this.streamRead = reading;
 	}
+
 	pipe(stream: ReadWriteLineStream) {
 		this.#pipes.add(stream);
 	}
+
 	unpipe(stream: ReadableLineStream) {
 		if (this.#pipes.delete(stream as ReadWriteLineStream)) {
 			// reciprocate if we deleted it from here.
@@ -271,6 +280,7 @@ export class ReadableLineStream implements AsyncIterable<string> {
 	}
 
 	protected readStream?: (text: string) => void;
+
 	protected streamRead?: (text: string) => Promise<EventStatus | string>;
 
 	get head() {
@@ -290,7 +300,9 @@ export class ReadableLineStream implements AsyncIterable<string> {
 	constructor(private readable: Readable) {
 		// if the stream is defined, then we're capturing
 		this.#decoder = new TextDecoder();
+
 		this.readable.on("data", (chunk: Buffer) => this.readChunk(chunk));
+
 		this.readable.on("end", () => finalize(this));
 	}
 
@@ -300,8 +312,10 @@ export class ReadableLineStream implements AsyncIterable<string> {
 
 			for (const each of this.pipes) {
 				this.unpipe(each);
+
 				each.unpipe(this);
 			}
+
 			this.#completed = true;
 
 			this.changed.dispose();
@@ -344,8 +358,10 @@ export class ReadableLineStream implements AsyncIterable<string> {
 					result.push(check[1] || check[0]);
 				}
 			}
+
 			return result;
 		}
+
 		for (let i = this.#head; i < this.#buffer.length; i++) {
 			const line = this.#buffer[i];
 
@@ -353,18 +369,21 @@ export class ReadableLineStream implements AsyncIterable<string> {
 				result.push(line);
 			}
 		}
+
 		return result;
 	}
 
 	private push(line?: string) {
 		if (this.#partial !== undefined) {
 			this.#partial = this.#partial.trimEnd();
+
 			this.#buffer.push(this.#partial);
 
 			for (const pipe of this.#pipes) {
 				void pipe.writeln(this.#partial);
 			}
 		}
+
 		this.#partial = line;
 	}
 
@@ -386,6 +405,7 @@ export class ReadableLineStream implements AsyncIterable<string> {
 		// carry over any partial line from before
 		if (this.#partial) {
 			incoming[0] = this.#partial + incoming[0];
+
 			this.#partial = undefined;
 		}
 
@@ -454,21 +474,26 @@ export class ReadableLineStream implements AsyncIterable<string> {
 		if (this.#partial) {
 			result.push(this.#partial);
 		}
+
 		return result;
 	}
 }
 
 export class ReadWriteLineStream extends ReadableLineStream {
 	#encoder = new TextEncoder();
+
 	protected writeable: Writable;
 
 	setWriteEvent(event: (text: string) => Promise<EventStatus | string>) {
 		this.streamWrite = event;
 	}
+
 	setWriteNotifier(notifier: (text: string) => void) {
 		this.wroteStream = notifier;
 	}
+
 	protected wroteStream?: (text: string) => void;
+
 	protected streamWrite?: (text: string) => Promise<EventStatus | string>;
 
 	constructor(stream: Duplex);
@@ -477,6 +502,7 @@ export class ReadWriteLineStream extends ReadableLineStream {
 
 	constructor(readable: Readable | Duplex, writeable?: Writable) {
 		super(readable);
+
 		this.writeable = writeable || (readable as Writable);
 
 		this.writeable.on("error", (_error) => {
@@ -507,6 +533,7 @@ export class ReadWriteLineStream extends ReadableLineStream {
 				}
 			}
 		}
+
 		if (this.wroteStream) {
 			for (const each of content) {
 				this.wroteStream(each);
@@ -582,11 +609,13 @@ export class WriteableLineStream {
 
 	constructor(stream: Writable, encoder: TextEncoder) {
 		this.#stream = stream;
+
 		this.#encoder = encoder;
 	}
 
 	write(...text: string[]): Promise<void> {
 		const result = new ManualPromise();
+
 		this.#stream.write(
 			this.#encoder.encode(text.join("")),
 			(error: Error | null | undefined) => {
@@ -603,6 +632,7 @@ export class WriteableLineStream {
 
 	writeln(...text: string[]) {
 		const result = new ManualPromise();
+
 		this.#stream.write(
 			this.#encoder.encode(text.join("\n")),
 			(error: Error | null | undefined) => {

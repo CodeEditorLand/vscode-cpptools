@@ -26,7 +26,9 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 export interface ExpansionVars {
 	[key: string]: string;
+
 	workspaceFolder: string;
+
 	workspaceFolderBasename: string;
 }
 
@@ -34,6 +36,7 @@ export interface ExpansionOptions {
 	vars: ExpansionVars;
 
 	doNotSupportCommands?: boolean;
+
 	recursive?: boolean;
 }
 
@@ -67,6 +70,7 @@ export async function expandString(
 	do {
 		// TODO: consider a full circular reference check?
 		[result, didReplacement] = await expandStringImpl(result, options);
+
 		i++;
 	} while (i < MAX_RECURSION && options.recursive && didReplacement);
 
@@ -144,7 +148,9 @@ async function expandStringImpl(
 				),
 			);
 		}
+
 		const repl: string = process.env[varname] || "";
+
 		subs.set(full, repl);
 	}
 
@@ -165,6 +171,7 @@ async function expandStringImpl(
 
 			break;
 		}
+
 		const full: string = match[0];
 
 		const command: string = match[1];
@@ -172,11 +179,13 @@ async function expandStringImpl(
 		if (subs.has(full)) {
 			continue; // Don't execute commands more than once per string
 		}
+
 		try {
 			const command_ret: unknown = await vscode.commands.executeCommand(
 				command,
 				options.vars.workspaceFolder,
 			);
+
 			subs.set(full, `${command_ret}`);
 		} catch (e: any) {
 			void getOutputChannelLogger().showWarningMessage(
@@ -194,9 +203,11 @@ async function expandStringImpl(
 	let result: string = input;
 
 	let didReplacement: boolean = false;
+
 	subs.forEach((value, key) => {
 		if (value !== key) {
 			result = replaceAll(result, key, value);
+
 			didReplacement = true;
 		}
 	});

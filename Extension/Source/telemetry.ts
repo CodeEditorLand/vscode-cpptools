@@ -19,6 +19,7 @@ import { is } from "./Utility/System/guards";
 
 interface IPackageInfo {
 	name: string;
+
 	version: string;
 }
 
@@ -63,6 +64,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 		for (const [key, value] of props) {
 			event[key] = value;
 		}
+
 		this.sendTelemetryEvent(eventName, event);
 	}
 
@@ -86,9 +88,11 @@ export function activate(): void {
 			if (packageInfo) {
 				const targetPopulation: TargetPopulation =
 					util.getCppToolsTargetPopulation();
+
 				experimentationTelemetry = new ExperimentationTelemetry(
 					new TelemetryReporter(appInsightsKey),
 				);
+
 				initializationPromise = getExperimentationServiceAsync(
 					packageInfo.name,
 					packageInfo.version,
@@ -115,6 +119,7 @@ export async function isExperimentEnabled(
 	if (new CppSettings().experimentalFeatures) {
 		return true;
 	}
+
 	const experimentationService: IExperimentationService | undefined =
 		await getExperimentationService();
 
@@ -129,6 +134,7 @@ export async function isExperimentEnabled(
 
 export async function deactivate(): Promise<void> {
 	await initializationPromise?.catch(logAndReturn.undefined);
+
 	await experimentationTelemetry?.dispose().catch(logAndReturn.undefined);
 }
 
@@ -140,6 +146,7 @@ export function logDebuggerEvent(
 	const sendTelemetry = () => {
 		if (experimentationTelemetry) {
 			const eventNamePrefix: string = "cppdbg/VS/Diagnostics/Debugger/";
+
 			experimentationTelemetry.sendTelemetryEvent(
 				eventNamePrefix + eventName,
 				properties,
@@ -156,6 +163,7 @@ export function logDebuggerEvent(
 			.then(sendTelemetry)
 			.catch(logAndReturn.undefined);
 	}
+
 	sendTelemetry();
 }
 
@@ -167,6 +175,7 @@ export function logLanguageServerEvent(
 	const sendTelemetry = () => {
 		if (experimentationTelemetry) {
 			const eventNamePrefix: string = "C_Cpp/LanguageServer/";
+
 			experimentationTelemetry.sendTelemetryEvent(
 				eventNamePrefix + eventName,
 				properties,
@@ -181,6 +190,7 @@ export function logLanguageServerEvent(
 			.then(sendTelemetry)
 			.catch(logAndReturn.undefined);
 	}
+
 	sendTelemetry();
 }
 
@@ -192,6 +202,7 @@ export function logLanguageModelToolEvent(
 	const sendTelemetry = () => {
 		if (experimentationTelemetry) {
 			const eventNamePrefix: string = "C_Cpp/Copilot/Chat/Tool/";
+
 			experimentationTelemetry.sendTelemetryEvent(
 				eventNamePrefix + eventName,
 				properties,
@@ -206,6 +217,7 @@ export function logLanguageModelToolEvent(
 			.then(sendTelemetry)
 			.catch(logAndReturn.undefined);
 	}
+
 	sendTelemetry();
 }
 
