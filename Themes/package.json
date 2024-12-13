@@ -1,33 +1,8 @@
 {
 	"name": "cpptools-themes",
 	"displayName": "C/C++ Themes",
-	"version": "2.0.0",
 	"description": "UI Themes for C/C++ extension.",
-	"categories": [
-		"Themes"
-	],
-	"keywords": [
-		"C",
-		"C++",
-		"Microsoft",
-		"Theme",
-		"Themes"
-	],
-	"homepage": "https://github.com/Microsoft/vscode-cpptools",
-	"bugs": {
-		"url": "https://github.com/Microsoft/vscode-cpptools/issues",
-		"email": "c_cpp_support@microsoft.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-cpptools.git"
-	},
-	"license": "SEE LICENSE IN LICENSE.txt",
 	"qna": "https://github.com/Microsoft/vscode-cpptools/issues",
-	"author": {
-		"name": "Microsoft Corporation"
-	},
-	"publisher": "ms-vscode",
 	"contributes": {
 		"themes": [
 			{
@@ -58,9 +33,6 @@
 	},
 	"dependencies": {},
 	"devDependencies": {},
-	"engines": {
-		"vscode": "^1.30.0"
-	},
 	"icon": "assets/LanguageCCPP_color_128x.png",
 	"preview": false,
 	"readme": "README.md"
