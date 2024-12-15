@@ -752,7 +752,6 @@ function removeCodeAnalysisCodeActions(
 
 				for (
 					let codeActionInfoIndex: number = 0;
-
 					codeActionInfoIndex < codeActionInfo.identifiers.length;
 					++codeActionInfoIndex
 				) {

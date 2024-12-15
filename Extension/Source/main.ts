@@ -201,7 +201,6 @@ export async function activate(
 	) {
 		for (
 			let i: number = 0;
-
 			i < vscode.workspace.workspaceFolders.length;
 			++i
 		) {

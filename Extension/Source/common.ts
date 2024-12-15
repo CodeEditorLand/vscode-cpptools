@@ -1926,9 +1926,7 @@ export function isValidIdentifier(candidate: string): boolean {
 	// Reject if first character is disallowed
 	for (
 		let i: number = 0;
-
 		i < disallowedFirstCharacterIdentifierUnicodeRanges.length;
-
 		i++
 	) {
 		const disallowedCharacters: number[] =
@@ -1947,9 +1945,7 @@ export function isValidIdentifier(candidate: string): boolean {
 
 		for (
 			let i: number = 0;
-
 			i < allowedIdentifierUnicodeRanges.length;
-
 			i++
 		) {
 			const allowedCharacters: number[] =

@@ -306,11 +306,9 @@ export class RemoteAttachPicker {
 		// The device may not be responsive for a while during the restart after image deploy. Retry 5 times.
 		for (
 			let i: number = 0;
-
 			i < 5 &&
 			!processListOutput.succeeded &&
 			processListOutput.outputError.length === 0;
-
 			i++
 		) {
 			processListOutput = await util.spawnChildProcess(
