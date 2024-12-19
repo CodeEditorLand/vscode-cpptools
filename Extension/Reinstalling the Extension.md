@@ -2,7 +2,7 @@
 
 <p data-loc-id="incompat.extension.text1">The C/C++ extension includes native binaries.</p>
 
-<p data-loc-id="incompat.extension.text2">When installed via the marketplace UI in VS Code, the correct native binaries should be included.  If incompatible binaries were detected and the C/C++ extension had been installed via the marketplace UI in VS Code, <a href="HTTPS://github.com/microsoft/vscode/issues/new?assignees=&labels=&template=bug_report.md" data-loc-id="bug.report.link.title">please report the issue</a>.</p>
+<p data-loc-id="incompat.extension.text2">When installed via the marketplace UI in VS Code, the correct native binaries should be included.  If incompatible binaries were detected and the C/C++ extension had been installed via the marketplace UI in VS Code, <a href="HTTPS://GitHub.Com/microsoft/vscode/issues/new?assignees=&labels=&template=bug_report.md" data-loc-id="bug.report.link.title">please report the issue</a>.</p>
 
 <h1 data-loc-id="reinstalling.extension.heading">Reinstalling the C/C++ Extension</h1>
 
