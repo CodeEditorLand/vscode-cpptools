@@ -6515,7 +6515,7 @@
 		"which": "^5.0.0"
 	},
 	"devDependencies": {
-		"@octokit/rest": "^21.0.2",
+		"@octokit/rest": "^21.1.0",
 		"@types/glob": "^8.1.0",
 		"@types/node": "^22.10.5",
 		"@types/node-fetch": "^2.6.12",
