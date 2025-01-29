@@ -479,6 +479,7 @@ interface CodeAnalysisParams {
 
 interface FinishedRequestCustomConfigParams {
     uri: string;
+    isProviderRegistered: boolean;
 }
 
 export interface TextDocumentWillSaveParams {
@@ -540,8 +541,9 @@ export interface GetCopilotHoverInfoParams {
     position: Position;
 }
 
-interface GetCopilotHoverInfoResult {
+export interface GetCopilotHoverInfoResult {
     content: string;
+    files: string[];
 }
 
 export interface ChatContextResult {
@@ -1840,7 +1842,8 @@ export class DefaultClient implements Client {
     public onDidChangeTextDocument(textDocumentChangeEvent: vscode.TextDocumentChangeEvent): void {
         if (util.isCpp(textDocumentChangeEvent.document)) {
             // If any file has changed, we need to abort the current rename operation
-            if (workspaceReferences.renamePending) {
+            if (workspaceReferences !== undefined // Occurs when a document changes before cpptools starts.
+                && workspaceReferences.renamePending) {
                 workspaceReferences.cancelCurrentReferenceRequest(refs.CancellationSender.User);
             }
 
@@ -2101,8 +2104,9 @@ export class DefaultClient implements Client {
     }
 
     public async provideCustomConfiguration(docUri: vscode.Uri): Promise<void> {
+        let isProviderRegistered: boolean = false;
         const onFinished: () => void = () => {
-            void this.languageClient.sendNotification(FinishedRequestCustomConfig, { uri: docUri.toString() });
+            void this.languageClient.sendNotification(FinishedRequestCustomConfig, { uri: docUri.toString(), isProviderRegistered });
         };
         try {
             const providerId: string | undefined = this.configurationProvider;
@@ -2113,6 +2117,7 @@ export class DefaultClient implements Client {
             if (!provider || !provider.isReady) {
                 return;
             }
+            isProviderRegistered = true;
             const resultCode = await this.provideCustomConfigurationAsync(docUri, provider);
             telemetry.logLanguageServerEvent('provideCustomConfiguration', { providerId, resultCode });
         } finally {
